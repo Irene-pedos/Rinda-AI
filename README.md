@@ -152,6 +152,12 @@ $key = (Select-String -Path .env -Pattern '^ML_INTERNAL_API_KEY=(.*)$').Matches[
 Invoke-RestMethod -Method Post -Uri http://localhost:8000/process/plot -ContentType 'application/json' -Headers @{ 'X-Internal-Api-Key' = $key } -Body '{"plotId": 9001, "source": "sample"}'
 ```
 
+To see how the status rules behave across past seasons, run this from `ml-service` with the backend running. It saves nothing, and the results are in [docs/ML_VALIDATION.md](docs/ML_VALIDATION.md).
+
+```powershell
+.venv\Scripts\python -m app.backtest
+```
+
 ### Before returning a borrowed computer
 
 Everything that matters must be pushed to GitHub. Then sign out of GitHub in Windows Credential Manager, and delete `.env` and `%LOCALAPPDATA%\Rinda`.

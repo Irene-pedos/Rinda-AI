@@ -1,7 +1,7 @@
 """The calculations, with no Earth Engine dependency, so they can be tested on fixed data."""
 
-from collections.abc import Mapping
-from dataclasses import dataclass, field
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass, field, replace
 from datetime import date, timedelta
 from statistics import mean, median
 
@@ -19,7 +19,7 @@ class Observation:
 
     @property
     def usable(self) -> bool:
-        return self.ndvi is not None and self.clear_pixels >= params.MIN_CLEAR_PIXELS
+        return self.ndvi is not None
 
 
 @dataclass(frozen=True)
@@ -52,6 +52,14 @@ def one_per_day(observations: list[Observation]) -> list[Observation]:
         if current is None or obs.clear_pixels > current.clear_pixels:
             best[obs.day] = obs
     return [best[day] for day in sorted(best)]
+
+
+def apply_pixel_limit(observations: list[Observation], min_clear_pixels: int) -> list[Observation]:
+    """Blanks the NDVI of dates with too few clear pixels, so they can't be mistaken for readings."""
+    return [
+        obs if obs.clear_pixels >= min_clear_pixels else replace(obs, ndvi=None)
+        for obs in observations
+    ]
 
 
 def smooth(observations: list[Observation]) -> dict[date, float]:
@@ -139,20 +147,24 @@ def rain_percent(total_mm: float | None, past_totals: list[float], window_end: d
 class StatusLimits:
     """Decision values from the backend's thresholds table."""
 
+    min_clear_pixels: int
     window_days: int
     min_observations: int
     watch_rain_pct: float
+    watch_anomaly: float
+    at_risk_anomaly: float
     consecutive_observations: int
     min_days: int
-    anomaly: float
 
     KEYS = {
+        "min_clear_pixels": "min_clear_pixels",
         "window_days": "not_enough_data_window_days",
         "min_observations": "not_enough_data_min_obs",
         "watch_rain_pct": "watch_rain_pct",
+        "watch_anomaly": "watch_anomaly",
+        "at_risk_anomaly": "at_risk_anomaly",
         "consecutive_observations": "at_risk_consecutive_obs",
         "min_days": "at_risk_min_days",
-        "anomaly": "at_risk_anomaly",
     }
 
     @classmethod
@@ -161,13 +173,19 @@ class StatusLimits:
         if missing:
             raise ValueError(f"These thresholds have no value yet: {', '.join(missing)}")
         return cls(
+            min_clear_pixels=int(thresholds[cls.KEYS["min_clear_pixels"]]),
             window_days=int(thresholds[cls.KEYS["window_days"]]),
             min_observations=int(thresholds[cls.KEYS["min_observations"]]),
             watch_rain_pct=float(thresholds[cls.KEYS["watch_rain_pct"]]),
+            watch_anomaly=float(thresholds[cls.KEYS["watch_anomaly"]]),
+            at_risk_anomaly=float(thresholds[cls.KEYS["at_risk_anomaly"]]),
             consecutive_observations=int(thresholds[cls.KEYS["consecutive_observations"]]),
             min_days=int(thresholds[cls.KEYS["min_days"]]),
-            anomaly=float(thresholds[cls.KEYS["anomaly"]]),
         )
+
+    def used(self, thresholds: Mapping[str, float | None]) -> dict[str, float]:
+        """The values a status depends on, to store with it."""
+        return {key: thresholds[key] for key in self.KEYS.values()}
 
 
 @dataclass(frozen=True)
@@ -190,13 +208,14 @@ def anomaly_score(value: float, band: BaselineBin) -> float | None:
     return (value - band.p50) / width
 
 
-def _below_band_run(usable: list[Observation], smoothed: dict[date, float],
-                    bands: dict[int, BaselineBin], planting: date) -> list[Observation]:
-    """The unbroken run of readings below the band, newest first."""
+def _unbroken_run(usable: list[Observation], smoothed: dict[date, float], bands: dict[int, BaselineBin],
+                  planting: date, meets: Callable[[float], bool]) -> list[Observation]:
+    """The readings in a row, ending at the newest, whose anomaly meets the condition. Newest first."""
     run = []
     for obs in reversed(usable):
         band = bands.get(dap_bin(days_after_planting(obs.day, planting)))
-        if band is None or smoothed[obs.day] >= band.p10:
+        score = anomaly_score(smoothed[obs.day], band) if band else None
+        if score is None or not meets(score):
             break
         run.append(obs)
     return run
@@ -216,7 +235,7 @@ def _not_enough(recent: list[Observation], limits: StatusLimits, as_of: date, ra
 
 def plot_status(observations: list[Observation], smoothed: dict[date, float], bins: list[BaselineBin],
                 planting: date, as_of: date, rain: RainComparison | None, limits: StatusLimits) -> PlotStatus:
-    """Applies the spec's status rules (3.4) and the MVP's two cause rules (10.1)."""
+    """Applies the team's status rules (questions 15 to 17) and the MVP's two cause rules (10.1)."""
     usable = [obs for obs in observations if obs.day in smoothed and obs.day <= as_of]
     first_day = as_of - timedelta(days=limits.window_days - 1)
     recent = [obs for obs in usable if obs.day >= first_day]
@@ -228,25 +247,26 @@ def plot_status(observations: list[Observation], smoothed: dict[date, float], bi
     bands = {band.dap_bin: band for band in bins}
     latest = recent[-1]
     band = bands.get(dap_bin(days_after_planting(latest.day, planting)))
-    if band is None:
+    score = anomaly_score(smoothed[latest.day], band) if band else None
+    if score is None:
         return _not_enough(recent, limits, as_of, rain_pct, "NO_NORMAL_CURVE")
 
-    score = anomaly_score(smoothed[latest.day], band)
-    below = _below_band_run(usable, smoothed, bands, planting)
+    below = _unbroken_run(usable, smoothed, bands, planting, lambda a: a < limits.watch_anomaly)
+    severe = _unbroken_run(usable, smoothed, bands, planting, lambda a: a <= limits.at_risk_anomaly)
+    severe_days = (severe[0].day - severe[-1].day).days if severe else 0
     rain_low = rain_pct is not None and rain_pct < limits.watch_rain_pct
 
     signals = []
     if below:
         signals.append({"code": "NDVI_BELOW_NORMAL", "readings": len(below)})
+    if severe:
+        signals.append({"code": "NDVI_WELL_BELOW_NORMAL", "readings": len(severe), "days": severe_days})
     if rain_low:
         signals.append({"code": "RAIN_BELOW_NORMAL", "rainPct": round(rain_pct, 1)})
     if rain_pct is None:
         signals.append({"code": "RAIN_NOT_COMPARED"})
 
-    persisted = below and (len(below) >= limits.consecutive_observations
-                           or (below[0].day - below[-1].day).days >= limits.min_days)
-    clearly_low = score is not None and score <= limits.anomaly
-    if persisted and clearly_low:
+    if len(severe) >= limits.consecutive_observations and severe_days >= limits.min_days:
         status = "AT_RISK"
     elif below or rain_low:
         status = "WATCH"
@@ -257,7 +277,7 @@ def plot_status(observations: list[Observation], smoothed: dict[date, float], bi
     if below:
         cause = "WATER_DEFICIT" if rain_low else "UNEXPLAINED"
 
-    # MEDIUM is the top level for now: nothing has been back-tested, so HIGH would claim more than we know.
+    # MEDIUM is the top level for now: nothing has been back-tested against field results.
     enough = len(recent) >= limits.consecutive_observations and rain_pct is not None
     confidence = "MEDIUM" if enough and cause != "UNEXPLAINED" else "LOW"
 

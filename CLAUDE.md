@@ -46,7 +46,8 @@ Run from `ml-service/`. The Python is in `.venv` (3.13). Tests need neither Eart
 ```
 
 - **Calculations go in `app/processing.py`**, with no Earth Engine dependency, so they stay testable on fixed data.
-- **Settings go in `app/params.py`.** Change `MODEL_VERSION` when one changes.
+- **Settings go in `app/params.py`.** Change `MODEL_VERSION` when one changes. Decision values don't go there: each run reads them from the backend's `thresholds` table and stores what it used.
+- **`app/backtest.py`** replays the status rules through past seasons and saves nothing. Results are in `docs/ML_VALIDATION.md`.
 - **Never fall back to sample data** when real data was requested. `samples/sample_plot.json` is simulated.
 - **Windows Application Control blocks some compiled packages here** (pandas was blocked, so it isn't used). Never try to bypass it.
 - `app.gee_check` tests the Earth Engine setup. Each computer needs its own `earthengine authenticate`.

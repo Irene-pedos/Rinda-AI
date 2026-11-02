@@ -177,6 +177,7 @@ class PlotDataApiTest extends ApiTestBase {
         body.put("confidence", "MEDIUM");
         body.put("explanation", Map.of("needsFieldVisit", false, "dataQualityNote", "2 clear reading(s).",
                 "signals", List.of(Map.of("code", "NDVI_BELOW_NORMAL", "readings", 2))));
+        body.put("thresholdsUsed", Map.of("at_risk_anomaly", -1.5, "not_enough_data_window_days", 20));
         return body;
     }
 
@@ -223,6 +224,84 @@ class PlotDataApiTest extends ApiTestBase {
                 .andExpect(jsonPath("$.dataQualityNote").value("2 clear reading(s)."))
                 .andExpect(jsonPath("$.modelVersion").value("0.2.0"))
                 .andExpect(jsonPath("$.dataOrigin").value("GEE"));
+    }
+
+    @Test
+    void statusStoresAndReturnsTheThresholdsItUsed() throws Exception {
+        saveStatus(statusBody("2026-10-20", "AT_RISK", "UNEXPLAINED")).andExpect(status().isOk());
+
+        read(farmer, "/status")
+                .andExpect(jsonPath("$.thresholdsUsed.at_risk_anomaly").value(-1.5))
+                .andExpect(jsonPath("$.thresholdsUsed.not_enough_data_window_days").value(20));
+        assertThat(jdbc.queryForObject("SELECT thresholds_json->>'$.at_risk_anomaly' FROM plot_status", String.class))
+                .isEqualTo("-1.5");
+    }
+
+    @Test
+    void statusWithoutItsThresholdsIsRefused() throws Exception {
+        Map<String, Object> status = statusBody("2026-10-20", "WATCH", null);
+        status.remove("thresholdsUsed");
+
+        saveStatus(status).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+    }
+
+    @Test
+    void notEnoughDataStillGivesTheLastKnownStatusAndDate() throws Exception {
+        saveStatus(statusBody("2026-10-01", "HEALTHY", null)).andExpect(status().isOk());
+        saveStatus(statusBody("2026-10-10", "WATCH", null)).andExpect(status().isOk());
+        saveStatus(statusBody("2026-10-20", "NOT_ENOUGH_DATA", null)).andExpect(status().isOk());
+        saveStatus(statusBody("2026-10-25", "NOT_ENOUGH_DATA", null)).andExpect(status().isOk());
+
+        read(farmer, "/status")
+                .andExpect(jsonPath("$.status").value("NOT_ENOUGH_DATA"))
+                .andExpect(jsonPath("$.date").value("2026-10-25"))
+                .andExpect(jsonPath("$.lastKnownStatus").value("WATCH"))
+                .andExpect(jsonPath("$.lastKnownDate").value("2026-10-10"));
+    }
+
+    @Test
+    void lastKnownStatusIsOnlySentWithNotEnoughData() throws Exception {
+        saveStatus(statusBody("2026-10-10", "WATCH", null)).andExpect(status().isOk());
+        saveStatus(statusBody("2026-10-20", "HEALTHY", null)).andExpect(status().isOk());
+
+        read(farmer, "/status").andExpect(jsonPath("$.lastKnownStatus").value(nullValue()));
+    }
+
+    @Test
+    void notEnoughDataWithNoEarlierStatusHasNoLastKnownStatus() throws Exception {
+        saveStatus(statusBody("2026-10-20", "NOT_ENOUGH_DATA", null)).andExpect(status().isOk());
+
+        read(farmer, "/status")
+                .andExpect(jsonPath("$.lastKnownStatus").value(nullValue()))
+                .andExpect(jsonPath("$.lastKnownDate").value(nullValue()));
+    }
+
+    @Test
+    void teamDecisionsAreInTheTableAndMarkedAsDemoNotFinal() {
+        Map<String, String> expected = Map.of("min_clear_pixels", "20.000", "not_enough_data_window_days", "20.000",
+                "not_enough_data_min_obs", "1.000", "watch_anomaly", "-1.000", "watch_rain_pct", "60.000",
+                "at_risk_anomaly", "-1.500", "at_risk_consecutive_obs", "2.000", "at_risk_min_days", "10.000",
+                "trigger_min_valid_obs", "2.000");
+
+        expected.forEach((key, value) -> {
+            assertThat(jdbc.queryForObject("SELECT threshold_value FROM thresholds WHERE threshold_key = ?",
+                    String.class, key)).as(key).isEqualTo(value);
+            assertThat(jdbc.queryForObject("SELECT status FROM thresholds WHERE threshold_key = ?",
+                    String.class, key)).as(key).isEqualTo("CONFIRMED_FOR_DEMO");
+        });
+    }
+
+    @Test
+    void thresholdChangesFromTheDecisionsAreAudited() {
+        assertThat(jdbc.queryForObject("""
+                SELECT before_json->>'$.value' FROM audit_log
+                WHERE action = 'THRESHOLD_CHANGED' AND after_json->>'$.key' = 'at_risk_anomaly'
+                """, String.class)).startsWith("-1.000");
+        assertThat(jdbc.queryForObject("""
+                SELECT after_json->>'$.value' FROM audit_log
+                WHERE action = 'THRESHOLD_CHANGED' AND after_json->>'$.key' = 'at_risk_anomaly'
+                """, String.class)).startsWith("-1.500");
     }
 
     @Test

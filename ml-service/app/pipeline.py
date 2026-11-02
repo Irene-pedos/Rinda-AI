@@ -11,6 +11,7 @@ from app.processing import (
     RainComparison,
     RainDay,
     StatusLimits,
+    apply_pixel_limit,
     build_baseline,
     complete_total,
     one_per_day,
@@ -43,11 +44,11 @@ def _round(value: float | None, digits: int) -> float | None:
 
 
 def _observation_row(obs: Observation, smoothed: dict[date, float]) -> dict:
-    # A date with too few clear pixels keeps its pixel count but no NDVI, so it can't be mistaken for a reading.
+    # A date with too few clear pixels has its pixel count but no NDVI (see apply_pixel_limit).
     return {
         "date": obs.day.isoformat(),
         "source": "S2",
-        "ndvi": _round(obs.ndvi, 4) if obs.usable else None,
+        "ndvi": _round(obs.ndvi, 4),
         "smoothedNdvi": _round(smoothed.get(obs.day), 4),
         "clearPixels": obs.clear_pixels,
         "cloudPct": _round(obs.cloud_pct, 2),
@@ -64,7 +65,8 @@ def compare_rain(job: PlotJob, source: DataSource) -> RainComparison | None:
     end = max(day.day for day in available)
     start = end - timedelta(days=params.RAIN_WINDOW_DAYS - 1)
     past_totals = []
-    for year in range(params.BASELINE_FIRST_YEAR, end.year):
+    # Stops before the window's first year, so a window crossing New Year can't be compared with itself.
+    for year in range(params.BASELINE_FIRST_YEAR, start.year):
         past_start = same_day_in_year(start, year)
         past_end = past_start + timedelta(days=params.RAIN_WINDOW_DAYS - 1)
         total = complete_total(source.rain(past_start, past_end), past_start, past_end)
@@ -73,7 +75,7 @@ def compare_rain(job: PlotJob, source: DataSource) -> RainComparison | None:
     return rain_percent(complete_total(available, start, end), past_totals, end)
 
 
-def _status_block(status: PlotStatus, as_of: date, rain: RainComparison | None) -> dict:
+def _status_block(status: PlotStatus, as_of: date, rain: RainComparison | None, used: dict) -> dict:
     return {
         "statusDate": as_of.isoformat(),
         "status": status.status,
@@ -89,6 +91,7 @@ def _status_block(status: PlotStatus, as_of: date, rain: RainComparison | None) 
             "rainTotalMm": _round(rain.total_mm, 2) if rain else None,
             "rainNormalMm": _round(rain.normal_mm, 2) if rain else None,
         },
+        "thresholdsUsed": used,
     }
 
 
@@ -97,12 +100,15 @@ def run(job: PlotJob, source: DataSource, thresholds: dict[str, float | None]) -
         raise ValueError("as_of is before the planting date")
     limits = StatusLimits.from_thresholds(thresholds)
 
-    observations = one_per_day(source.observations(job.planting_date, job.as_of))
+    def valid(start: date, end: date) -> list[Observation]:
+        return apply_pixel_limit(one_per_day(source.observations(start, end)), limits.min_clear_pixels)
+
+    observations = valid(job.planting_date, job.as_of)
     smoothed = smooth(observations)
     rain = source.rain(job.planting_date, job.as_of)
 
     seasons = {
-        start: one_per_day(source.observations(start, start + timedelta(days=params.BASELINE_MAX_DAP)))
+        start: valid(start, start + timedelta(days=params.BASELINE_MAX_DAP))
         for start in past_season_starts(job.planting_date)
     }
     bins = build_baseline(seasons)
@@ -118,6 +124,7 @@ def run(job: PlotJob, source: DataSource, thresholds: dict[str, float | None]) -
         "inputTo": job.as_of.isoformat(),
         "params": {
             **params.as_dict(),
+            "minClearPixels": limits.min_clear_pixels,
             "baselineSeasons": [start.isoformat() for start in seasons],
             "thresholds": thresholds,
         },
@@ -135,5 +142,5 @@ def run(job: PlotJob, source: DataSource, thresholds: dict[str, float | None]) -
                 for b in bins
             ],
         },
-        "status": _status_block(status, job.as_of, rain_comparison),
+        "status": _status_block(status, job.as_of, rain_comparison, limits.used(thresholds)),
     }

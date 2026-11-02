@@ -370,17 +370,23 @@ Returns **200** with the latest crop health:
   "needsFieldVisit": false,
   "signals": [
     { "code": "NDVI_BELOW_NORMAL", "readings": 3 },
+    { "code": "NDVI_WELL_BELOW_NORMAL", "readings": 3, "days": 15 },
     { "code": "RAIN_BELOW_NORMAL", "rainPct": 42.5 }
   ],
-  "dataQualityNote": "3 clear reading(s) in the 15 days to 2025-12-10. Latest: 2025-12-09. These rules have not been checked against field results yet.",
-  "modelVersion": "0.2.0",
-  "dataOrigin": "GEE"
+  "dataQualityNote": "3 clear reading(s) in the 20 days to 2025-12-10. Latest: 2025-12-09. These rules have not been checked against field results yet.",
+  "modelVersion": "0.3.0",
+  "dataOrigin": "GEE",
+  "lastKnownStatus": null,
+  "lastKnownDate": null,
+  "thresholdsUsed": { "at_risk_anomaly": -1.5, "watch_rain_pct": 60.0 }
 }
 ```
 
 - `status` is `HEALTHY`, `WATCH`, `AT_RISK` or `NOT_ENOUGH_DATA`. Show it as icon plus word, never colour alone.
 - **This is crop health, not a claim, and not the plot's `status` from `GET /plots/{id}`.** `AT_RISK` must not open a claim screen (§2.2 #7).
 - `NOT_ENOUGH_DATA` shows "Not enough satellite data yet". A plot with no analysis yet also returns this, with `date` null and the other result fields null or empty.
+- **With `NOT_ENOUGH_DATA`, `lastKnownStatus` and `lastKnownDate` give the newest real status.** Show "Last update: <date>", and never present that status as current. Both are null with any other status, or if the plot has never had one.
+- `thresholdsUsed` lists the values this result used. Show it to officers if useful, but don't copy these values into the app, because they can change. Older results may have it as null.
 - `cause` is `WATER_DEFICIT`, `UNEXPLAINED` or null. Null means no low NDVI to explain, so don't show a cause. Word them as "likely", and never name a pest or disease.
 - `needsFieldVisit` is true for `UNEXPLAINED`. Show that an agent visit is recommended.
 - `confidence` is `HIGH`, `MEDIUM` or `LOW`, and always show it. The rules aren't back-tested yet, so today it stops at `MEDIUM`.
@@ -392,6 +398,7 @@ Each item in `signals` has a `code`, so map codes to `strings.xml`:
 | Code | Meaning | Extra field |
 |---|---|---|
 | `NDVI_BELOW_NORMAL` | Latest readings are below the normal band | `readings` in a row |
+| `NDVI_WELL_BELOW_NORMAL` | Latest readings are far below the normal band | `readings` in a row, and the `days` they span |
 | `RAIN_BELOW_NORMAL` | Rain is below the limit for this plot | `rainPct` |
 | `RAIN_NOT_COMPARED` | Not enough rain data to compare | |
 | `NO_RECENT_READINGS` | Too few clear readings recently | |

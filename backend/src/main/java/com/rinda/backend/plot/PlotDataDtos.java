@@ -47,7 +47,13 @@ public final class PlotDataDtos {
             JsonNode signals,
             String dataQualityNote,
             @Schema(types = {"string", "null"}) String modelVersion,
-            @Schema(types = {"string", "null"}, description = "GEE, or SAMPLE_FILE for simulated data") DataOrigin dataOrigin) {
+            @Schema(types = {"string", "null"}, description = "GEE, or SAMPLE_FILE for simulated data") DataOrigin dataOrigin,
+            @Schema(types = {"string", "null"}, description = "Only with NOT_ENOUGH_DATA: the newest real status, which is not current")
+            String lastKnownStatus,
+            @Schema(types = {"string", "null"}, description = "The date of lastKnownStatus, for \"Last update: <date>\"")
+            LocalDate lastKnownDate,
+            @Schema(types = {"object", "null"}, description = "The threshold values this result used")
+            JsonNode thresholdsUsed) {
     }
 
     public record BaselineBinResponse(

@@ -25,7 +25,7 @@ def main() -> int:
 
     observations = source.observations(date(2025, 1, 1), date(2025, 1, 31))
     usable = [o for o in observations if o.usable]
-    print(f"Sentinel-2, January 2025: {len(observations)} images, {len(usable)} usable")
+    print(f"Sentinel-2, January 2025: {len(observations)} images, {len(usable)} with a reading")
     for obs in observations[:5]:
         print(f"  {obs.day} ndvi={obs.ndvi} clear_pixels={obs.clear_pixels} cloud_pct={obs.cloud_pct}")
 

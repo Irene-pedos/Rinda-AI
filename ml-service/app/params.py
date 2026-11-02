@@ -1,15 +1,15 @@
 """Processing settings. Every run stores these with its results, so results can be reproduced.
 
-Items marked TO_CONFIRM are suggestions and must match the backend's thresholds table.
+Items marked TO_CONFIRM are suggestions. Decision values, such as the clear pixel limit, are not
+here: each run reads them from the backend's thresholds table and stores what it used.
 Change MODEL_VERSION whenever a value here changes.
 """
 
-MODEL_VERSION = "0.2.0"
+MODEL_VERSION = "0.3.0"
 BASELINE_VERSION = "plot-history-v1"
 
 # Spec section 3.2
 SHRINK_METRES = 10
-MIN_CLEAR_PIXELS = 20  # TO_CONFIRM
 SENTINEL2_SCALE_METRES = 10
 
 # Not in the spec, so TO_CONFIRM (docs/OPEN_QUESTIONS.md).
@@ -34,7 +34,6 @@ RAIN_MIN_PAST_SEASONS = 3  # TO_CONFIRM
 def as_dict() -> dict:
     return {
         "shrinkMetres": SHRINK_METRES,
-        "minClearPixels": MIN_CLEAR_PIXELS,
         "cloudProbabilityMax": CLOUD_PROBABILITY_MAX,
         "sclClearClasses": SCL_CLEAR_CLASSES,
         "smoothingWindow": SMOOTHING_WINDOW,

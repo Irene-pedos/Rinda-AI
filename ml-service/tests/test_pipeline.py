@@ -26,8 +26,9 @@ class FakeSource:
 
 
 THRESHOLDS = {
-    "not_enough_data_window_days": 15, "not_enough_data_min_obs": 1, "watch_rain_pct": 60,
-    "at_risk_consecutive_obs": 2, "at_risk_min_days": 10, "at_risk_anomaly": -1,
+    "min_clear_pixels": 20, "not_enough_data_window_days": 20, "not_enough_data_min_obs": 1,
+    "watch_rain_pct": 60, "watch_anomaly": -1, "at_risk_anomaly": -1.5, "at_risk_consecutive_obs": 2,
+    "at_risk_min_days": 10,
 }
 JOB = pipeline.PlotJob(plot_id=7, planting_date=date(2021, 9, 20), season_type="A", as_of=date(2021, 10, 20))
 
@@ -39,7 +40,7 @@ def test_result_records_how_it_was_made():
     assert result["modelVersion"] == params.MODEL_VERSION
     assert result["inputFrom"] == "2021-09-20"
     assert result["inputTo"] == "2021-10-20"
-    assert result["params"]["minClearPixels"] == params.MIN_CLEAR_PIXELS
+    assert result["params"]["minClearPixels"] == THRESHOLDS["min_clear_pixels"]
     assert result["params"]["baselineSeasons"] == ["2019-09-20", "2020-09-20"]
 
 
@@ -174,7 +175,7 @@ def test_sample_stress_shows_up_as_at_risk():
     job = pipeline.PlotJob(9001, source.planting_date, source.season_type, source.as_of)
     status = pipeline.run(job, source, THRESHOLDS)["status"]
     assert status["status"] == "AT_RISK"
-    assert status["anomaly"] <= -1
+    assert status["anomaly"] <= -1.5
 
 
 def test_sample_season_shows_a_rain_deficit_as_the_likely_cause():
@@ -184,3 +185,25 @@ def test_sample_season_shows_a_rain_deficit_as_the_likely_cause():
     assert status["rainPct"] < 60
     assert status["cause"] == "WATER_DEFICIT"
     assert status["confidence"] == "MEDIUM"
+
+
+def test_a_rain_window_crossing_new_year_is_never_compared_with_itself():
+    job = pipeline.PlotJob(1, date(2025, 9, 20), "A", date(2026, 1, 10))
+    window_start = date(2025, 12, 12)
+    past = [day for year in range(2021, 2025) for day in _rain_days(date(year, 12, 12), 30, 1.0)]
+    source = FakeSource(rain=_rain_days(window_start, 30, 5.0) + past)
+    comparison = pipeline.compare_rain(job, source)
+    assert comparison.normal_mm == 30
+    assert comparison.pct_of_normal == 500
+
+
+def test_the_pixel_limit_comes_from_the_thresholds():
+    source = FakeSource([Observation(date(2021, 10, 1), 0.5, 25)])
+    assert pipeline.run(JOB, source, THRESHOLDS)["observations"][0]["ndvi"] == 0.5
+    stricter = {**THRESHOLDS, "min_clear_pixels": 30}
+    assert pipeline.run(JOB, source, stricter)["observations"][0]["ndvi"] is None
+
+
+def test_status_stores_the_thresholds_it_used():
+    used = pipeline.run(JOB, FakeSource(), THRESHOLDS)["status"]["thresholdsUsed"]
+    assert used == THRESHOLDS

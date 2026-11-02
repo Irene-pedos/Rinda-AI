@@ -15,6 +15,7 @@ import com.rinda.backend.plot.PlotDataDtos.WeatherResponse;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class PlotDataService {
 
     private static final LocalDate EARLIEST = LocalDate.of(1000, 1, 1);
     private static final LocalDate LATEST = LocalDate.of(9999, 12, 31);
+    private static final String NOT_ENOUGH_DATA = "NOT_ENOUGH_DATA";
 
     private final PlotService plots;
     private final JdbcTemplate jdbc;
@@ -38,6 +40,9 @@ public class PlotDataService {
     }
 
     private record BaselineSet(String seasonType, String version, DataOrigin origin) {
+    }
+
+    private record LastKnown(String status, LocalDate date) {
     }
 
     @Transactional(readOnly = true)
@@ -100,31 +105,47 @@ public class PlotDataService {
     @Transactional(readOnly = true)
     public StatusResponse status(AuthPrincipal principal, long plotId) {
         plots.get(principal, plotId);
+        Optional<LastKnown> lastKnown = lastKnown(plotId);
         return jdbc.query("""
                 SELECT status_date, status, anomaly, rain_pct, cause, confidence, explanation_json,
-                       model_version, data_origin
+                       model_version, data_origin, thresholds_json
                 FROM plot_status
                 WHERE plot_id = ?
                 ORDER BY status_date DESC, id DESC
                 LIMIT 1
                 """, (rs, n) -> {
+            String status = rs.getString(2);
             JsonNode explanation = readJson(rs.getString(7));
-            return new StatusResponse(rs.getObject(1, LocalDate.class), rs.getString(2), rs.getBigDecimal(3),
+            Optional<LastKnown> shown = NOT_ENOUGH_DATA.equals(status) ? lastKnown : Optional.empty();
+            return new StatusResponse(rs.getObject(1, LocalDate.class), status, rs.getBigDecimal(3),
                     rs.getBigDecimal(4), rs.getString(5), rs.getString(6),
                     explanation.path("needsFieldVisit").asBoolean(false), explanation.path("signals"),
                     explanation.path("dataQualityNote").asText(""), rs.getString(8),
-                    DataOrigin.valueOf(rs.getString(9)));
+                    DataOrigin.valueOf(rs.getString(9)), shown.map(LastKnown::status).orElse(null),
+                    shown.map(LastKnown::date).orElse(null), readJson(rs.getString(10)));
         }, plotId).stream().findFirst().orElseGet(PlotDataService::notAnalysedYet);
     }
 
+    /** The newest result that was a real status, so the app can show when it last knew something. */
+    private Optional<LastKnown> lastKnown(long plotId) {
+        return jdbc.query("""
+                SELECT status, status_date FROM plot_status
+                WHERE plot_id = ? AND status <> ?
+                ORDER BY status_date DESC, id DESC
+                LIMIT 1
+                """, (rs, n) -> new LastKnown(rs.getString(1), rs.getObject(2, LocalDate.class)),
+                plotId, NOT_ENOUGH_DATA).stream().findFirst();
+    }
+
     private static StatusResponse notAnalysedYet() {
-        return new StatusResponse(null, "NOT_ENOUGH_DATA", null, null, null, "LOW", false,
-                JsonNodeFactory.instance.arrayNode(), "This plot has not been analysed yet.", null, null);
+        return new StatusResponse(null, NOT_ENOUGH_DATA, null, null, null, "LOW", false,
+                JsonNodeFactory.instance.arrayNode(), "This plot has not been analysed yet.", null, null, null, null,
+                null);
     }
 
     private JsonNode readJson(String json) {
         try {
-            return json == null ? JsonNodeFactory.instance.objectNode() : mapper.readTree(json);
+            return json == null ? JsonNodeFactory.instance.nullNode() : mapper.readTree(json);
         } catch (JsonProcessingException ex) {
             throw new IllegalStateException(ex);
         }

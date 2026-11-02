@@ -58,14 +58,14 @@ public class MlResultService {
         }
         jdbc.update("""
                 INSERT INTO plot_status (plot_id, status_date, status, anomaly, rain_pct, cause, confidence,
-                                         explanation_json, model_version, data_origin, run_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) AS new
+                                         explanation_json, thresholds_json, model_version, data_origin, run_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) AS new
                 ON DUPLICATE KEY UPDATE status = new.status, anomaly = new.anomaly, rain_pct = new.rain_pct,
                     cause = new.cause, confidence = new.confidence, explanation_json = new.explanation_json,
-                    data_origin = new.data_origin, run_id = new.run_id
+                    thresholds_json = new.thresholds_json, data_origin = new.data_origin, run_id = new.run_id
                 """, result.plotId(), Date.valueOf(status.statusDate()), status.status(), status.anomaly(),
                 status.rainPct(), status.cause(), status.confidence(), status.explanation().toString(),
-                result.modelVersion(), result.dataOrigin().name(), runId);
+                status.thresholdsUsed().toString(), result.modelVersion(), result.dataOrigin().name(), runId);
     }
 
     /** Sample data can only reach demo plots, and real data only verified plots with confirmed details. */

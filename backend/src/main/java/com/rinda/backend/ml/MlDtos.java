@@ -44,7 +44,8 @@ public final class MlDtos {
             @DecimalMin("0") @DecimalMax("9999") BigDecimal rainPct,
             @Pattern(regexp = "WATER_DEFICIT|UNEXPLAINED") String cause,
             @NotNull @Pattern(regexp = "HIGH|MEDIUM|LOW") String confidence,
-            @NotNull JsonNode explanation) {
+            @NotNull JsonNode explanation,
+            @NotNull JsonNode thresholdsUsed) {
     }
 
     public record ObservationRow(
