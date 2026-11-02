@@ -1,9 +1,30 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.RindaAI" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <!-- Base application theme (Light) -->
+    <style name="Base.Theme.Rinda" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/rinda_green</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/rinda_green_container</item>
+        <item name="colorOnPrimaryContainer">@color/rinda_green_on_container</item>
+
+        <item name="colorSecondary">@color/rinda_gold</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSecondaryContainer">@color/rinda_gold_container</item>
+        <item name="colorOnSecondaryContainer">@color/rinda_gold_on_container</item>
+
+        <item name="colorTertiary">@color/rinda_blue</item>
+        <item name="colorOnTertiary">@color/white</item>
+
+        <item name="android:colorBackground">@color/bg_light</item>
+        <item name="colorSurface">@color/surface_light</item>
+        <item name="colorSurfaceVariant">@color/surface_variant_light</item>
+        <item name="colorOnSurface">@color/text_primary_light</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary_light</item>
+
+        <item name="android:statusBarColor">@color/bg_light</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/surface_light</item>
+        <item name="android:windowLightNavigationBar">true</item>
     </style>
 
-    <style name="Theme.RindaAI" parent="Base.Theme.RindaAI" />
+    <style name="Theme.Rinda" parent="Base.Theme.Rinda" />
 </resources>

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DRAFT – needs native speaker review -->
+<resources>
+    <!-- App Brand -->
+    <string name="app_name">Rinda</string>
+    <string name="app_tagline">Ubwishingizi n\'Uburinzi bw\'Ikigori hakoreshejwe AI</string>
+    <string name="app_demo_badge">Icyitegererezo (Demo)</string>
+    <string name="demo_mode_warning">Amakuru y\'icyitegererezo niyo akoreshwa. Kwishyura n\'ubugenzuzi bikorwa mu buryo bwo kwimenyereza.</string>
+
+    <!-- Navigation Tabs -->
+    <string name="nav_home">Ahabanza</string>
+    <string name="nav_plots">Imirima</string>
+    <string name="nav_alerts">Impuruza</string>
+    <string name="nav_claims">Ubwishingizi</string>
+    <string name="nav_profile">Umwirondoro</string>
+
+    <!-- General Common -->
+    <string name="btn_continue">Komeza</string>
+    <string name="btn_save">Bika</string>
+    <string name="btn_cancel">Hagarika</string>
+    <string name="btn_retry">Ongera ugerageze</string>
+    <string name="btn_submit">Ohereza</string>
+    <string name="btn_done">Byarangiye</string>
+    <string name="btn_back">Subira inyuma</string>
+    <string name="btn_close">Funga</string>
+    <string name="btn_delete">Siba</string>
+    <string name="btn_edit">Hindura</string>
+    <string name="btn_verify">Emeza</string>
+    <string name="btn_request_review">Saba isubiramo</string>
+    <string name="btn_report_problem">Tanga raporo y\'ikibazo</string>
+    <string name="btn_logout">Sohoka</string>
+    <string name="loading">Birimo gutunganywa…</string>
+    <string name="last_updated">Ibiheruka kuvugururwa: %s</string>
+    <string name="offline_badge">Nta murongo (Offline)</string>
+    <string name="sync_pending">Ibyahinduwe %d bitegereje koherezwa</string>
+
+    <!-- Onboarding & Language -->
+    <string name="onboarding_welcome_title">Murakaza neza kuri Rinda</string>
+    <string name="onboarding_welcome_desc">Kurengera abahinzi b\'ibigori mu Rwanda hakoreshejwe ibyogajuru n\'ubwishingizi bwihuse.</string>
+    <string name="onboarding_satellite_title">Isuzuma ry\'Ibyogajuru</string>
+    <string name="onboarding_satellite_desc">Ibyogajuru bya Sentinel bikurikirana imikurire y\'ikigori cyawe buri minsi 5 kugira ngo hemezwe ubuzima bw\'igihingwa.</string>
+    <string name="onboarding_claims_title">Ubwishingizi bunoze kandi bwihuse</string>
+    <string name="onboarding_claims_desc">Iyo igihingwa kigize ikibazo, ubwishingizi butangizwa mu buryo bwikora kandi buri mwanzuro ugasobanurwa mu mvugo yumvikana.</string>
+    <string name="select_language">Hitamo Ururimi / Select Language</string>
+    <string name="lang_english">Icyongereza (English)</string>
+    <string name="lang_kinyarwanda">Ikinyarwanda</string>
+    <string name="consent_title">Uruhushya rwo gukoresha amakuru</string>
+    <string name="consent_body">Mugukoresha Rinda, mwemeye ko imbibi z\'umurima wanyu n\'amakuru y\'ibyogajuru bikoreshwa mu gupima ubuzima bw\'igihingwa no gutanga ingoboka y\'ubwishingizi.</string>
+    <string name="consent_agree">Nabyumvise kandi ndabyemeye</string>
+
+    <!-- Auth -->
+    <string name="login_title">Injira ukoresheje Telefoni</string>
+    <string name="login_subtitle">Andika numero yawe yo mu Rwanda kugira ngo uhabwe umubare w\'ibanga wo kwemeza.</string>
+    <string name="phone_label">Numero ya Telefoni</string>
+    <string name="phone_hint">078 000 0001</string>
+    <string name="btn_send_code">Ohereza Umubare w\'Ibanga</string>
+    <string name="otp_title">Emeza Umubare</string>
+    <string name="otp_subtitle">Andika imibare 6 yoherejwe kuri %s</string>
+    <string name="otp_dev_hint">(Dev mode: Reba mu nyandiko ya seriveri [DEV OTP])</string>
+    <string name="btn_verify_code">Emeza ukomeze</string>
+    <string name="resend_code">Ongera wohereze</string>
+    <string name="signup_title">Kwiyandikisha k\'Umuhinzi</string>
+    <string name="signup_subtitle">Iyi numero ni nshya muri Rinda. Shyiramo amazina yawe na koperative urimo kugira ngo wiyandikishe.</string>
+    <string name="full_name_label">Amazina Yombi</string>
+    <string name="full_name_hint">urugero: Jean Mugabo</string>
+    <string name="cooperative_label">Koperative</string>
+    <string name="cooperative_select">Hitamo koperative yawe</string>
+    <string name="btn_complete_signup">Uzuza Kwiyandikisha</string>
+
+    <!-- Roles -->
+    <string name="role_farmer">Umuhinzi</string>
+    <string name="role_agent">Uhagarariye Koperative</string>
+    <string name="role_officer">Umukozi w\'Ubwishingizi</string>
+    <string name="role_admin">Umuhuzabikorwa</string>
+
+    <!-- Plot Statuses (Verification) -->
+    <string name="plot_status_pending">Bitegereje Kwemezwa</string>
+    <string name="plot_status_active">Biremejwe &amp; Bifite Ubwishingizi</string>
+    <string name="plot_status_rejected">Byanzwe</string>
+    <string name="plot_status_archived">Byabitswe</string>
+
+    <!-- Crop Health Statuses (Always word + icon) -->
+    <string name="health_healthy">Bimeze Neza</string>
+    <string name="health_watch">Bikeneye Kwitonderwa</string>
+    <string name="health_at_risk">Biri mu Kaga</string>
+    <string name="health_not_enough_data">Nta makuru ahagije y\'icyogajuru araboneka</string>
+
+    <!-- Stress Causes & Confidence -->
+    <string name="cause_water_deficit">Kubura Amazi (Amateka y\'izuba)</string>
+    <string name="cause_unexplained">Ikibazo kitaramenyekana (Gusura umurima birakenewe)</string>
+    <string name="confidence_high">Icyizere cyo Hejuru</string>
+    <string name="confidence_medium">Icyizere Giciriritse</string>
+    <string name="confidence_low">Icyizere cyo Hasi (Bikeneye gusuzumwa n\'umuntu)</string>
+
+    <!-- Plots Management -->
+    <string name="my_plots_title">Imirima Yanjye y\'Ibigori</string>
+    <string name="empty_plots">Nta murima urandikisha. Kanda kuri + kugira ngo wandikishe uwa mbere.</string>
+    <string name="btn_register_plot">Andikisha Umurima Mushya</string>
+    <string name="plot_name_label">Izina ry\'Umurima</string>
+    <string name="plot_name_hint">urugero: Umurima wo ku Munani</string>
+    <string name="planting_date_label">Itariki yo Gutera</string>
+    <string name="planting_date_hint">Hitamo itariki wateyeho</string>
+    <string name="crop_label">Igihingwa</string>
+    <string name="crop_maize">Ikigori (Maize)</string>
+    <string name="draw_boundary_instruction">Kanda ku ikarita kugira ngo ushyireho imbibi z\'umurima wawe w\'ibigori. Funga ishusho kugira ngo urangize.</string>
+    <string name="area_ha">%1$.2f ha</string>
+    <string name="days_after_planting">Iminsi %1$d nyuma yo gutera (DAP)</string>
+    <string name="chart_ndvi_title">Ubuzima bw\'Igihingwa (NDVI n\'Urwego Rusanzwe)</string>
+    <string name="chart_rain_title">Imvura Yaguye buri munsi (mm)</string>
+    <string name="chart_legend_plot">Uyu Murima</string>
+    <string name="chart_legend_normal">Urwego Rusanzwe (p10–p90)</string>
+    <string name="harvest_forecast_title">Iteganyamisaruro</string>
+    <string name="harvest_forecast_range">%1$.0f%% – %2$.0f%% by\'ibisanzwe</string>
+    <string name="harvest_forecast_disclaimer">Icyigereranyo cy\'agateganyo gishingiye ku mikurire y\'igihingwa.</string>
+    <string name="enrollment_status_label">Imimerere y\'Ubwishingizi</string>
+    <string name="enrollment_covered">Bifite Ubwishingizi bw\'Igihembwe %s</string>
+    <string name="enrollment_pending">Ubusabe bw\'ubwishingizi burategerejwe</string>
+
+    <!-- Claims Flow -->
+    <string name="claims_title">Ubusabe bw\'Ingoboka</string>
+    <string name="empty_claims">Nta ngoboka y\'ubwishingizi iratangizwa. Ingoboka itangizwa mu buryo bwikora iyo igihingwa kigeze mu kaga.</string>
+    <string name="claim_status_under_review">Birimo Gusuzumwa</string>
+    <string name="claim_status_field_visit">Gusura Umurima Byasabwe</string>
+    <string name="claim_status_approved">Byemejwe</string>
+    <string name="claim_status_declined">Byanzwe</string>
+    <string name="claim_status_paid">Byishyuwe (Icyitegererezo)</string>
+    <string name="claim_status_review_requested">Isubiramo Ryasabwe</string>
+    <string name="claim_status_final">Byarangiye</string>
+    <string name="why_decision_title">Impamvu y\'uyu mwanzuro?</string>
+    <string name="officer_reason_label">Icyo Umukozi yashingiyeho:</string>
+    <string name="evidence_snapshot_title">Ibimenyetso by\'Icyogajuru n\'Ikirere</string>
+    <string name="ask_review_title">Saba Isubiramo ry\'Ingoboka</string>
+    <string name="ask_review_hint">Sobanura impamvu ubona iki cyemezo cyakongera gusuzumwa…</string>
+
+    <!-- Problem Reports -->
+    <string name="report_problem_title">Tanga Raporo y\'Ikibazo</string>
+    <string name="report_disclaimer">Iyi raporo ikoreshwa nk\'igihamya. Ntihita itanga ubwishyu mu buryo bwikora.</string>
+    <string name="report_reason_label">Ni iki wabonye mu murima?</string>
+    <string name="report_note_label">Ibisobanuro birambuye</string>
+    <string name="report_agent_visit">Saba ko umukozi wa koperative asura umurima</string>
+    <string name="report_add_photo">Shyiraho Ifoto (Iyo ihari)</string>
+
+    <!-- Payout Account -->
+    <string name="payout_account_title">Konti yo Kwishyurirwaho</string>
+    <string name="payout_provider_momo">MTN Mobile Money</string>
+    <string name="payout_provider_airtel">Airtel Money</string>
+    <string name="payout_verified">Yemejwe</string>
+    <string name="payout_unverified">Ntiraremezwa</string>
+    <string name="payout_simulated_notice">Kwishyura bikorwa mu buryo bwo kwimenyereza gusa.</string>
+
+    <!-- Agent Screens -->
+    <string name="agent_farmers_title">Abahinzi bo muri Koperative</string>
+    <string name="verify_plot_title">Emeza Imbibi z\'Umurima</string>
+    <string name="confirm_planting_date">Emeza Itariki yo Gutera</string>
+    <string name="btn_approve_plot">Emeza Umurima (Ugire Agaciro)</string>
+    <string name="btn_reject_plot">Anga Imbibi z\'Umurima</string>
+    <string name="field_visit_title">Andika Ibyavuye mu Gusura Umurima</string>
+    <string name="field_condition_label">Imiterere y\'Igihingwa</string>
+    <string name="field_cause_label">Icyateye Ikibazo</string>
+    <string name="field_stage_label">Icyiciro cy\'Imikurire</string>
+
+    <!-- Error Messages (Mapped from API codes) -->
+    <string name="error_phone_invalid">Shyiramo numero nyayo yo mu Rwanda (MTN cyangwa Airtel).</string>
+    <string name="error_otp_invalid">Umubare w\'ibanga winjije siwo cyangwa wataye agaciro.</string>
+    <string name="error_otp_rate_limited">Tegereza amasegonda 60 mbere yo gusaba undi mubare.</string>
+    <string name="error_cooperative_not_found">Koperative wahisemo ntiyabonetse.</string>
+    <string name="error_plot_outside_rwanda">Imbibi z\'umurima zigomba kuba ziri mu Rwanda.</string>
+    <string name="error_plot_too_small">Umurima ni muto cyane ku buryo icyogajuru cyawukurikirana (Byibuze 0.1 ha).</string>
+    <string name="error_plot_too_large">Umurima urarenze ingano yemewe.</string>
+    <string name="error_plot_geometry_invalid">Imbibi zashushanyije ntizifunze neza cyangwa zirahura mu buryo budakwiye.</string>
+    <string name="error_planting_date_invalid">Itariki yateweho ntiyemewe cyangwa ntiyaba iri mu bihe bizaza.</string>
+    <string name="error_plot_locked">Izina ry\'umurima niryo ryonyine rishobora guhinduka iyo umurima wamaze kwemezwa.</string>
+    <string name="error_plot_delete_deferred">Uyu murima ufite ubwishingizi cyangwa ingoboka itararangira, ntushobora gusibwa ubu.</string>
+    <string name="error_unauthorized">Igihe cyo gukoresha kigiye kurangira. Ongera winjire.</string>
+    <string name="error_forbidden">Ntabwo wemerewe gukora iki gikorwa.</string>
+    <string name="error_network">Ntabwo byabashije guhura na seriveri ya Rinda. Hagaragajwe amakuru abitswe kuri telefone.</string>
+    <string name="error_generic">Habaye ikibazo kitunguranye. Ongera ugerageze mukanya.</string>
+</resources>

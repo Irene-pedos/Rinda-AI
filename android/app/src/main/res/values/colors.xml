@@ -1,5 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
+    <!-- Brand Primary (Maize Green) -->
+    <color name="rinda_green_dark">#1B5E20</color>
+    <color name="rinda_green">#2E7D32</color>
+    <color name="rinda_green_light">#4CAF50</color>
+    <color name="rinda_green_container">#C8E6C9</color>
+    <color name="rinda_green_on_container">#002105</color>
+
+    <!-- Brand Secondary (Maize Harvest Gold / Amber) -->
+    <color name="rinda_gold_dark">#E65100</color>
+    <color name="rinda_gold">#F57F17</color>
+    <color name="rinda_gold_light">#FFB300</color>
+    <color name="rinda_gold_container">#FFE082</color>
+    <color name="rinda_gold_on_container">#2E1500</color>
+
+    <!-- Brand Tertiary (Rainfall / Water Blue) -->
+    <color name="rinda_blue">#0277BD</color>
+    <color name="rinda_blue_light">#03A9F4</color>
+    <color name="rinda_blue_container">#B3E5FC</color>
+
+    <!-- Neutral Colors Light -->
+    <color name="bg_light">#F8F9FA</color>
+    <color name="surface_light">#FFFFFF</color>
+    <color name="surface_variant_light">#EDF1EC</color>
+    <color name="text_primary_light">#1A1C19</color>
+    <color name="text_secondary_light">#5C6258</color>
+    <color name="text_tertiary_light">#8C9388</color>
+    <color name="divider_light">#E0E3DD</color>
+
+    <!-- Neutral Colors Dark -->
+    <color name="bg_dark">#111411</color>
+    <color name="surface_dark">#1B201A</color>
+    <color name="surface_variant_dark">#282E27</color>
+    <color name="text_primary_dark">#E2E4DE</color>
+    <color name="text_secondary_dark">#A1A69D</color>
+    <color name="text_tertiary_dark">#72776E</color>
+    <color name="divider_dark">#2F352E</color>
+
+    <!-- Semantic Status Colors (always paired with icon + word) -->
+    <color name="status_healthy">#2E7D32</color>
+    <color name="status_healthy_bg">#E8F5E9</color>
+
+    <color name="status_watch">#EF6C00</color>
+    <color name="status_watch_bg">#FFF3E0</color>
+
+    <color name="status_at_risk">#C62828</color>
+    <color name="status_at_risk_bg">#FFEBEE</color>
+
+    <color name="status_pending">#1565C0</color>
+    <color name="status_pending_bg">#E3F2FD</color>
+
+    <color name="status_not_enough_data">#546E7A</color>
+    <color name="status_not_enough_data_bg">#ECEFF1</color>
+
+    <color name="status_demo">#6A1B9A</color>
+    <color name="status_demo_bg">#F3E5F5</color>
+
+    <!-- Common UI -->
     <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="transparent">#00000000</color>
+    <color name="ripple_light">#1F000000</color>
+    <color name="ripple_dark">#24FFFFFF</color>
 </resources>

@@ -1,3 +1,176 @@
 <resources>
-    <string name="app_name">Rinda AI</string>
+    <!-- App Brand -->
+    <string name="app_name">Rinda</string>
+    <string name="app_tagline">AI-Powered Maize Crop Protection</string>
+    <string name="app_demo_badge">Demo</string>
+    <string name="demo_mode_warning">Demo data is active. Payouts and assessments are simulated.</string>
+
+    <!-- Navigation Tabs -->
+    <string name="nav_home">Home</string>
+    <string name="nav_plots">Plots</string>
+    <string name="nav_alerts">Alerts</string>
+    <string name="nav_claims">Claims</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- General Common -->
+    <string name="btn_continue">Continue</string>
+    <string name="btn_save">Save</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_retry">Retry</string>
+    <string name="btn_submit">Submit</string>
+    <string name="btn_done">Done</string>
+    <string name="btn_back">Back</string>
+    <string name="btn_close">Close</string>
+    <string name="btn_delete">Delete</string>
+    <string name="btn_edit">Edit</string>
+    <string name="btn_verify">Verify</string>
+    <string name="btn_request_review">Ask for Review</string>
+    <string name="btn_report_problem">Report a Problem</string>
+    <string name="btn_logout">Log Out</string>
+    <string name="loading">Loading…</string>
+    <string name="last_updated">Last updated: %s</string>
+    <string name="offline_badge">Offline Mode</string>
+    <string name="sync_pending">%d pending updates to sync</string>
+
+    <!-- Onboarding & Language -->
+    <string name="onboarding_welcome_title">Welcome to Rinda</string>
+    <string name="onboarding_welcome_desc">Protecting Rwandan maize farmers with satellite monitoring and automated insurance coverage.</string>
+    <string name="onboarding_satellite_title">Satellite Crop Health</string>
+    <string name="onboarding_satellite_desc">Sentinel radar and optical satellites monitor your maize plots every 5 days for early stress detection.</string>
+    <string name="onboarding_claims_title">Fair &amp; Fast Protection</string>
+    <string name="onboarding_claims_desc">Parametric triggers initiate claims automatically with plain-language explanations and reviews.</string>
+    <string name="select_language">Select Language / Hitamo Ururimi</string>
+    <string name="lang_english">English</string>
+    <string name="lang_kinyarwanda">Kinyarwanda</string>
+    <string name="consent_title">Data &amp; Privacy Consent</string>
+    <string name="consent_body">By using Rinda, you agree that your maize plot boundaries and satellite growth observations will be processed to assess crop health and trigger insurance coverage. All data is handled according to Rwandan data protection regulations.</string>
+    <string name="consent_agree">I Understand &amp; Agree</string>
+
+    <!-- Auth -->
+    <string name="login_title">Log In with Phone</string>
+    <string name="login_subtitle">Enter your Rwandan mobile number to receive a one-time verification code.</string>
+    <string name="phone_label">Mobile Phone Number</string>
+    <string name="phone_hint">078 000 0001</string>
+    <string name="btn_send_code">Send Verification Code</string>
+    <string name="otp_title">Verify Code</string>
+    <string name="otp_subtitle">Enter the 6-digit code sent to %s</string>
+    <string name="otp_dev_hint">(Dev mode: Check backend log for DEV OTP)</string>
+    <string name="btn_verify_code">Verify &amp; Continue</string>
+    <string name="resend_code">Resend code</string>
+    <string name="signup_title">Farmer Registration</string>
+    <string name="signup_subtitle">This phone is new to Rinda. Please provide your name and primary cooperative to complete registration.</string>
+    <string name="full_name_label">Full Name</string>
+    <string name="full_name_hint">e.g. Jean Mugabo</string>
+    <string name="cooperative_label">Cooperative</string>
+    <string name="cooperative_select">Select your cooperative</string>
+    <string name="btn_complete_signup">Complete Registration</string>
+
+    <!-- Roles -->
+    <string name="role_farmer">Farmer</string>
+    <string name="role_agent">Cooperative Agent</string>
+    <string name="role_officer">Insurance Officer</string>
+    <string name="role_admin">System Administrator</string>
+
+    <!-- Plot Statuses (Verification) -->
+    <string name="plot_status_pending">Pending Verification</string>
+    <string name="plot_status_active">Active &amp; Covered</string>
+    <string name="plot_status_rejected">Rejected</string>
+    <string name="plot_status_archived">Archived</string>
+
+    <!-- Crop Health Statuses (Always word + icon) -->
+    <string name="health_healthy">Healthy</string>
+    <string name="health_watch">Watch (Mild Stress)</string>
+    <string name="health_at_risk">At Risk (Severe Stress)</string>
+    <string name="health_not_enough_data">Not enough satellite data yet</string>
+
+    <!-- Stress Causes & Confidence -->
+    <string name="cause_water_deficit">Water Deficit (Drought)</string>
+    <string name="cause_unexplained">Unexplained Stress (Field visit recommended)</string>
+    <string name="confidence_high">High Confidence</string>
+    <string name="confidence_medium">Medium Confidence</string>
+    <string name="confidence_low">Low Confidence (Human review required)</string>
+
+    <!-- Plots Management -->
+    <string name="my_plots_title">My Maize Plots</string>
+    <string name="empty_plots">No maize plots registered yet. Tap + to add your first plot.</string>
+    <string name="btn_register_plot">Register New Plot</string>
+    <string name="plot_name_label">Plot Name</string>
+    <string name="plot_name_hint">e.g. Hillside Field</string>
+    <string name="planting_date_label">Planting Date</string>
+    <string name="planting_date_hint">Select planting date</string>
+    <string name="crop_label">Crop</string>
+    <string name="crop_maize">Maize (Fixed)</string>
+    <string name="draw_boundary_instruction">Tap on the map to add boundary points around your maize field. Close the polygon to finish.</string>
+    <string name="area_ha">%1$.2f ha</string>
+    <string name="days_after_planting">%1$d Days After Planting (DAP)</string>
+    <string name="chart_ndvi_title">Crop Health (NDVI vs Normal Band)</string>
+    <string name="chart_rain_title">Daily Rainfall (mm)</string>
+    <string name="chart_legend_plot">This Plot</string>
+    <string name="chart_legend_normal">Normal Band (p10–p90)</string>
+    <string name="harvest_forecast_title">Harvest Forecast</string>
+    <string name="harvest_forecast_range">%1$.0f%% – %2$.0f%% of normal</string>
+    <string name="harvest_forecast_disclaimer">Prototype estimate based on seasonal NDVI trajectory.</string>
+    <string name="enrollment_status_label">Coverage Status</string>
+    <string name="enrollment_covered">Covered for Season %s</string>
+    <string name="enrollment_pending">Coverage Request Pending</string>
+
+    <!-- Claims Flow -->
+    <string name="claims_title">Insurance Claims</string>
+    <string name="empty_claims">No insurance claims triggered. Claims are automatically initiated when crop stress passes agreed thresholds.</string>
+    <string name="claim_status_under_review">Under Review</string>
+    <string name="claim_status_field_visit">Field Visit Requested</string>
+    <string name="claim_status_approved">Approved</string>
+    <string name="claim_status_declined">Declined</string>
+    <string name="claim_status_paid">Paid (Simulated)</string>
+    <string name="claim_status_review_requested">Review Requested</string>
+    <string name="claim_status_final">Final</string>
+    <string name="why_decision_title">Why This Decision?</string>
+    <string name="officer_reason_label">Officer Assessment:</string>
+    <string name="evidence_snapshot_title">Satellite &amp; Weather Evidence</string>
+    <string name="ask_review_title">Request Claim Review</string>
+    <string name="ask_review_hint">Explain why this claim should be reviewed (e.g. localized slope or water conditions)…</string>
+
+    <!-- Problem Reports -->
+    <string name="report_problem_title">Report a Problem</string>
+    <string name="report_disclaimer">Problem reports serve as ground evidence. They do not automatically trigger payouts.</string>
+    <string name="report_reason_label">What do you observe?</string>
+    <string name="report_note_label">Notes &amp; Description</string>
+    <string name="report_agent_visit">Request an agent field visit</string>
+    <string name="report_add_photo">Attach Photo (Optional)</string>
+
+    <!-- Payout Account -->
+    <string name="payout_account_title">Payout Account</string>
+    <string name="payout_provider_momo">MTN Mobile Money</string>
+    <string name="payout_provider_airtel">Airtel Money</string>
+    <string name="payout_verified">Verified</string>
+    <string name="payout_unverified">Not Verified</string>
+    <string name="payout_simulated_notice">Simulated payments only. No real money moves in this academic project.</string>
+
+    <!-- Agent Screens -->
+    <string name="agent_farmers_title">My Cooperative Farmers</string>
+    <string name="verify_plot_title">Verify Plot Boundary</string>
+    <string name="confirm_planting_date">Confirm Planting Date</string>
+    <string name="btn_approve_plot">Approve Plot (Activate)</string>
+    <string name="btn_reject_plot">Reject Boundary</string>
+    <string name="field_visit_title">Record Field Visit</string>
+    <string name="field_condition_label">Crop Condition</string>
+    <string name="field_cause_label">Observed Cause</string>
+    <string name="field_stage_label">Growth Stage</string>
+
+    <!-- Error Messages (Mapped from API codes) -->
+    <string name="error_phone_invalid">Please enter a valid Rwandan mobile number (MTN or Airtel).</string>
+    <string name="error_otp_invalid">The verification code is invalid or has expired.</string>
+    <string name="error_otp_rate_limited">Please wait 60 seconds before requesting a new code.</string>
+    <string name="error_cooperative_not_found">The selected cooperative was not found.</string>
+    <string name="error_plot_outside_rwanda">The plot boundary must be located inside Rwanda.</string>
+    <string name="error_plot_too_small">The plot is too small for reliable satellite monitoring (min 0.1 ha).</string>
+    <string name="error_plot_too_large">The plot exceeds the maximum permitted size.</string>
+    <string name="error_plot_geometry_invalid">Invalid polygon boundary. Points must form a closed shape without self-intersections.</string>
+    <string name="error_planting_date_invalid">The planting date cannot be in the future or outside the planting window.</string>
+    <string name="error_plot_locked">Only the plot name can be updated once the plot has been verified and activated.</string>
+    <string name="error_plot_delete_deferred">This plot has active insurance cover or an open claim and cannot be deleted yet.</string>
+    <string name="error_unauthorized">Your session has expired. Please log in again.</string>
+    <string name="error_forbidden">Your account does not have permission to perform this action.</string>
+    <string name="error_network">Unable to connect to Rinda server. Showing cached data.</string>
+    <string name="error_generic">Something went wrong. Please try again later.</string>
 </resources>
