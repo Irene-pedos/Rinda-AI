@@ -25,4 +25,6 @@ Where the build departs from `RINDA_PROJECT.md`, or settles something it leaves 
 | 2026-11-02 | Added `data_origin` to `observations`, `weather_daily` and `baselines`, and an `ml_runs` table. | Keeps sample and real data apart on every row (§0 rule 4), and stores each run's dates and parameters so results can be reproduced (§3). |
 | 2026-11-02 | The backend stores sample results on demo plots only, and real results only on `ACTIVE`, `CONFIRMED` plots. | Enforced in the backend, so no ML bug can mix the two. |
 | 2026-11-02 | `POST /process/plot` never falls back to the sample file. | A caller asking for real data must get real data or an error. |
+| 2026-11-02 | `docs/API.md` separates built endpoints from planned ones, whose fields are drafts. | Agy can plan against the full API without mistaking drafts for a finished contract. |
+| 2026-11-02 | The backend has no CORS setup; the dashboard calls it through Next.js rewrites or server routes. | The MVP needs no browser access from another origin, and this avoids choosing allowed origins before the demo setup is known (question 11). |
 | 2026-11-02 | The MVP processes one plot on request. `/process/batch`, `GET /baseline` and `POST /forecast` (§8) come later. | Day 2 adds the forecast and the "Run analysis" action, which will use them. |

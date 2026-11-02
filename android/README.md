@@ -2,7 +2,7 @@
 
 For Agy. This is the stock Android Studio template (Java + XML); no features are built yet. Open this `android/` folder in Android Studio, not the repo root.
 
-Read `docs/RINDA_PROJECT.md` first, especially §2.2 and §9. The API contract will be in `docs/API.md`.
+Read `docs/RINDA_PROJECT.md` first, especially §2.2 and §9. The API contract is in `docs/API.md`, including which endpoints are built and which are still drafts.
 
 ## Fix these before the first build
 

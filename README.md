@@ -2,7 +2,7 @@
 
 Rinda ("protect" in Kinyarwanda) is an AI-powered parametric crop-insurance system for maize farmers in Rwanda. It is a final-year learning project: payouts are simulated, and an insurer officer makes every claim decision.
 
-The full design is in [docs/RINDA_PROJECT.md](docs/RINDA_PROJECT.md), which is the source of truth. Unresolved items are in [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md), and departures from the design are in [docs/DECISIONS.md](docs/DECISIONS.md).
+The full design is in [docs/RINDA_PROJECT.md](docs/RINDA_PROJECT.md), which is the source of truth. The API contract is in [docs/API.md](docs/API.md). Unresolved items are in [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md), and departures from the design are in [docs/DECISIONS.md](docs/DECISIONS.md).
 
 | Folder | Contents | Status |
 |---|---|---|

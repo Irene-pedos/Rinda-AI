@@ -29,7 +29,14 @@ public final class PlotDtos {
     }
 
     public record PlotResponse(long id, long farmerId, String name, String crop, GeoJsonPolygon boundary,
-                               BigDecimal areaHa, LocalDate plantingDate, PlotStatus status, String dataStatus,
-                               boolean isDemo, Instant createdAt, Instant updatedAt) {
+                               BigDecimal areaHa,
+                               @Schema(types = {"string", "null"}, description = "Null only on seeded placeholder plots")
+                               LocalDate plantingDate,
+                               PlotStatus status,
+                               @Schema(allowableValues = {"CONFIRMED", "TO_CONFIRM"},
+                                       description = "TO_CONFIRM marks a placeholder plot whose details are not real")
+                               String dataStatus,
+                               @Schema(description = "When true, every UI must show a Demo label") boolean isDemo,
+                               Instant createdAt, Instant updatedAt) {
     }
 }

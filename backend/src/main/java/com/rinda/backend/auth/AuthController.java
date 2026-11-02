@@ -48,7 +48,8 @@ public class AuthController {
         return authService.verifyOtp(request);
     }
 
-    @Operation(summary = "Swap a refresh token for new tokens. Each refresh token works once.")
+    @Operation(summary = "Swap a refresh token for new tokens. Each refresh token works once.",
+            description = "Sending a used token again ends all of the user's sessions, so clients must never refresh twice at once.")
     @PostMapping("/refresh")
     public TokenResponse refresh(@Valid @RequestBody RefreshRequest request) {
         return authService.refresh(request.refreshToken());
