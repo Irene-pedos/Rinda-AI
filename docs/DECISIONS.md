@@ -20,3 +20,9 @@ Where the build departs from `RINDA_PROJECT.md`, or settles something it leaves 
 | 2026-11-02 | `plots.planting_date` is nullable, and `plots` has a `data_status` column. | The API always requires a planting date, but the seeded placeholder plots must not contain an invented one. `TO_CONFIRM` marks those plots. |
 | 2026-11-02 | The `seasons` table has `data_status`, with nullable dates. | Season dates are unconfirmed. The planting-date window is enforced only for `CONFIRMED` seasons. |
 | 2026-11-02 | Added tables `otp_codes` and `refresh_tokens`, which §6 does not list. | Login needs them. Both store hashes, never the codes or tokens. |
+| 2026-11-02 | Earth Engine project: `rinda-ai`. | The team's registered project. The ID is not a secret, but it stays in `.env` so each computer can set its own. |
+| 2026-11-02 | The ML service doesn't use pandas or scikit-learn (§7). | Windows Application Control on the lab computer blocked a pandas DLL. A rolling median doesn't need pandas, and the MVP has no trained model. The policy was left in place. |
+| 2026-11-02 | Added `data_origin` to `observations`, `weather_daily` and `baselines`, and an `ml_runs` table. | Keeps sample and real data apart on every row (§0 rule 4), and stores each run's dates and parameters so results can be reproduced (§3). |
+| 2026-11-02 | The backend stores sample results on demo plots only, and real results only on `ACTIVE`, `CONFIRMED` plots. | Enforced in the backend, so no ML bug can mix the two. |
+| 2026-11-02 | `POST /process/plot` never falls back to the sample file. | A caller asking for real data must get real data or an error. |
+| 2026-11-02 | The MVP processes one plot on request. `/process/batch`, `GET /baseline` and `POST /forecast` (§8) come later. | Day 2 adds the forecast and the "Run analysis" action, which will use them. |

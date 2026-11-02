@@ -7,7 +7,7 @@ Items the team must confirm. Until then, values that depend on them stay `TO_CON
 | # | Question | Needed for | Spec | Status |
 |---|---|---|---|---|
 | 1 | Which district is the pilot, and what are the 3–5 real maize plot locations (boundaries or GPS points) and planting dates? | Demo plots, satellite extraction | §10.3, §12.3 | Open |
-| 2 | What is the Google Cloud project ID registered for Earth Engine? | Real satellite data | §3.1, §10.3 | Open |
+| 2 | What is the Google Cloud project ID registered for Earth Engine? | Real satellite data | §3.1, §10.3 | Answered: `rinda-ai`. This computer still needs `earthengine authenticate`. |
 | 3 | What trigger thresholds should the demo use (X days, Y% yield, Z% rain)? | Claim trigger | §3.7, §10.3 | Open |
 
 ## Insurer rules
@@ -23,6 +23,8 @@ Items the team must confirm. Until then, values that depend on them stay `TO_CON
 | 5 | What are the exact Season A and Season B date windows for maize? | Planting date validation | §5.2, §12.2 | Open |
 | 6 | What are the minimum and maximum plot area, and the maximum allowed overlap? The backend currently applies the spec's suggested 0.1 ha minimum; no maximum is enforced. | Plot validation | §3.2, §5.2, §12.5 | Open |
 | 7 | How many clear pixels does a plot need (suggested 20)? | "Not enough data" rule | §3.2 | Open |
+| 13 | Are these processing settings acceptable? Cloud probability below 40, Sentinel-2 scene classes vegetation and bare soil only, a smoothing window of 3 images, a baseline of 150 days after planting, and at least 3 values per 10-day bin. The spec doesn't set them, so they are in `ml-service/app/params.py` as `TO_CONFIRM`. | Every NDVI reading and baseline | §3.2, §3.3 | Open |
+| 14 | Did the demo plots grow maize in past seasons, and were they planted at about the same time each year? The MVP baseline assumes both. | Trust in the baseline | §10.1 | Open |
 | 8 | Do agents only verify plots in the pilot, or admins too? | Plot verification | §12.7 | Open |
 
 ## Other

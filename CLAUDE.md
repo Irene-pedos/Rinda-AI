@@ -34,6 +34,23 @@ powershell -ExecutionPolicy Bypass -File scripts\mvn.ps1 spring-boot:run "-Dspri
 - **Errors** are `ProblemDetail` JSON with a stable `code`. Throw `ApiException`.
 - In Windows PowerShell 5.1, quote native arguments that contain dots and start with a dash (for example `'--host=127.0.0.1'`), or they get split.
 
+## ML service
+
+Run from `ml-service/`. The Python is in `.venv` (3.13). Tests need neither Earth Engine nor the backend.
+
+```powershell
+.venv\Scripts\python -m pytest
+.venv\Scripts\python -m pytest tests/test_processing.py::test_ndvi_formula
+.venv\Scripts\python -m uvicorn app.main:app --port 8000
+.venv\Scripts\python -m app.gee_check
+```
+
+- **Calculations go in `app/processing.py`**, with no Earth Engine dependency, so they stay testable on fixed data.
+- **Settings go in `app/params.py`.** Change `MODEL_VERSION` when one changes.
+- **Never fall back to sample data** when real data was requested. `samples/sample_plot.json` is simulated.
+- **Windows Application Control blocks some compiled packages here** (pandas was blocked, so it isn't used). Never try to bypass it.
+- `app/gee_source.py` has not yet run against real Earth Engine. Confirm its results with `app.gee_check` before relying on it.
+
 ## Android build
 
 Run from `android/`. **The build currently fails** with `checkDebugAarMetadata`: `androidx.activity:1.13.0` and its transitive dependencies need `compileSdk` 36 or later, but `app/build.gradle.kts` sets 35. The `android-36` platform is installed. Until this is fixed, the commands below will not succeed. The JDK 26 failure shows only the message `26.0.2.1`.

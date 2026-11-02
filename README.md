@@ -7,7 +7,7 @@ The full design is in [docs/RINDA_PROJECT.md](docs/RINDA_PROJECT.md), which is t
 | Folder | Contents | Status |
 |---|---|---|
 | `backend/` | Spring Boot 3 REST API (Java 17) | Auth and plots working |
-| `ml-service/` | Python FastAPI service and Earth Engine extraction | Not built yet |
+| `ml-service/` | Python FastAPI service and Earth Engine extraction | Working on sample data; Earth Engine not yet tested |
 | `android/` | Android app (Java + XML) | Android Studio template, for Agy |
 | `dashboard/` | Next.js insurer dashboard | Placeholder, for Agy |
 | `database/` | Local MySQL script | Working |
@@ -109,6 +109,47 @@ MySQL must be running, because the tests use its spatial functions. They use a s
 powershell -ExecutionPolicy Bypass -File scripts\mvn.ps1 test
 powershell -ExecutionPolicy Bypass -File scripts\mvn.ps1 test "-Dtest=PlotApiTest"
 powershell -ExecutionPolicy Bypass -File scripts\mvn.ps1 test "-Dtest=PlotApiTest#otherCropsAreRejected"
+```
+
+### 7. Set up the ML service
+
+From the repo root:
+
+```powershell
+cd ml-service
+py -3.13 -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt
+```
+
+### 8. Authorise Google Earth Engine
+
+Earth Engine needs a Google Cloud project registered for non-commercial use. Put its ID in `.env` as `GEE_PROJECT_ID`. Then, from `ml-service`:
+
+```powershell
+.venv\Scripts\earthengine authenticate
+.venv\Scripts\python -m app.gee_check
+```
+
+The first command opens a browser, where you sign in with the Google account that owns the project. The second should end with `Earth Engine is working.`
+
+Until this is done, the service works with the simulated sample file only.
+
+### 9. Run the ML service
+
+The backend must be running. From `ml-service`:
+
+```powershell
+.venv\Scripts\python -m uvicorn app.main:app --port 8000
+.venv\Scripts\python -m pytest
+```
+
+The first command runs the service on http://localhost:8000. The second runs the tests, which need neither Earth Engine nor the backend.
+
+To load the simulated sample onto demo plot 9001 (in a second PowerShell window, from the repo root):
+
+```powershell
+$key = (Select-String -Path .env -Pattern '^ML_INTERNAL_API_KEY=(.*)$').Matches[0].Groups[1].Value
+Invoke-RestMethod -Method Post -Uri http://localhost:8000/process/plot -ContentType 'application/json' -Headers @{ 'X-Internal-Api-Key' = $key } -Body '{"plotId": 9001, "source": "sample"}'
 ```
 
 ### Before returning a borrowed computer
