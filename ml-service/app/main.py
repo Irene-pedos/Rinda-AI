@@ -76,12 +76,11 @@ def process_plot(request: ProcessPlotRequest, settings: SettingsDep) -> dict:
         job = _gee_job(request)
 
     try:
-        result = pipeline.run(job, source)
+        thresholds = backend_client.get_thresholds(settings)
+        result = pipeline.run(job, source, thresholds)
+        saved = backend_client.post_results(settings, result)
     except ValueError as ex:
         raise HTTPException(status_code=400, detail=str(ex)) from ex
-
-    try:
-        saved = backend_client.post_results(settings, result)
     except backend_client.BackendRejected as ex:
         status = ex.status if 400 <= ex.status < 500 else 502
         raise HTTPException(status_code=status, detail=ex.body) from ex

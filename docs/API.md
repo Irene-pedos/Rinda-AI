@@ -355,6 +355,48 @@ Takes the same `from` and `to`, with the same errors. Returns **200** with a pla
 
 `rainMm` of `0` means a dry day. A missing date means no data, which isn't the same thing.
 
+### `GET /plots/{id}/status`
+
+Returns **200** with the latest crop health:
+
+```json
+{
+  "date": "2025-12-10",
+  "status": "AT_RISK",
+  "anomaly": -1.84,
+  "rainPct": 42.5,
+  "cause": "WATER_DEFICIT",
+  "confidence": "MEDIUM",
+  "needsFieldVisit": false,
+  "signals": [
+    { "code": "NDVI_BELOW_NORMAL", "readings": 3 },
+    { "code": "RAIN_BELOW_NORMAL", "rainPct": 42.5 }
+  ],
+  "dataQualityNote": "3 clear reading(s) in the 15 days to 2025-12-10. Latest: 2025-12-09. These rules have not been checked against field results yet.",
+  "modelVersion": "0.2.0",
+  "dataOrigin": "GEE"
+}
+```
+
+- `status` is `HEALTHY`, `WATCH`, `AT_RISK` or `NOT_ENOUGH_DATA`. Show it as icon plus word, never colour alone.
+- **This is crop health, not a claim, and not the plot's `status` from `GET /plots/{id}`.** `AT_RISK` must not open a claim screen (§2.2 #7).
+- `NOT_ENOUGH_DATA` shows "Not enough satellite data yet". A plot with no analysis yet also returns this, with `date` null and the other result fields null or empty.
+- `cause` is `WATER_DEFICIT`, `UNEXPLAINED` or null. Null means no low NDVI to explain, so don't show a cause. Word them as "likely", and never name a pest or disease.
+- `needsFieldVisit` is true for `UNEXPLAINED`. Show that an agent visit is recommended.
+- `confidence` is `HIGH`, `MEDIUM` or `LOW`, and always show it. The rules aren't back-tested yet, so today it stops at `MEDIUM`.
+- `rainPct` is rain over the 30 days to the latest available rain data, as a percent of normal. Null means it couldn't be compared, which doesn't mean no rain.
+- Always show `dataQualityNote`. It's English only for now.
+
+Each item in `signals` has a `code`, so map codes to `strings.xml`:
+
+| Code | Meaning | Extra field |
+|---|---|---|
+| `NDVI_BELOW_NORMAL` | Latest readings are below the normal band | `readings` in a row |
+| `RAIN_BELOW_NORMAL` | Rain is below the limit for this plot | `rainPct` |
+| `RAIN_NOT_COMPARED` | Not enough rain data to compare | |
+| `NO_RECENT_READINGS` | Too few clear readings recently | |
+| `NO_NORMAL_CURVE` | No normal band for this growth stage | |
+
 ### `GET /plots/{id}/baseline`
 
 Returns **200** with the newest normal band saved for the plot:
@@ -410,16 +452,12 @@ Every model result will include `modelVersion`, a confidence and a data quality 
 
 | Endpoint | Draft fields |
 |---|---|
-| `GET /plots/{id}/status` | `date`, `status`, `anomaly`, `rainPct`, `cause`, `confidence`, `explanation`, `modelVersion` |
 | `GET /plots/{id}/forecast` | `date`, `lowPct`, `highPct`, `confidence`, `modelVersion` |
 
 Display rules for these:
 
-- `status` is `HEALTHY`, `WATCH`, `AT_RISK` or `NOT_ENOUGH_DATA`. `confidence` is `HIGH`, `MEDIUM` or `LOW`. Always show the status as icon plus word, never colour alone.
-- `AT_RISK` isn't a claim. Show "Not enough satellite data yet" for `NOT_ENOUGH_DATA`, and never fill in a guess.
 - The chart title is "Crop health (NDVI)", plotted against the normal band at the same days after planting (§2.2 #8).
 - The forecast is a range compared with the plot's normal, labelled "Prototype estimate". Never show one number or a tonnage.
-- Never show a specific pest or disease as a cause.
 
 ### Enrollment, alerts, claims and reports
 

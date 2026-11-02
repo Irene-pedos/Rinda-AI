@@ -3,6 +3,7 @@ package com.rinda.backend.plot;
 import com.rinda.backend.auth.AuthPrincipal;
 import com.rinda.backend.plot.PlotDataDtos.BaselineResponse;
 import com.rinda.backend.plot.PlotDataDtos.ObservationResponse;
+import com.rinda.backend.plot.PlotDataDtos.StatusResponse;
 import com.rinda.backend.plot.PlotDataDtos.WeatherResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,6 +44,13 @@ public class PlotDataController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         return service.weather(principal, id, from, to);
+    }
+
+    @Operation(summary = "Latest crop health, with its confidence and data quality note",
+            description = "Crop health is not a claim. A plot with no analysis yet returns NOT_ENOUGH_DATA.")
+    @GetMapping("/status")
+    public StatusResponse status(@AuthenticationPrincipal AuthPrincipal principal, @PathVariable long id) {
+        return service.status(principal, id);
     }
 
     @Operation(summary = "The normal band for the crop health chart, by days after planting")

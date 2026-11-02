@@ -1,5 +1,6 @@
 package com.rinda.backend;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -166,11 +167,114 @@ class PlotDataApiTest extends ApiTestBase {
         read(farmer, "/weather").andExpect(jsonPath("$[0].dap").value(nullValue()));
     }
 
+    private Map<String, Object> statusBody(String date, String status, String cause) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("statusDate", date);
+        body.put("status", status);
+        body.put("anomaly", -1.25);
+        body.put("rainPct", 42.5);
+        body.put("cause", cause);
+        body.put("confidence", "MEDIUM");
+        body.put("explanation", Map.of("needsFieldVisit", false, "dataQualityNote", "2 clear reading(s).",
+                "signals", List.of(Map.of("code", "NDVI_BELOW_NORMAL", "readings", 2))));
+        return body;
+    }
+
+    private ResultActions saveStatus(Map<String, Object> status) throws Exception {
+        Map<String, Object> result = new HashMap<>();
+        result.put("plotId", plotId);
+        result.put("dataOrigin", "GEE");
+        result.put("modelVersion", "0.2.0");
+        result.put("plantingDate", PLANTED);
+        result.put("inputFrom", PLANTED);
+        result.put("inputTo", "2026-10-20");
+        result.put("params", Map.of());
+        result.put("observations", List.of());
+        result.put("weather", List.of());
+        result.put("status", status);
+        return mvc.perform(post("/api/v1/internal/ml/results").header("X-Internal-Api-Key", KEY)
+                .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(result)));
+    }
+
+    @Test
+    void plotWithNoAnalysisReportsNotEnoughDataNeverAGuess() throws Exception {
+        read(farmer, "/status")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("NOT_ENOUGH_DATA"))
+                .andExpect(jsonPath("$.confidence").value("LOW"))
+                .andExpect(jsonPath("$.date").value(nullValue()))
+                .andExpect(jsonPath("$.signals", hasSize(0)));
+    }
+
+    @Test
+    void statusCarriesConfidenceQualityNoteAndVersion() throws Exception {
+        saveStatus(statusBody("2026-10-20", "AT_RISK", "WATER_DEFICIT")).andExpect(status().isOk());
+
+        read(farmer, "/status")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.date").value("2026-10-20"))
+                .andExpect(jsonPath("$.status").value("AT_RISK"))
+                .andExpect(jsonPath("$.anomaly").value(-1.25))
+                .andExpect(jsonPath("$.rainPct").value(42.5))
+                .andExpect(jsonPath("$.cause").value("WATER_DEFICIT"))
+                .andExpect(jsonPath("$.confidence").value("MEDIUM"))
+                .andExpect(jsonPath("$.needsFieldVisit").value(false))
+                .andExpect(jsonPath("$.signals[0].code").value("NDVI_BELOW_NORMAL"))
+                .andExpect(jsonPath("$.dataQualityNote").value("2 clear reading(s)."))
+                .andExpect(jsonPath("$.modelVersion").value("0.2.0"))
+                .andExpect(jsonPath("$.dataOrigin").value("GEE"));
+    }
+
+    @Test
+    void newestStatusWins() throws Exception {
+        saveStatus(statusBody("2026-10-20", "WATCH", null)).andExpect(status().isOk());
+        saveStatus(statusBody("2026-10-10", "HEALTHY", null)).andExpect(status().isOk());
+
+        read(farmer, "/status").andExpect(jsonPath("$.status").value("WATCH"));
+    }
+
+    @Test
+    void rerunForTheSameDateReplacesTheStatus() throws Exception {
+        saveStatus(statusBody("2026-10-20", "WATCH", null)).andExpect(status().isOk());
+        saveStatus(statusBody("2026-10-20", "HEALTHY", null)).andExpect(status().isOk());
+
+        read(farmer, "/status").andExpect(jsonPath("$.status").value("HEALTHY"));
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM plot_status", Long.class)).isEqualTo(1);
+    }
+
+    @Test
+    void statusRowPointsAtTheRunThatMadeIt() throws Exception {
+        saveStatus(statusBody("2026-10-20", "WATCH", null)).andExpect(status().isOk());
+
+        assertThat(jdbc.queryForObject("""
+                SELECT r.model_version FROM plot_status s JOIN ml_runs r ON r.id = s.run_id
+                """, String.class)).isEqualTo("0.2.0");
+    }
+
+    @Test
+    void aCauseNamingAPestIsRefused() throws Exception {
+        saveStatus(statusBody("2026-10-20", "AT_RISK", "FALL_ARMYWORM"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+    }
+
+    @Test
+    void thresholdsNeedTheInternalKey() throws Exception {
+        mvc.perform(get("/api/v1/internal/ml/thresholds"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("INTERNAL_KEY_INVALID"));
+
+        mvc.perform(get("/api/v1/internal/ml/thresholds").header("X-Internal-Api-Key", KEY))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.watch_rain_pct").value(60.0))
+                .andExpect(jsonPath("$.trigger_rain_deficit_pct").value(nullValue()));
+    }
+
     @Test
     void anotherFarmerGetsTheSame404AsAMissingPlot() throws Exception {
         String other = farmerToken("+250785555552");
 
-        for (String path : List.of("/observations", "/weather", "/baseline")) {
+        for (String path : List.of("/observations", "/weather", "/baseline", "/status")) {
             read(other, path).andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.code").value("PLOT_NOT_FOUND"));
         }

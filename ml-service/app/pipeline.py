@@ -5,7 +5,21 @@ from datetime import date, timedelta
 from typing import Protocol
 
 from app import params
-from app.processing import Observation, RainDay, build_baseline, one_per_day, past_season_starts, smooth
+from app.processing import (
+    Observation,
+    PlotStatus,
+    RainComparison,
+    RainDay,
+    StatusLimits,
+    build_baseline,
+    complete_total,
+    one_per_day,
+    past_season_starts,
+    plot_status,
+    rain_percent,
+    same_day_in_year,
+    smooth,
+)
 
 
 class DataSource(Protocol):
@@ -40,9 +54,48 @@ def _observation_row(obs: Observation, smoothed: dict[date, float]) -> dict:
     }
 
 
-def run(job: PlotJob, source: DataSource) -> dict:
+def compare_rain(job: PlotJob, source: DataSource) -> RainComparison | None:
+    """Compares the last 30 days of available rain with the same dates in past years."""
+    lookback = job.as_of - timedelta(days=params.RAIN_LOOKBACK_DAYS)
+    available = [day for day in source.rain(lookback, job.as_of) if day.rain_mm is not None]
+    if not available:
+        return None
+
+    end = max(day.day for day in available)
+    start = end - timedelta(days=params.RAIN_WINDOW_DAYS - 1)
+    past_totals = []
+    for year in range(params.BASELINE_FIRST_YEAR, end.year):
+        past_start = same_day_in_year(start, year)
+        past_end = past_start + timedelta(days=params.RAIN_WINDOW_DAYS - 1)
+        total = complete_total(source.rain(past_start, past_end), past_start, past_end)
+        if total is not None:
+            past_totals.append(total)
+    return rain_percent(complete_total(available, start, end), past_totals, end)
+
+
+def _status_block(status: PlotStatus, as_of: date, rain: RainComparison | None) -> dict:
+    return {
+        "statusDate": as_of.isoformat(),
+        "status": status.status,
+        "anomaly": _round(status.anomaly, 3),
+        "rainPct": _round(status.rain_pct, 2),
+        "cause": status.cause,
+        "confidence": status.confidence,
+        "explanation": {
+            "needsFieldVisit": status.needs_field_visit,
+            "signals": status.signals,
+            "dataQualityNote": status.data_quality_note,
+            "rainWindowEnd": rain.window_end.isoformat() if rain else None,
+            "rainTotalMm": _round(rain.total_mm, 2) if rain else None,
+            "rainNormalMm": _round(rain.normal_mm, 2) if rain else None,
+        },
+    }
+
+
+def run(job: PlotJob, source: DataSource, thresholds: dict[str, float | None]) -> dict:
     if job.as_of < job.planting_date:
         raise ValueError("as_of is before the planting date")
+    limits = StatusLimits.from_thresholds(thresholds)
 
     observations = one_per_day(source.observations(job.planting_date, job.as_of))
     smoothed = smooth(observations)
@@ -53,6 +106,8 @@ def run(job: PlotJob, source: DataSource) -> dict:
         for start in past_season_starts(job.planting_date)
     }
     bins = build_baseline(seasons)
+    rain_comparison = compare_rain(job, source)
+    status = plot_status(observations, smoothed, bins, job.planting_date, job.as_of, rain_comparison, limits)
 
     return {
         "plotId": job.plot_id,
@@ -61,7 +116,11 @@ def run(job: PlotJob, source: DataSource) -> dict:
         "plantingDate": job.planting_date.isoformat(),
         "inputFrom": job.planting_date.isoformat(),
         "inputTo": job.as_of.isoformat(),
-        "params": {**params.as_dict(), "baselineSeasons": [start.isoformat() for start in seasons]},
+        "params": {
+            **params.as_dict(),
+            "baselineSeasons": [start.isoformat() for start in seasons],
+            "thresholds": thresholds,
+        },
         "observations": [_observation_row(obs, smoothed) for obs in observations],
         "weather": [
             {"date": day.day.isoformat(), "rainMm": _round(day.rain_mm, 2)}
@@ -76,4 +135,5 @@ def run(job: PlotJob, source: DataSource) -> dict:
                 for b in bins
             ],
         },
+        "status": _status_block(status, job.as_of, rain_comparison),
     }

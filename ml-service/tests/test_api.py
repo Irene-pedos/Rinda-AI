@@ -12,8 +12,15 @@ BOUNDARY = {"type": "Polygon", "coordinates": [[[30.1, -1.95], [30.102, -1.95], 
 GEE_BODY = {"plotId": 1, "source": "gee", "boundary": BOUNDARY, "plantingDate": "2026-09-20", "seasonType": "A"}
 
 
+THRESHOLDS = {
+    "not_enough_data_window_days": 15, "not_enough_data_min_obs": 1, "watch_rain_pct": 60,
+    "at_risk_consecutive_obs": 2, "at_risk_min_days": 10, "at_risk_anomaly": -1,
+}
+
+
 @pytest.fixture
-def client():
+def client(monkeypatch):
+    monkeypatch.setattr(main.backend_client, "get_thresholds", lambda settings: dict(THRESHOLDS))
     main.app.dependency_overrides[get_settings] = lambda: SETTINGS
     yield TestClient(main.app)
     main.app.dependency_overrides.clear()
@@ -82,6 +89,33 @@ def test_backend_refusal_is_passed_back(client, monkeypatch):
     response = client.post("/process/plot", json={"plotId": 1, "source": "sample"}, headers=HEADERS)
     assert response.status_code == 409
     assert response.json()["detail"]["code"] == "SAMPLE_ON_REAL_PLOT"
+
+
+def test_run_stores_the_thresholds_it_used(client, posted):
+    client.post("/process/plot", json={"plotId": 9001, "source": "sample"}, headers=HEADERS)
+    assert posted[0]["params"]["thresholds"] == THRESHOLDS
+    assert posted[0]["status"]["status"] in {"HEALTHY", "WATCH", "AT_RISK", "NOT_ENOUGH_DATA"}
+
+
+def test_a_threshold_with_no_value_stops_the_run(client, posted, monkeypatch):
+    monkeypatch.setattr(main.backend_client, "get_thresholds",
+                        lambda settings: {**THRESHOLDS, "watch_rain_pct": None})
+    response = client.post("/process/plot", json={"plotId": 9001, "source": "sample"}, headers=HEADERS)
+    assert response.status_code == 400
+    assert "watch_rain_pct" in response.json()["detail"]
+    assert posted == []
+
+
+def test_client_reads_thresholds_with_the_key():
+    seen = {}
+
+    def handler(request):
+        seen["url"] = str(request.url)
+        seen["key"] = request.headers["X-Internal-Api-Key"]
+        return httpx.Response(200, json={"watch_rain_pct": 60.0})
+
+    assert backend_client.get_thresholds(SETTINGS, httpx.MockTransport(handler)) == {"watch_rain_pct": 60.0}
+    assert seen == {"url": "http://backend.test/api/v1/internal/ml/thresholds", "key": KEY}
 
 
 def test_client_sends_the_key_to_the_internal_endpoint():

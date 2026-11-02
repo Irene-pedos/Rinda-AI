@@ -32,7 +32,19 @@ public final class MlDtos {
             @NotNull JsonNode params,
             @NotNull @Size(max = 2000) List<@Valid ObservationRow> observations,
             @NotNull @Size(max = 2000) List<@Valid WeatherRow> weather,
-            @Valid BaselineResult baseline) {
+            @Valid BaselineResult baseline,
+            @Valid StatusResult status) {
+    }
+
+    /** The cause list is closed on purpose: a satellite can't identify a pest or disease. */
+    public record StatusResult(
+            @NotNull LocalDate statusDate,
+            @NotNull @Pattern(regexp = "HEALTHY|WATCH|AT_RISK|NOT_ENOUGH_DATA") String status,
+            BigDecimal anomaly,
+            @DecimalMin("0") @DecimalMax("9999") BigDecimal rainPct,
+            @Pattern(regexp = "WATER_DEFICIT|UNEXPLAINED") String cause,
+            @NotNull @Pattern(regexp = "HIGH|MEDIUM|LOW") String confidence,
+            @NotNull JsonNode explanation) {
     }
 
     public record ObservationRow(

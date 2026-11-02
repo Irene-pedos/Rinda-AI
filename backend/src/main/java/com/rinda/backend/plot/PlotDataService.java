@@ -1,11 +1,16 @@
 package com.rinda.backend.plot;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.rinda.backend.auth.AuthPrincipal;
 import com.rinda.backend.common.ApiException;
 import com.rinda.backend.ml.MlDtos.DataOrigin;
 import com.rinda.backend.plot.PlotDataDtos.BaselineBinResponse;
 import com.rinda.backend.plot.PlotDataDtos.BaselineResponse;
 import com.rinda.backend.plot.PlotDataDtos.ObservationResponse;
+import com.rinda.backend.plot.PlotDataDtos.StatusResponse;
 import com.rinda.backend.plot.PlotDataDtos.WeatherResponse;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -24,10 +29,12 @@ public class PlotDataService {
 
     private final PlotService plots;
     private final JdbcTemplate jdbc;
+    private final ObjectMapper mapper;
 
-    public PlotDataService(PlotService plots, JdbcTemplate jdbc) {
+    public PlotDataService(PlotService plots, JdbcTemplate jdbc, ObjectMapper mapper) {
         this.plots = plots;
         this.jdbc = jdbc;
+        this.mapper = mapper;
     }
 
     private record BaselineSet(String seasonType, String version, DataOrigin origin) {
@@ -87,6 +94,40 @@ public class PlotDataService {
                 """, (rs, n) -> new BaselineBinResponse(rs.getInt(1), rs.getBigDecimal(2), rs.getBigDecimal(3),
                 rs.getBigDecimal(4)), plotId, set.seasonType(), set.version());
         return new BaselineResponse(set.seasonType(), set.version(), binDays(plotId), set.origin(), bins);
+    }
+
+    /** The newest status. A plot with no analysis yet reports NOT_ENOUGH_DATA, never a guess. */
+    @Transactional(readOnly = true)
+    public StatusResponse status(AuthPrincipal principal, long plotId) {
+        plots.get(principal, plotId);
+        return jdbc.query("""
+                SELECT status_date, status, anomaly, rain_pct, cause, confidence, explanation_json,
+                       model_version, data_origin
+                FROM plot_status
+                WHERE plot_id = ?
+                ORDER BY status_date DESC, id DESC
+                LIMIT 1
+                """, (rs, n) -> {
+            JsonNode explanation = readJson(rs.getString(7));
+            return new StatusResponse(rs.getObject(1, LocalDate.class), rs.getString(2), rs.getBigDecimal(3),
+                    rs.getBigDecimal(4), rs.getString(5), rs.getString(6),
+                    explanation.path("needsFieldVisit").asBoolean(false), explanation.path("signals"),
+                    explanation.path("dataQualityNote").asText(""), rs.getString(8),
+                    DataOrigin.valueOf(rs.getString(9)));
+        }, plotId).stream().findFirst().orElseGet(PlotDataService::notAnalysedYet);
+    }
+
+    private static StatusResponse notAnalysedYet() {
+        return new StatusResponse(null, "NOT_ENOUGH_DATA", null, null, null, "LOW", false,
+                JsonNodeFactory.instance.arrayNode(), "This plot has not been analysed yet.", null, null);
+    }
+
+    private JsonNode readJson(String json) {
+        try {
+            return json == null ? JsonNodeFactory.instance.objectNode() : mapper.readTree(json);
+        } catch (JsonProcessingException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     /** Checks the user can see the plot. Seeded plots have no date of their own, so the latest run's date is used. */

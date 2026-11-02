@@ -4,7 +4,7 @@ Items marked TO_CONFIRM are suggestions and must match the backend's thresholds 
 Change MODEL_VERSION whenever a value here changes.
 """
 
-MODEL_VERSION = "0.1.0"
+MODEL_VERSION = "0.2.0"
 BASELINE_VERSION = "plot-history-v1"
 
 # Spec section 3.2
@@ -25,6 +25,11 @@ DAP_BIN_DAYS = 10
 
 CHIRPS_SCALE_METRES = 5566
 
+# Spec section 3.4 says 30 days. CHIRPS lags, so the window ends on its latest day within the lookback.
+RAIN_WINDOW_DAYS = 30
+RAIN_LOOKBACK_DAYS = 60  # TO_CONFIRM
+RAIN_MIN_PAST_SEASONS = 3  # TO_CONFIRM
+
 
 def as_dict() -> dict:
     return {
@@ -37,4 +42,7 @@ def as_dict() -> dict:
         "baselineMaxDap": BASELINE_MAX_DAP,
         "baselineMinSamples": BASELINE_MIN_SAMPLES,
         "dapBinDays": DAP_BIN_DAYS,
+        "rainWindowDays": RAIN_WINDOW_DAYS,
+        "rainLookbackDays": RAIN_LOOKBACK_DAYS,
+        "rainMinPastSeasons": RAIN_MIN_PAST_SEASONS,
     }

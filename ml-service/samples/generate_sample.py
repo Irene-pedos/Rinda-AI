@@ -57,6 +57,17 @@ rain = [
     for i in range((AS_OF - PLANTING).days + 1)
 ]
 
+# Past seasons are wetter, so the simulated stressed season shows a rain deficit.
+# These come after the draws above, which keeps the current season's values the same.
+for year in PAST_YEARS:
+    rain += [
+        {
+            "date": (PLANTING.replace(year=year) + timedelta(days=i)).isoformat(),
+            "rain_mm": round(float(rng.gamma(0.8, 8.0)), 2) if rng.random() < 0.7 else 0.0,
+        }
+        for i in range((AS_OF - PLANTING).days + 1)
+    ]
+
 sample = {
     "notice": "SIMULATED DATA. Not satellite data and not a real plot. For development and demo plots only.",
     "is_simulated": True,

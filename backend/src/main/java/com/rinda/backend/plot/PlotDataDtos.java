@@ -1,5 +1,6 @@
 package com.rinda.backend.plot;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.rinda.backend.ml.MlDtos.DataOrigin;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
@@ -30,6 +31,23 @@ public final class PlotDataDtos {
             Integer dap,
             @Schema(types = {"number", "null"}) BigDecimal rainMm,
             @Schema(description = "SAMPLE_FILE is simulated and must be labelled Demo") DataOrigin dataOrigin) {
+    }
+
+    /** Crop health, which is separate from a plot's verification status and from any claim. */
+    public record StatusResponse(
+            @Schema(types = {"string", "null"}, description = "Null if the plot has not been analysed yet") LocalDate date,
+            @Schema(allowableValues = {"HEALTHY", "WATCH", "AT_RISK", "NOT_ENOUGH_DATA"}) String status,
+            @Schema(types = {"number", "null"}) BigDecimal anomaly,
+            @Schema(types = {"number", "null"}, description = "Rain over 30 days as a percent of normal. Null if unknown, never 0.")
+            BigDecimal rainPct,
+            @Schema(types = {"string", "null"}, allowableValues = {"WATER_DEFICIT", "UNEXPLAINED"}) String cause,
+            @Schema(allowableValues = {"HIGH", "MEDIUM", "LOW"}) String confidence,
+            boolean needsFieldVisit,
+            @Schema(description = "What the status is based on. Each item has a code, and some have values.")
+            JsonNode signals,
+            String dataQualityNote,
+            @Schema(types = {"string", "null"}) String modelVersion,
+            @Schema(types = {"string", "null"}, description = "GEE, or SAMPLE_FILE for simulated data") DataOrigin dataOrigin) {
     }
 
     public record BaselineBinResponse(
