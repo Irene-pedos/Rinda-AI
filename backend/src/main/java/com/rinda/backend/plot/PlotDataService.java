@@ -93,11 +93,11 @@ public class PlotDataService {
 
         BaselineSet set = latest.get(0);
         List<BaselineBinResponse> bins = jdbc.query("""
-                SELECT dap_bin, p10, p50, p90 FROM baselines
+                SELECT dap_bin, p10, p50, p90, is_filled FROM baselines
                 WHERE plot_id = ? AND season_type = ? AND version = ?
                 ORDER BY dap_bin
                 """, (rs, n) -> new BaselineBinResponse(rs.getInt(1), rs.getBigDecimal(2), rs.getBigDecimal(3),
-                rs.getBigDecimal(4)), plotId, set.seasonType(), set.version());
+                rs.getBigDecimal(4), rs.getBoolean(5)), plotId, set.seasonType(), set.version());
         return new BaselineResponse(set.seasonType(), set.version(), binDays(plotId), set.origin(), bins);
     }
 

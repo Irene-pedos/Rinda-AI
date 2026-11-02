@@ -401,6 +401,7 @@ Each item in `signals` has a `code`, so map codes to `strings.xml`:
 | `NDVI_WELL_BELOW_NORMAL` | Latest readings are far below the normal band | `readings` in a row, and the `days` they span |
 | `RAIN_BELOW_NORMAL` | Rain is below the limit for this plot | `rainPct` |
 | `RAIN_NOT_COMPARED` | Not enough rain data to compare | |
+| `NORMAL_CURVE_ESTIMATED` | The normal band here was estimated, so confidence is `LOW` | |
 | `NO_RECENT_READINGS` | Too few clear readings recently | |
 | `NO_NORMAL_CURVE` | No normal band for this growth stage | |
 
@@ -415,14 +416,15 @@ Returns **200** with the newest normal band saved for the plot:
   "binDays": 10,
   "dataOrigin": "GEE",
   "bins": [
-    { "dapBin": 10, "p10": 0.2, "p50": 0.3, "p90": 0.4 },
-    { "dapBin": 20, "p10": 0.3, "p50": 0.4, "p90": 0.5 }
+    { "dapBin": 10, "p10": 0.2, "p50": 0.3, "p90": 0.4, "filled": false },
+    { "dapBin": 20, "p10": 0.3, "p50": 0.4, "p90": 0.5, "filled": true }
   ]
 }
 ```
 
 - A bin covers `dapBin` up to, but not including, `dapBin + binDays`. Use `binDays` from the response, not a fixed 10.
-- Bins with too few past readings are left out, so the list can have gaps. Don't draw the band across a gap.
+- `filled` is true when a bin had too few past readings and was estimated from the bins on each side. Show those bins differently, for example with a dashed band.
+- Longer gaps and the ends of the curve aren't estimated, so the list can still have gaps. Don't draw the band across a gap.
 - With no baseline yet, `bins` is empty and the other fields are null.
 
 ## 4. Demo accounts

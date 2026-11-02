@@ -70,7 +70,8 @@ public final class MlDtos {
             @NotNull @Min(0) Integer dapBin,
             @NotNull @DecimalMin("-1") @DecimalMax("1") BigDecimal p10,
             @NotNull @DecimalMin("-1") @DecimalMax("1") BigDecimal p50,
-            @NotNull @DecimalMin("-1") @DecimalMax("1") BigDecimal p90) {
+            @NotNull @DecimalMin("-1") @DecimalMax("1") BigDecimal p90,
+            boolean filled) {
     }
 
     public record MlResultResponse(long runId, int observations, int weatherDays, int baselineBins) {

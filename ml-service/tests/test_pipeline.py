@@ -104,6 +104,7 @@ def test_sample_run_is_labelled_and_builds_a_baseline():
     assert len(result["baseline"]["bins"]) > 10
     for row in result["baseline"]["bins"]:
         assert row["p10"] <= row["p50"] <= row["p90"]
+        assert isinstance(row["filled"], bool)
 
 
 def test_gee_response_parsing():

@@ -166,8 +166,8 @@ public class MlResultService {
         jdbc.update("DELETE FROM baselines WHERE plot_id = ? AND season_type = ? AND version = ?",
                 result.plotId(), baseline.seasonType(), baseline.version());
         jdbc.batchUpdate("""
-                INSERT INTO baselines (plot_id, season_type, dap_bin, p10, p50, p90, version, data_origin)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO baselines (plot_id, season_type, dap_bin, p10, p50, p90, version, data_origin, is_filled)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, baseline.bins(), 200, (ps, bin) -> {
             ps.setLong(1, result.plotId());
             ps.setString(2, baseline.seasonType());
@@ -177,6 +177,7 @@ public class MlResultService {
             ps.setBigDecimal(6, bin.p90());
             ps.setString(7, baseline.version());
             ps.setString(8, result.dataOrigin().name());
+            ps.setBoolean(9, bin.filled());
         });
         return baseline.bins().size();
     }

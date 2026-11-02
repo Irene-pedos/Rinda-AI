@@ -138,7 +138,8 @@ def run(job: PlotJob, source: DataSource, thresholds: dict[str, float | None]) -
             "seasonType": job.season_type,
             "version": params.BASELINE_VERSION,
             "bins": [
-                {"dapBin": b.dap_bin, "p10": round(b.p10, 4), "p50": round(b.p50, 4), "p90": round(b.p90, 4)}
+                {"dapBin": b.dap_bin, "p10": round(b.p10, 4), "p50": round(b.p50, 4), "p90": round(b.p90, 4),
+                 "filled": b.filled}
                 for b in bins
             ],
         },

@@ -54,7 +54,7 @@ class PlotDataApiTest extends ApiTestBase {
         result.put("weather", List.of(Map.of("date", "2026-10-02", "rainMm", 0),
                 Map.of("date", "2026-10-01", "rainMm", 4.2)));
         result.put("baseline", Map.of("seasonType", "A", "version", "plot-history-v1", "bins", List.of(
-                Map.of("dapBin", 20, "p10", 0.3, "p50", 0.4, "p90", 0.5),
+                Map.of("dapBin", 20, "p10", 0.3, "p50", 0.4, "p90", 0.5, "filled", true),
                 Map.of("dapBin", 10, "p10", 0.2, "p50", 0.3, "p90", 0.4))));
         mvc.perform(post("/api/v1/internal/ml/results").header("X-Internal-Api-Key", KEY)
                         .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(result)))
@@ -137,7 +137,9 @@ class PlotDataApiTest extends ApiTestBase {
                 .andExpect(jsonPath("$.dataOrigin").value("GEE"))
                 .andExpect(jsonPath("$.bins[0].dapBin").value(10))
                 .andExpect(jsonPath("$.bins[1].dapBin").value(20))
-                .andExpect(jsonPath("$.bins[1].p50").value(0.4));
+                .andExpect(jsonPath("$.bins[0].filled").value(false))
+                .andExpect(jsonPath("$.bins[1].p50").value(0.4))
+                .andExpect(jsonPath("$.bins[1].filled").value(true));
     }
 
     @Test

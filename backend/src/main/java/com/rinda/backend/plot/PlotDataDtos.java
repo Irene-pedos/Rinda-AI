@@ -58,7 +58,8 @@ public final class PlotDataDtos {
 
     public record BaselineBinResponse(
             @Schema(description = "First day of the bin, in days after planting") int dapBin,
-            BigDecimal p10, BigDecimal p50, BigDecimal p90) {
+            BigDecimal p10, BigDecimal p50, BigDecimal p90,
+            @Schema(description = "True if estimated from the bins on each side. Show it differently.") boolean filled) {
     }
 
     /** Before any analysis has run, bins is empty and the other fields are null. */

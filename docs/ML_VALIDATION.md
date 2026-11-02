@@ -6,7 +6,7 @@ What has been tested, what the results show, and what they can't show. For how t
 
 ## Back-test of the demo settings
 
-Run on 2026-11-02 with model version 0.3.0, using the `CONFIRMED_FOR_DEMO` values in the `thresholds` table. To repeat it, run this from `ml-service` with the backend running:
+Run on 2026-11-02 with model version 0.4.0, using the `CONFIRMED_FOR_DEMO` values in the `thresholds` table. To repeat it, run this from `ml-service` with the backend running:
 
 ```powershell
 .venv\Scripts\python -m app.backtest
@@ -19,6 +19,7 @@ It saves nothing to the database.
 - **Replay:** the rules ran every 5 days through each season, up to 150 days after planting (DAP). Each result used only the data available on that date, and each baseline used only earlier years.
 - **Real data:** Sentinel-2 and CHIRPS for the 4 demo plots, seasons 2023 to 2025, 360 results in total.
 - **Simulated data:** two normal seasons and one with stress built in from 55 DAP. The stressed season stops at 81 DAP.
+- **Normal band:** gaps of up to 2 bins are estimated from the bins on each side (question 18).
 
 ### Limits
 
@@ -27,17 +28,31 @@ It saves nothing to the database.
 - **The plots aren't independent.** All four are within about 1.2 km of each other, and likely share one CHIRPS rain pixel.
 - **No season is a known drought or a known good year** (question 10), so false alarms and missed events can't be measured.
 
+## Effect of filling the gaps
+
+| Real data, 360 results | Before | After |
+|---|---|---|
+| `HEALTHY` | 187 (52%) | 217 (60%) |
+| `WATCH` | 54 (15%) | 62 (17%) |
+| `AT_RISK` | 2 (1%) | 15 (4%) |
+| `NOT_ENOUGH_DATA` | 117 (32%) | 66 (18%) |
+| `NOT_ENOUGH_DATA` from gaps in the normal band | 92 | 41 |
+
+The simulated results didn't change, because the sample has no gaps of this kind.
+
 ## What the results show
 
-1. **Most `NOT_ENOUGH_DATA` comes from gaps in the normal curve, not from clouds.** On real data, 32% of results were `NOT_ENOUGH_DATA`. Of those 117, 92 (79%) were `NO_NORMAL_CURVE`: the growth stage had too few past readings to build a band. Only 25 had no recent clear reading. A longer window only moves this a little: 30 days gives 27% instead of 32%. Question 18 asks how to close the gaps.
-2. **`AT_RISK` is rare, and the only real cases look like early-season noise.** It appeared in 2 of 360 real results, both on plot 9004 at 15 and 20 DAP. That's well before the sensitive stage of 50 to 100 DAP, and it had no rain signal. A claim trigger limited to the sensitive stage would ignore both.
-3. **The rules do pick up the simulated stress, but late.** Stress began at 55 DAP and `AT_RISK` first appeared at 75 DAP, 20 days later. The 2 normal simulated seasons never reached `AT_RISK` in 60 results. They did reach `WATCH` in 9 of those results, or 15%.
-4. **`at_risk_min_days` is the setting that changes `AT_RISK` most clearly.** A value of 5 gives 8 results and 15 gives none.
-5. **`at_risk_anomaly` made no difference between −1.25 and −2.** The 2 real `AT_RISK` results were both at −3.24, far past all three values, so this range couldn't change them. Narrow normal bands may be why the scores are so large.
-6. **Raising `min_clear_pixels` to 100 raised `AT_RISK` from 2 to 9.** It also raised `NOT_ENOUGH_DATA` to 42%. The cause wasn't investigated. It may be that fewer readings change the baseline, so treat this with care.
-7. **Status moves often.** Each 30-result season changed status 7 to 14 times on real data, and this count includes moves in and out of `NOT_ENOUGH_DATA`. A farmer could see several status changes in a season, which matters for health alerts.
-8. **Most results are low confidence.** 63% of real results were `LOW`, and none were `HIGH`, because `HIGH` isn't used before back-testing against field results.
-9. **Most low NDVI has no explained cause.** Of the 35 real results with low NDVI, 32 were `UNEXPLAINED` and 3 were `WATER_DEFICIT`, so `needsFieldVisit` would come up often. Another 21 `WATCH` results came from low rain alone, with NDVI inside the band.
+1. **Filling the gaps removed over half of the `NOT_ENOUGH_DATA` results, but 17% of statuses now rest on an estimated band.** That's 51 of 294, and all of them are `LOW` confidence.
+2. **Most remaining `NOT_ENOUGH_DATA` is in the 2023 season:** 57 of 66. That season has only 4 past seasons, so its gaps are longer than 2 bins. Later seasons have more history, and were at 7% or lower.
+3. **`AT_RISK` is still uncommon, but most of it doesn't look like crop stress.** Of the 15 results, only 3 fall in the sensitive stage of 50 to 100 DAP. Another 10 come at 120 DAP or later, when maize may be drying off or already harvested, so a small timing difference looks like a large drop. The last 2 are at 15 and 20 DAP, before the crop is established. A claim trigger limited to the sensitive stage would see only those 3.
+4. **8 of the 15 `AT_RISK` results use an estimated band.** One of those is among the 3 in the sensitive stage. Question 19 asks whether an estimated band should be allowed to count towards a claim.
+5. **The rules do pick up the simulated stress, but late.** Stress began at 55 DAP and `AT_RISK` first appeared at 75 DAP, 20 days later. The 2 normal simulated seasons never reached `AT_RISK` in 60 results. They did reach `WATCH` in 9 of those results, or 15%.
+6. **`at_risk_anomaly` and `at_risk_min_days` both change `AT_RISK` now.** An anomaly limit of −2 halves it from 15 to 9, and −1.25 raises it to 18. A minimum of 15 days gives 10, and 5 days gives 20.
+7. **Anomaly scores can be very large,** down to −11.88. Narrow normal bands may be the reason, so a score far below −1.5 doesn't always mean a severe drop.
+8. **Raising `min_clear_pixels` to 100 raised `AT_RISK` from 15 to 25.** It also raised `NOT_ENOUGH_DATA` to 26%. The cause wasn't investigated. It may be that fewer readings change the baseline, so treat this with care.
+9. **Status moves often.** Each 30-result season changed status 5 to 12 times on real data, and this count includes moves in and out of `NOT_ENOUGH_DATA`. So health alerts only go out when a plot gets worse than its last known status.
+10. **Most results are low confidence.** 63% of real results were `LOW`, and none were `HIGH`, because `HIGH` isn't used before back-testing against field results.
+11. **Most low NDVI has no explained cause.** Of the 50 real results with low NDVI, 45 were `UNEXPLAINED` and 5 were `WATER_DEFICIT`, so `needsFieldVisit` would come up often. Another 27 `WATCH` results came from low rain alone, with NDVI inside the band.
 
 ## Results
 
@@ -69,26 +84,26 @@ It saves nothing to the database.
 | Plot | Season | Results | HEALTHY | WATCH | AT_RISK | NOT_ENOUGH_DATA | Status changes |
 |---|---|---|---|---|---|---|---|
 | 9001 | 2023 | 30 | 16 (53%) | 1 (3%) | 0 (0%) | 13 (43%) | 7 |
-| 9001 | 2024 | 30 | 19 (63%) | 1 (3%) | 0 (0%) | 10 (33%) | 7 |
-| 9001 | 2025 | 30 | 19 (63%) | 5 (17%) | 0 (0%) | 6 (20%) | 9 |
-| 9002 | 2023 | 30 | 10 (33%) | 2 (7%) | 0 (0%) | 18 (60%) | 9 |
-| 9002 | 2024 | 30 | 16 (53%) | 5 (17%) | 0 (0%) | 9 (30%) | 9 |
-| 9002 | 2025 | 30 | 22 (73%) | 3 (10%) | 0 (0%) | 5 (17%) | 7 |
+| 9001 | 2024 | 30 | 25 (83%) | 2 (7%) | 2 (7%) | 1 (3%) | 7 |
+| 9001 | 2025 | 30 | 22 (73%) | 7 (23%) | 0 (0%) | 1 (3%) | 7 |
+| 9002 | 2023 | 30 | 14 (47%) | 2 (7%) | 0 (0%) | 14 (47%) | 7 |
+| 9002 | 2024 | 30 | 21 (70%) | 4 (13%) | 4 (13%) | 1 (3%) | 8 |
+| 9002 | 2025 | 30 | 25 (83%) | 5 (17%) | 0 (0%) | 0 (0%) | 5 |
 | 9003 | 2023 | 30 | 15 (50%) | 2 (7%) | 0 (0%) | 13 (43%) | 8 |
-| 9003 | 2024 | 30 | 20 (67%) | 2 (7%) | 0 (0%) | 8 (27%) | 8 |
-| 9003 | 2025 | 30 | 17 (57%) | 9 (30%) | 0 (0%) | 4 (13%) | 14 |
+| 9003 | 2024 | 30 | 24 (80%) | 3 (10%) | 1 (3%) | 2 (7%) | 9 |
+| 9003 | 2025 | 30 | 19 (63%) | 8 (27%) | 2 (7%) | 1 (3%) | 12 |
 | 9004 | 2023 | 30 | 11 (37%) | 2 (7%) | 0 (0%) | 17 (57%) | 8 |
-| 9004 | 2024 | 30 | 9 (30%) | 12 (40%) | 2 (7%) | 7 (23%) | 11 |
-| 9004 | 2025 | 30 | 13 (43%) | 10 (33%) | 0 (0%) | 7 (23%) | 14 |
+| 9004 | 2024 | 30 | 12 (40%) | 12 (40%) | 4 (13%) | 2 (7%) | 10 |
+| 9004 | 2025 | 30 | 13 (43%) | 14 (47%) | 2 (7%) | 1 (3%) | 10 |
 
 ### Real data, likely causes
 
 | Status | Likely cause | Results |
 |---|---|---|
-| AT_RISK | UNEXPLAINED | 2 |
+| AT_RISK | UNEXPLAINED | 15 |
 | WATCH | UNEXPLAINED | 30 |
-| WATCH | WATER_DEFICIT | 3 |
-| WATCH | none | 21 |
+| WATCH | WATER_DEFICIT | 5 |
+| WATCH | none | 27 |
 
 ### Real data, confidence
 
@@ -102,28 +117,47 @@ It saves nothing to the database.
 
 | Reason | Stage | Results |
 |---|---|---|
-| NO_NORMAL_CURVE | After 30 DAP | 86 |
-| NO_NORMAL_CURVE | Up to 30 DAP | 6 |
+| NO_NORMAL_CURVE | After 30 DAP | 39 |
+| NO_NORMAL_CURVE | Up to 30 DAP | 2 |
 | NO_RECENT_READINGS | After 30 DAP | 22 |
 | NO_RECENT_READINGS | Up to 30 DAP | 3 |
+
+### Real data, estimated normal bands
+
+| Results with a status | Using an estimated band |
+|---|---|
+| 294 | 51 (17%) |
 
 ### Real data, AT_RISK results
 
 | Plot | Season | Date | DAP | Anomaly | Signals |
 |---|---|---|---|---|---|
+| 9001 | 2024 | 2025-02-02 | 135 | -1.83 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL, NORMAL_CURVE_ESTIMATED |
+| 9001 | 2024 | 2025-02-07 | 140 | -1.83 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL, NORMAL_CURVE_ESTIMATED |
+| 9002 | 2024 | 2025-02-02 | 135 | -5.38 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL, NORMAL_CURVE_ESTIMATED |
+| 9002 | 2024 | 2025-02-07 | 140 | -10.58 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL, NORMAL_CURVE_ESTIMATED |
+| 9002 | 2024 | 2025-02-12 | 145 | -11.88 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL |
+| 9002 | 2024 | 2025-02-17 | 150 | -4.20 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL |
+| 9003 | 2024 | 2024-12-09 | 80 | -4.07 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL, NORMAL_CURVE_ESTIMATED |
+| 9003 | 2025 | 2026-01-18 | 120 | -2.13 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL, NORMAL_CURVE_ESTIMATED |
+| 9003 | 2025 | 2026-01-28 | 130 | -2.12 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL |
 | 9004 | 2024 | 2024-10-05 | 15 | -3.24 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL |
 | 9004 | 2024 | 2024-10-10 | 20 | -3.24 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL |
+| 9004 | 2024 | 2025-02-02 | 135 | -1.88 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL, NORMAL_CURVE_ESTIMATED |
+| 9004 | 2024 | 2025-02-07 | 140 | -1.88 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL, NORMAL_CURVE_ESTIMATED |
+| 9004 | 2025 | 2025-11-14 | 55 | -8.88 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL |
+| 9004 | 2025 | 2025-11-19 | 60 | -8.88 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL |
 
 ### Real data, if a setting changes
 
 | Settings | Results | HEALTHY | WATCH | AT_RISK | NOT_ENOUGH_DATA |
 |---|---|---|---|---|---|
-| Team settings | 360 | 187 (52%) | 54 (15%) | 2 (1%) | 117 (32%) |
-| `at_risk_anomaly` -1.25 | 360 | 187 (52%) | 54 (15%) | 2 (1%) | 117 (32%) |
-| `at_risk_anomaly` -2 | 360 | 187 (52%) | 54 (15%) | 2 (1%) | 117 (32%) |
-| `at_risk_min_days` 5 | 360 | 187 (52%) | 48 (13%) | 8 (2%) | 117 (32%) |
-| `at_risk_min_days` 15 | 360 | 187 (52%) | 56 (16%) | 0 (0%) | 117 (32%) |
-| `not_enough_data_window_days` 15 | 360 | 166 (46%) | 51 (14%) | 2 (1%) | 141 (39%) |
-| `not_enough_data_window_days` 30 | 360 | 206 (57%) | 56 (16%) | 2 (1%) | 96 (27%) |
-| `min_clear_pixels` 100 | 360 | 146 (41%) | 53 (15%) | 9 (2%) | 152 (42%) |
+| Team settings | 360 | 217 (60%) | 62 (17%) | 15 (4%) | 66 (18%) |
+| `at_risk_anomaly` -1.25 | 360 | 217 (60%) | 59 (16%) | 18 (5%) | 66 (18%) |
+| `at_risk_anomaly` -2 | 360 | 217 (60%) | 68 (19%) | 9 (2%) | 66 (18%) |
+| `at_risk_min_days` 5 | 360 | 217 (60%) | 57 (16%) | 20 (6%) | 66 (18%) |
+| `at_risk_min_days` 15 | 360 | 217 (60%) | 67 (19%) | 10 (3%) | 66 (18%) |
+| `not_enough_data_window_days` 15 | 360 | 196 (54%) | 59 (16%) | 15 (4%) | 90 (25%) |
+| `not_enough_data_window_days` 30 | 360 | 236 (66%) | 64 (18%) | 15 (4%) | 45 (12%) |
+| `min_clear_pixels` 100 | 360 | 182 (51%) | 61 (17%) | 25 (7%) | 92 (26%) |
 

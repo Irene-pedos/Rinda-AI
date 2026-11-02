@@ -5,8 +5,8 @@ here: each run reads them from the backend's thresholds table and stores what it
 Change MODEL_VERSION whenever a value here changes.
 """
 
-MODEL_VERSION = "0.3.0"
-BASELINE_VERSION = "plot-history-v1"
+MODEL_VERSION = "0.4.0"
+BASELINE_VERSION = "plot-history-v2"
 
 # Spec section 3.2
 SHRINK_METRES = 10
@@ -18,6 +18,7 @@ SCL_CLEAR_CLASSES = [4, 5]  # Sentinel-2 scene classes: vegetation, bare soil
 SMOOTHING_WINDOW = 3
 BASELINE_MAX_DAP = 150
 BASELINE_MIN_SAMPLES = 3
+BASELINE_MAX_FILLED_BINS = 2  # A longer gap could cut across the greenness peak (question 18).
 
 # Spec sections 3.3 and 10.1
 BASELINE_FIRST_YEAR = 2019
@@ -40,6 +41,7 @@ def as_dict() -> dict:
         "baselineFirstYear": BASELINE_FIRST_YEAR,
         "baselineMaxDap": BASELINE_MAX_DAP,
         "baselineMinSamples": BASELINE_MIN_SAMPLES,
+        "baselineMaxFilledBins": BASELINE_MAX_FILLED_BINS,
         "dapBinDays": DAP_BIN_DAYS,
         "rainWindowDays": RAIN_WINDOW_DAYS,
         "rainLookbackDays": RAIN_LOOKBACK_DAYS,

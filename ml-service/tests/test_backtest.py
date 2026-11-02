@@ -103,6 +103,16 @@ def test_cached_source_loads_each_year_once():
     assert cached.rain(date(2023, 9, 1), date(2023, 9, 2)) == rain
 
 
+def test_estimated_bands_are_counted_among_results_with_a_status():
+    def result(status, signals):
+        return backtest.Result("9001", 2024, PLANTING, 40, PlotStatus(status, "LOW", signals=signals))
+
+    lines = backtest.estimated_curve_table([
+        result("HEALTHY", [{"code": "NORMAL_CURVE_ESTIMATED"}]), result("HEALTHY", []),
+        result("NOT_ENOUGH_DATA", [{"code": "NO_NORMAL_CURVE"}])])
+    assert lines[2] == "| 2 | 1 (50%) |"
+
+
 def test_not_enough_data_is_split_by_reason_and_stage():
     def result(code, dap):
         return backtest.Result("9001", 2024, PLANTING, dap,

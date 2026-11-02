@@ -15,6 +15,7 @@ from app.processing import (
     complete_total,
     dap_bin,
     days_after_planting,
+    fill_short_gaps,
     ndvi,
     one_per_day,
     past_season_starts,
@@ -138,6 +139,37 @@ def test_baseline_of_no_data_is_empty():
     assert build_baseline({}) == []
 
 
+def test_a_one_bin_gap_is_filled_halfway_and_marked():
+    filled = fill_short_gaps([BaselineBin(10, 0.2, 0.4, 0.6), BaselineBin(30, 0.4, 0.6, 0.8)])
+    assert [b.dap_bin for b in filled] == [10, 20, 30]
+    assert filled[1].filled is True
+    assert filled[1].p10 == pytest.approx(0.3)
+    assert filled[1].p50 == pytest.approx(0.5)
+    assert filled[1].p90 == pytest.approx(0.7)
+    assert not filled[0].filled and not filled[2].filled
+
+
+def test_a_two_bin_gap_is_filled_evenly():
+    filled = fill_short_gaps([BaselineBin(10, 0.1, 0.1, 0.1), BaselineBin(40, 0.4, 0.4, 0.4)])
+    assert [round(b.p50, 6) for b in filled] == [0.1, 0.2, 0.3, 0.4]
+
+
+def test_a_longer_gap_is_left_open():
+    bins = [BaselineBin(10, 0.2, 0.4, 0.6), BaselineBin(50, 0.4, 0.6, 0.8)]
+    assert fill_short_gaps(bins) == bins
+
+
+def test_the_ends_of_the_curve_are_never_extended():
+    bins = [BaselineBin(40, 0.2, 0.4, 0.6)]
+    assert fill_short_gaps(bins) == bins
+    assert fill_short_gaps([]) == []
+
+
+def test_a_filled_bin_keeps_percentiles_in_order():
+    filled = fill_short_gaps([BaselineBin(10, 0.2, 0.3, 0.9), BaselineBin(30, 0.5, 0.6, 0.7)])
+    assert filled[1].p10 <= filled[1].p50 <= filled[1].p90
+
+
 PLANTED = date(2024, 9, 1)
 LIMITS = StatusLimits(min_clear_pixels=20, window_days=20, min_observations=1, watch_rain_pct=60, watch_anomaly=-1,
                       at_risk_anomaly=-1.5, consecutive_observations=2, min_days=10)
@@ -162,6 +194,19 @@ def test_anomaly_formula():
 
 def test_anomaly_with_a_flat_band_is_unknown_not_zero():
     assert anomaly_score(0.2, BaselineBin(0, 0.6, 0.6, 0.8)) is None
+
+
+def test_an_estimated_normal_curve_lowers_confidence_and_says_so():
+    bands = [BaselineBin(dap, 0.4, 0.6, 0.8, filled=True) for dap in range(0, 100, 10)]
+    result = status_of([(11, 0.7), (1, 0.7)], bins=bands)
+    assert result.status == "HEALTHY"
+    assert result.confidence == "LOW"
+    assert {"code": "NORMAL_CURVE_ESTIMATED"} in result.signals
+
+
+def test_a_filled_bin_still_detects_low_ndvi():
+    bands = [BaselineBin(dap, 0.4, 0.6, 0.8, filled=True) for dap in range(0, 100, 10)]
+    assert status_of([(11, 0.1), (1, 0.1)], bins=bands).status == "AT_RISK"
 
 
 def test_a_flat_band_gives_not_enough_data():

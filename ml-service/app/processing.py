@@ -34,6 +34,7 @@ class BaselineBin:
     p10: float
     p50: float
     p90: float
+    filled: bool = False
 
 
 def ndvi(b8: float, b4: float) -> float | None:
@@ -114,7 +115,29 @@ def build_baseline(seasons: dict[date, list[Observation]]) -> list[BaselineBin]:
         if len(values) >= params.BASELINE_MIN_SAMPLES:
             p10, p50, p90 = np.percentile(values, [10, 50, 90])
             result.append(BaselineBin(key, float(p10), float(p50), float(p90)))
-    return result
+    return fill_short_gaps(result)
+
+
+def fill_short_gaps(bins: list[BaselineBin]) -> list[BaselineBin]:
+    """Fills a short gap with a straight line between the bins on each side, marked as filled.
+
+    The ends of the curve are never extended, because only one side is known there.
+    """
+    result = []
+    for left, right in zip(bins, bins[1:]):
+        result.append(left)
+        missing = (right.dap_bin - left.dap_bin) // params.DAP_BIN_DAYS - 1
+        if 0 < missing <= params.BASELINE_MAX_FILLED_BINS:
+            for step in range(1, missing + 1):
+                share = step / (missing + 1)
+                result.append(BaselineBin(
+                    left.dap_bin + step * params.DAP_BIN_DAYS,
+                    left.p10 + (right.p10 - left.p10) * share,
+                    left.p50 + (right.p50 - left.p50) * share,
+                    left.p90 + (right.p90 - left.p90) * share,
+                    filled=True,
+                ))
+    return result + bins[-1:]
 
 
 @dataclass(frozen=True)
@@ -265,6 +288,8 @@ def plot_status(observations: list[Observation], smoothed: dict[date, float], bi
         signals.append({"code": "RAIN_BELOW_NORMAL", "rainPct": round(rain_pct, 1)})
     if rain_pct is None:
         signals.append({"code": "RAIN_NOT_COMPARED"})
+    if band.filled:
+        signals.append({"code": "NORMAL_CURVE_ESTIMATED"})
 
     if len(severe) >= limits.consecutive_observations and severe_days >= limits.min_days:
         status = "AT_RISK"
@@ -279,7 +304,7 @@ def plot_status(observations: list[Observation], smoothed: dict[date, float], bi
 
     # MEDIUM is the top level for now: nothing has been back-tested against field results.
     enough = len(recent) >= limits.consecutive_observations and rain_pct is not None
-    confidence = "MEDIUM" if enough and cause != "UNEXPLAINED" else "LOW"
+    confidence = "MEDIUM" if enough and cause != "UNEXPLAINED" and not band.filled else "LOW"
 
     return PlotStatus(status, confidence, score, rain_pct, cause, cause == "UNEXPLAINED", signals,
                       _quality_note(recent, limits, as_of))

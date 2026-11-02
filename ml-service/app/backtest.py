@@ -181,6 +181,15 @@ def confidence_table(results: list[Result]) -> list[str]:
     return lines
 
 
+def estimated_curve_table(results: list[Result]) -> list[str]:
+    """How many results rest on a normal band that was estimated from its neighbours."""
+    judged = [r for r in results if r.status.status != "NOT_ENOUGH_DATA"]
+    estimated = [r for r in judged if any(s["code"] == "NORMAL_CURVE_ESTIMATED" for s in r.status.signals)]
+    lines = ["| Results with a status | Using an estimated band |", "|---|---|"]
+    lines.append(f"| {len(judged)} | {len(estimated)} ({_percent(len(estimated), len(judged))}) |")
+    return lines
+
+
 def at_risk_table(results: list[Result]) -> list[str]:
     lines = ["| Plot | Season | Date | DAP | Anomaly | Signals |", "|---|---|---|---|---|---|"]
     for result in results:
@@ -243,6 +252,7 @@ def main() -> int:
         ("Real data, likely causes", causes_table(real)),
         ("Real data, confidence", confidence_table(real)),
         ("Real data, why NOT_ENOUGH_DATA", not_enough_data_table(real)),
+        ("Real data, estimated normal bands", estimated_curve_table(real)),
         ("Real data, AT_RISK results", at_risk_table(real)),
         ("Real data, if a setting changes", variations_table(lambda change: _real(sources, {**thresholds, **change}))),
     ]
