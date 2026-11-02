@@ -7,7 +7,7 @@ The full design is in [docs/RINDA_PROJECT.md](docs/RINDA_PROJECT.md), which is t
 | Folder | Contents | Status |
 |---|---|---|
 | `backend/` | Spring Boot 3 REST API (Java 17) | Auth and plots working |
-| `ml-service/` | Python FastAPI service and Earth Engine extraction | Working on sample data; Earth Engine not yet tested |
+| `ml-service/` | Python FastAPI service and Earth Engine extraction | Working with real Earth Engine data and the simulated sample |
 | `android/` | Android app (Java + XML) | Android Studio template, for Agy |
 | `dashboard/` | Next.js insurer dashboard | Placeholder, for Agy |
 | `database/` | Local MySQL script | Working |

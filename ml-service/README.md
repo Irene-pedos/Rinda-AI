@@ -35,6 +35,7 @@ Every saved row carries `data_origin` (`GEE` or `SAMPLE_FILE`). The backend stor
 
 - It assumes the plot was planted on the same calendar day in past years.
 - It uses the plot's own history, and that land may not have grown maize every year.
+- Cloud cover leaves gaps. In a test run over one Rwandan location, 11 of 27 dates were usable, and 13 of 16 baseline bins had enough values. Missing bins are left out, never filled in.
 
 ## Compiled packages on the lab computer
 

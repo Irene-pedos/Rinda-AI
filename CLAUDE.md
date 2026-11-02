@@ -49,7 +49,7 @@ Run from `ml-service/`. The Python is in `.venv` (3.13). Tests need neither Eart
 - **Settings go in `app/params.py`.** Change `MODEL_VERSION` when one changes.
 - **Never fall back to sample data** when real data was requested. `samples/sample_plot.json` is simulated.
 - **Windows Application Control blocks some compiled packages here** (pandas was blocked, so it isn't used). Never try to bypass it.
-- `app/gee_source.py` has not yet run against real Earth Engine. Confirm its results with `app.gee_check` before relying on it.
+- `app.gee_check` tests the Earth Engine setup. Each computer needs its own `earthengine authenticate`.
 
 ## Android build
 

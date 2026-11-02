@@ -7,7 +7,7 @@ Items the team must confirm. Until then, values that depend on them stay `TO_CON
 | # | Question | Needed for | Spec | Status |
 |---|---|---|---|---|
 | 1 | Which district is the pilot, and what are the 3–5 real maize plot locations (boundaries or GPS points) and planting dates? | Demo plots, satellite extraction | §10.3, §12.3 | Open |
-| 2 | What is the Google Cloud project ID registered for Earth Engine? | Real satellite data | §3.1, §10.3 | Answered: `rinda-ai`. This computer still needs `earthengine authenticate`. |
+| 2 | What is the Google Cloud project ID registered for Earth Engine? | Real satellite data | §3.1, §10.3 | Answered: `rinda-ai`. Authorised and tested on the lab computer. |
 | 3 | What trigger thresholds should the demo use (X days, Y% yield, Z% rain)? | Claim trigger | §3.7, §10.3 | Open |
 
 ## Insurer rules
