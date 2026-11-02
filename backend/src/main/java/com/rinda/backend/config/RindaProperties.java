@@ -10,7 +10,11 @@ import org.springframework.validation.annotation.Validated;
 
 @Validated
 @ConfigurationProperties("rinda")
-public record RindaProperties(@Valid Jwt jwt, @Valid Otp otp) {
+public record RindaProperties(@Valid Jwt jwt, @Valid Otp otp, @Valid Ml ml) {
+
+    public record Ml(
+            @NotNull @Size(min = 32, message = "ML_INTERNAL_API_KEY must be at least 32 characters") String internalApiKey) {
+    }
 
     public record Jwt(
             @NotNull @Size(min = 32, message = "JWT_SECRET must be at least 32 characters") String secret,

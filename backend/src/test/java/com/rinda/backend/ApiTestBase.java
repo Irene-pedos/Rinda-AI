@@ -29,7 +29,8 @@ import org.springframework.test.web.servlet.ResultActions;
 @Import(ApiTestBase.TestOtp.class)
 abstract class ApiTestBase {
 
-    private static final List<String> TABLES = List.of("claims", "enrollments", "seasons", "plots",
+    private static final List<String> TABLES = List.of("ml_runs", "baselines", "weather_daily", "observations",
+            "claims", "enrollments", "seasons", "plots",
             "refresh_tokens", "otp_codes", "agents", "farmers", "users", "cooperatives");
 
     @TestConfiguration

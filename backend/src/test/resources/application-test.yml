@@ -7,5 +7,7 @@ springdoc:
     enabled: true
 
 rinda:
+  ml:
+    internal-api-key: test-only-key-test-only-key-test-only-key
   jwt:
     secret: test-only-secret-test-only-secret-test-only-secret
