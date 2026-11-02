@@ -301,6 +301,81 @@ Validation errors are the same as `POST /plots`, plus `PLOT_NOT_FOUND`.
 |---|---|---|
 | 409 | `PLOT_DELETE_DEFERRED` | The plot has active cover or an open claim. Explain that it can be deleted after the season or claim closes (§2.2 #11). |
 
+### Plot data for the charts
+
+Any role, with the same visibility as `GET /plots/{id}`. A plot that can't be seen returns 404 `PLOT_NOT_FOUND`. A plot with no analysis yet returns **200** with an empty list, which isn't an error, so show an empty state.
+
+`dataOrigin` is `GEE` for real satellite data and `SAMPLE_FILE` for simulated data. **Always label `SAMPLE_FILE` data as Demo.**
+
+`dap` is days after planting. It's null if the plot has no known planting date. For a seeded plot, it uses the planting date of the latest analysis.
+
+### `GET /plots/{id}/observations`
+
+Takes optional `from` and `to` (`yyyy-MM-dd`, both included). Returns **200** with a plain array, oldest first:
+
+```json
+[
+  {
+    "date": "2026-10-05",
+    "dap": 15,
+    "source": "S2",
+    "ndvi": 0.41,
+    "smoothedNdvi": 0.4,
+    "clearPixels": 240,
+    "cloudPct": 12.5,
+    "dataOrigin": "GEE"
+  },
+  {
+    "date": "2026-10-10",
+    "dap": 20,
+    "source": "S2",
+    "ndvi": null,
+    "smoothedNdvi": null,
+    "clearPixels": 3,
+    "cloudPct": null,
+    "dataOrigin": "GEE"
+  }
+]
+```
+
+`ndvi` is null when clouds left too few clear pixels. **Show a gap, and never join across it as if a reading existed.** Plot `smoothedNdvi` for the line, and compare it with the band from `GET /plots/{id}/baseline`.
+
+| Status | Code | When |
+|---|---|---|
+| 400 | `DATE_RANGE_INVALID` | `from` is after `to` |
+| 400 | `REQUEST_INVALID` | A date isn't `yyyy-MM-dd` |
+
+### `GET /plots/{id}/weather`
+
+Takes the same `from` and `to`, with the same errors. Returns **200** with a plain array of daily rain, oldest first:
+
+```json
+[{ "date": "2026-10-01", "dap": 11, "rainMm": 4.2, "dataOrigin": "GEE" }]
+```
+
+`rainMm` of `0` means a dry day. A missing date means no data, which isn't the same thing.
+
+### `GET /plots/{id}/baseline`
+
+Returns **200** with the newest normal band saved for the plot:
+
+```json
+{
+  "seasonType": "A",
+  "version": "plot-history-v1",
+  "binDays": 10,
+  "dataOrigin": "GEE",
+  "bins": [
+    { "dapBin": 10, "p10": 0.2, "p50": 0.3, "p90": 0.4 },
+    { "dapBin": 20, "p10": 0.3, "p50": 0.4, "p90": 0.5 }
+  ]
+}
+```
+
+- A bin covers `dapBin` up to, but not including, `dapBin + binDays`. Use `binDays` from the response, not a fixed 10.
+- Bins with too few past readings are left out, so the list can have gaps. Don't draw the band across a gap.
+- With no baseline yet, `bins` is empty and the other fields are null.
+
 ## 4. Demo accounts
 
 Available with the `dev` profile. Log in with the code from the backend log.
@@ -331,13 +406,10 @@ The planned onboarding shows language and consent **before** login, but these en
 
 ### Plot data
 
-These are the planned read endpoints. Every model result includes `modelVersion`, a confidence and a data quality note, as §0 and §3 require.
+Every model result will include `modelVersion`, a confidence and a data quality note, as §0 and §3 require.
 
 | Endpoint | Draft fields |
 |---|---|
-| `GET /plots/{id}/observations?from&to` | `date`, `source`, `ndvi`, `smoothedNdvi`, `clearPixels`, `cloudPct`, `dataOrigin` |
-| `GET /plots/{id}/weather` | `date`, `rainMm`, `dataOrigin` |
-| `GET /plots/{id}/baseline` | By `dapBin` (days after planting): `p10`, `p50`, `p90`, `dataOrigin`, `version` |
 | `GET /plots/{id}/status` | `date`, `status`, `anomaly`, `rainPct`, `cause`, `confidence`, `explanation`, `modelVersion` |
 | `GET /plots/{id}/forecast` | `date`, `lowPct`, `highPct`, `confidence`, `modelVersion` |
 
@@ -345,7 +417,6 @@ Display rules for these:
 
 - `status` is `HEALTHY`, `WATCH`, `AT_RISK` or `NOT_ENOUGH_DATA`. `confidence` is `HIGH`, `MEDIUM` or `LOW`. Always show the status as icon plus word, never colour alone.
 - `AT_RISK` isn't a claim. Show "Not enough satellite data yet" for `NOT_ENOUGH_DATA`, and never fill in a guess.
-- `dataOrigin` is `GEE` for real satellite data and `SAMPLE_FILE` for simulated data. Label simulated data as Demo.
 - The chart title is "Crop health (NDVI)", plotted against the normal band at the same days after planting (§2.2 #8).
 - The forecast is a range compared with the plot's normal, labelled "Prototype estimate". Never show one number or a tonnage.
 - Never show a specific pest or disease as a cause.
