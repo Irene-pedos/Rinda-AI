@@ -1,0 +1,40 @@
+"""Processing settings. Every run stores these with its results, so results can be reproduced.
+
+Items marked TO_CONFIRM are suggestions and must match the backend's thresholds table.
+Change MODEL_VERSION whenever a value here changes.
+"""
+
+MODEL_VERSION = "0.1.0"
+BASELINE_VERSION = "plot-history-v1"
+
+# Spec section 3.2
+SHRINK_METRES = 10
+MIN_CLEAR_PIXELS = 20  # TO_CONFIRM
+SENTINEL2_SCALE_METRES = 10
+
+# Not in the spec, so TO_CONFIRM (docs/OPEN_QUESTIONS.md).
+CLOUD_PROBABILITY_MAX = 40
+SCL_CLEAR_CLASSES = [4, 5]  # Sentinel-2 scene classes: vegetation, bare soil
+SMOOTHING_WINDOW = 3
+BASELINE_MAX_DAP = 150
+BASELINE_MIN_SAMPLES = 3
+
+# Spec sections 3.3 and 10.1
+BASELINE_FIRST_YEAR = 2019
+DAP_BIN_DAYS = 10
+
+CHIRPS_SCALE_METRES = 5566
+
+
+def as_dict() -> dict:
+    return {
+        "shrinkMetres": SHRINK_METRES,
+        "minClearPixels": MIN_CLEAR_PIXELS,
+        "cloudProbabilityMax": CLOUD_PROBABILITY_MAX,
+        "sclClearClasses": SCL_CLEAR_CLASSES,
+        "smoothingWindow": SMOOTHING_WINDOW,
+        "baselineFirstYear": BASELINE_FIRST_YEAR,
+        "baselineMaxDap": BASELINE_MAX_DAP,
+        "baselineMinSamples": BASELINE_MIN_SAMPLES,
+        "dapBinDays": DAP_BIN_DAYS,
+    }
