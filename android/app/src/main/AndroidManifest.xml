@@ -22,8 +22,9 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="34">
 
+        <!-- Splash Launcher Screen -->
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.auth.SplashActivity"
             android:exported="true"
             android:theme="@style/Theme.Rinda">
             <intent-filter>
@@ -31,6 +32,35 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Onboarding & Auth Flow -->
+        <activity
+            android:name=".ui.auth.LanguageActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.auth.OnboardingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.auth.ConsentActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.auth.LoginActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ui.auth.VerifyOtpActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ui.auth.SignupActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Home Bottom Tabs Shell -->
+        <activity
+            android:name=".ui.home.HomeActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
