@@ -6,7 +6,7 @@ The full design is in [docs/RINDA_PROJECT.md](docs/RINDA_PROJECT.md), which is t
 
 | Folder | Contents | Status |
 |---|---|---|
-| `backend/` | Spring Boot 3 REST API (Java 17) | Not built yet |
+| `backend/` | Spring Boot 3 REST API (Java 17) | Auth and plots working |
 | `ml-service/` | Python FastAPI service and Earth Engine extraction | Not built yet |
 | `android/` | Android app (Java + XML) | Android Studio template, for Agy |
 | `dashboard/` | Next.js insurer dashboard | Placeholder, for Agy |
@@ -70,6 +70,46 @@ powershell -ExecutionPolicy Bypass -File database\mysql-dev.ps1 -Action start
 The script also accepts `-Action stop` and `-Action status`.
 
 To reset the database completely, stop the server and delete `%LOCALAPPDATA%\Rinda\mysql`, then run `init` again.
+
+### 5. Run the backend
+
+MySQL must be running. The first run downloads Maven and the dependencies, which takes a few minutes.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\mvn.ps1 spring-boot:run "-Dspring-boot.run.profiles=dev"
+```
+
+Always use `scripts\mvn.ps1`: it runs Maven on JDK 17 whatever the system default is.
+
+| What | Where |
+|---|---|
+| API | http://localhost:8080/api/v1 |
+| Swagger UI | http://localhost:8080/swagger-ui/index.html |
+| Health check | http://localhost:8080/actuator/health |
+
+The `dev` profile loads the demo data, turns on Swagger UI, and prints login codes in the backend log as `[DEV OTP] phone=... code=...`. Without it the backend refuses to start, because it has no way to send a code.
+
+Demo accounts (log in with the code from the log):
+
+| Phone | Role |
+|---|---|
+| +250780000001 | Farmer, with 3 covered plots |
+| +250780000002 | Farmer, with 1 plot pending verification |
+| +250780000003 | Agent |
+| +250780000004 | Officer |
+| +250780000005 | Admin |
+
+Demo plots are placeholders until the team supplies real locations and planting dates.
+
+### 6. Run the backend tests
+
+MySQL must be running, because the tests use its spatial functions. They use a separate `rinda_test` database and never touch the demo data.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\mvn.ps1 test
+powershell -ExecutionPolicy Bypass -File scripts\mvn.ps1 test "-Dtest=PlotApiTest"
+powershell -ExecutionPolicy Bypass -File scripts\mvn.ps1 test "-Dtest=PlotApiTest#otherCropsAreRejected"
+```
 
 ### Before returning a borrowed computer
 

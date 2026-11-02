@@ -17,6 +17,23 @@ The lab computer has no admin rights for this work, and its defaults are wrong f
 - **MySQL does not survive a reboot.** Start it with `powershell -ExecutionPolicy Bypass -File database\mysql-dev.ps1 -Action start`.
 - **Secrets** are in `.env`, generated per computer by `scripts\new-env.ps1`.
 
+## Backend
+
+Run everything through `scripts\mvn.ps1`, which selects JDK 17. MySQL must be running, including for tests.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\mvn.ps1 test
+powershell -ExecutionPolicy Bypass -File scripts\mvn.ps1 test "-Dtest=PlotApiTest#otherCropsAreRejected"
+powershell -ExecutionPolicy Bypass -File scripts\mvn.ps1 spring-boot:run "-Dspring-boot.run.profiles=dev"
+```
+
+- **Tests use real MySQL** (`rinda_test`) through `ApiTestBase`, because H2 has no spatial functions.
+- **Flyway owns the schema.** Add a new `V<n>__*.sql` migration; never edit an applied one. Demo data is the repeatable `db/demo/R__demo_seed.sql`, which only the `dev` profile loads.
+- **Plot polygons** are stored as GeoJSON through a `@ColumnTransformer` using `ST_GeomFromGeoJSON`. SRID 4326 in MySQL is lat/lon order, so don't write WKT by hand.
+- **Decision values** come from the `thresholds` table through `ThresholdService`. An empty result means "not supplied yet", never zero.
+- **Errors** are `ProblemDetail` JSON with a stable `code`. Throw `ApiException`.
+- In Windows PowerShell 5.1, quote native arguments that contain dots and start with a dash (for example `'--host=127.0.0.1'`), or they get split.
+
 ## Android build
 
 Run from `android/`. **The build currently fails** with `checkDebugAarMetadata`: `androidx.activity:1.13.0` and its transitive dependencies need `compileSdk` 36 or later, but `app/build.gradle.kts` sets 35. The `android-36` platform is installed. Until this is fixed, the commands below will not succeed. The JDK 26 failure shows only the message `26.0.2.1`.

@@ -21,7 +21,7 @@ Items the team must confirm. Until then, values that depend on them stay `TO_CON
 | # | Question | Needed for | Spec | Status |
 |---|---|---|---|---|
 | 5 | What are the exact Season A and Season B date windows for maize? | Planting date validation | §5.2, §12.2 | Open |
-| 6 | What are the minimum and maximum plot area, and the maximum allowed overlap? | Plot validation | §3.2, §5.2, §12.5 | Open |
+| 6 | What are the minimum and maximum plot area, and the maximum allowed overlap? The backend currently applies the spec's suggested 0.1 ha minimum; no maximum is enforced. | Plot validation | §3.2, §5.2, §12.5 | Open |
 | 7 | How many clear pixels does a plot need (suggested 20)? | "Not enough data" rule | §3.2 | Open |
 | 8 | Do agents only verify plots in the pilot, or admins too? | Plot verification | §12.7 | Open |
 
