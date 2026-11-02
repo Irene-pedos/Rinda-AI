@@ -100,6 +100,9 @@ CREATE USER IF NOT EXISTS '$user'@'localhost' IDENTIFIED BY '$pass';
 CREATE USER IF NOT EXISTS '$user'@'127.0.0.1' IDENTIFIED BY '$pass';
 GRANT ALL PRIVILEGES ON ``$db``.* TO '$user'@'localhost';
 GRANT ALL PRIVILEGES ON ``$db``.* TO '$user'@'127.0.0.1';
+CREATE DATABASE IF NOT EXISTS rinda_test CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+GRANT ALL PRIVILEGES ON rinda_test.* TO '$user'@'localhost';
+GRANT ALL PRIVILEGES ON rinda_test.* TO '$user'@'127.0.0.1';
 FLUSH PRIVILEGES;
 "@
         $sql | & $mysql --protocol=TCP '--host=127.0.0.1' "--port=$port" -uroot

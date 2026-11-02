@@ -1,0 +1,14 @@
+# Development only. Prints OTPs to the log, loads demo data and turns on Swagger UI.
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/demo
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+rinda:
+  otp:
+    log-to-console: true
