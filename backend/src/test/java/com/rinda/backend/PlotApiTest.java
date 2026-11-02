@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -243,6 +244,26 @@ class PlotApiTest extends ApiTestBase {
         String area = jdbc.queryForObject("SELECT ROUND(ST_Area(boundary) / 10000, 1) FROM plots WHERE id = ?",
                 String.class, id);
         assertThat(Double.parseDouble(area)).isBetween(9.6, 10.0);
+    }
+
+    @Test
+    void editResponseShowsTheSameUpdatedTimeAsALaterRead() throws Exception {
+        String token = farmerToken(FARMER);
+        String created = postPlot(token, plotBody(SQUARE)).andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        long id = mapper.readTree(created).get("id").asLong();
+
+        Map<String, Object> edit = plotBody(SQUARE);
+        edit.put("name", "Renamed");
+        String edited = putPlot(token, id, edit).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String read = getUrl(token, "/api/v1/plots/" + id).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        Instant before = Instant.parse(mapper.readTree(created).get("updatedAt").asText());
+        Instant after = Instant.parse(mapper.readTree(edited).get("updatedAt").asText());
+        assertThat(after).isAfter(before);
+        assertThat(after).isEqualTo(Instant.parse(mapper.readTree(read).get("updatedAt").asText()));
     }
 
     @Test

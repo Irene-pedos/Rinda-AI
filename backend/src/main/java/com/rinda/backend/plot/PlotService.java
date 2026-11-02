@@ -91,7 +91,8 @@ public class PlotService {
             changeVerifiedFields(plot, request, geojson, boundaryChanged, dateChanged);
         }
         plot.rename(request.name().trim());
-        return toResponse(plot);
+        // Flush now so the response carries the new updatedAt, which is set when the row is written.
+        return toResponse(plots.saveAndFlush(plot));
     }
 
     /** §2.2 #11: a plot under cover or with an open claim is a legal record, so it stays until that closes. */

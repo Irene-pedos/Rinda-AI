@@ -12,6 +12,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import org.hibernate.annotations.ColumnTransformer;
 
 @Entity
@@ -56,12 +57,17 @@ public class Plot {
     private boolean demo;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt = Instant.now();
+    private Instant createdAt = now();
 
     @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt = Instant.now();
+    private Instant updatedAt = now();
 
     protected Plot() {
+    }
+
+    /** Microseconds match DATETIME(6), so a write response shows the same time a later read does. */
+    private static Instant now() {
+        return Instant.now().truncatedTo(ChronoUnit.MICROS);
     }
 
     public Plot(long farmerId, String name, String geojson, BigDecimal areaHa, LocalDate plantingDate) {
@@ -73,7 +79,7 @@ public class Plot {
 
     @PreUpdate
     void touch() {
-        updatedAt = Instant.now();
+        updatedAt = now();
     }
 
     public void rename(String newName) {
