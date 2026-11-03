@@ -1,9 +1,15 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!--
+        English strings. Every user-visible word goes here (and its draft in values-rw/strings.xml).
+        Writing rules (docs/ANDROID_UI_GUIDELINES.md §5): short sentences, everyday words,
+        say what happens next, never blame the farmer, no internal codes (PENDING_VERIFICATION, DAP, p10…).
+    -->
+
     <!-- App Brand -->
     <string name="app_name">Rinda</string>
-    <string name="app_tagline">AI-Powered Maize Crop Protection</string>
+    <string name="app_tagline">Protecting maize farmers with satellites</string>
     <string name="app_demo_badge">Demo</string>
-    <string name="demo_mode_warning">Demo data is active. Payouts and assessments are simulated.</string>
+    <string name="demo_mode_warning">You are using demo data. Assessments and payouts are practice only.</string>
 
     <!-- Navigation Tabs -->
     <string name="nav_home">Home</string>
@@ -14,9 +20,12 @@
 
     <!-- General Common -->
     <string name="btn_continue">Continue</string>
+    <string name="btn_next">Next</string>
+    <string name="btn_get_started">Get started</string>
+    <string name="btn_skip">Skip</string>
     <string name="btn_save">Save</string>
     <string name="btn_cancel">Cancel</string>
-    <string name="btn_retry">Retry</string>
+    <string name="btn_retry">Try again</string>
     <string name="btn_submit">Submit</string>
     <string name="btn_done">Done</string>
     <string name="btn_back">Back</string>
@@ -24,153 +33,395 @@
     <string name="btn_delete">Delete</string>
     <string name="btn_edit">Edit</string>
     <string name="btn_verify">Verify</string>
-    <string name="btn_request_review">Ask for Review</string>
-    <string name="btn_report_problem">Report a Problem</string>
-    <string name="btn_logout">Log Out</string>
+    <string name="btn_ok">OK</string>
+    <string name="btn_got_it">Got it</string>
+    <string name="btn_request_review">Ask for a review</string>
+    <string name="btn_report_problem">Report a problem</string>
+    <string name="btn_logout">Log out</string>
     <string name="loading">Loading…</string>
     <string name="last_updated">Last updated: %s</string>
-    <string name="offline_badge">Offline Mode</string>
+    <string name="offline_badge">Offline mode</string>
+    <string name="offline_banner">No internet. You are seeing saved information.</string>
     <string name="sync_pending">%d pending updates to sync</string>
+    <string name="cd_help">Explain this</string>
+    <string name="cd_back">Go back</string>
+    <string name="step_of">Step %1$d of %2$d</string>
+    <string name="pull_to_refresh_hint">Pull down to refresh</string>
+    <string name="value_not_available">Not available yet</string>
 
     <!-- Onboarding & Language -->
     <string name="onboarding_welcome_title">Welcome to Rinda</string>
-    <string name="onboarding_welcome_desc">Protecting Rwandan maize farmers with satellite monitoring and automated insurance coverage.</string>
-    <string name="onboarding_satellite_title">Satellite Crop Health</string>
-    <string name="onboarding_satellite_desc">Sentinel radar and optical satellites monitor your maize plots every 5 days for early stress detection.</string>
-    <string name="onboarding_claims_title">Fair &amp; Fast Protection</string>
-    <string name="onboarding_claims_desc">Parametric triggers initiate claims automatically with plain-language explanations and reviews.</string>
-    <string name="select_language">Select Language / Hitamo Ururimi</string>
+    <string name="onboarding_welcome_desc">Rinda helps protect your maize. We watch your field and tell you early when your crop needs care.</string>
+    <string name="onboarding_satellite_title">We watch your field from space</string>
+    <string name="onboarding_satellite_desc">Satellites look at your maize every 5 days. You get an alert if the crop looks weaker than normal.</string>
+    <string name="onboarding_claims_title">Fair help when crops fail</string>
+    <string name="onboarding_claims_desc">If your covered plot loses too much, a claim starts by itself. A person checks it and explains the decision to you.</string>
+    <string name="select_language">Choose your language</string>
+    <string name="select_language_sub">Hitamo ururimi</string>
+    <string name="select_language_hint">You can change this later in Profile.</string>
     <string name="lang_english">English</string>
+    <string name="lang_english_native">English</string>
     <string name="lang_kinyarwanda">Kinyarwanda</string>
-    <string name="consent_title">Data &amp; Privacy Consent</string>
-    <string name="consent_body">By using Rinda, you agree that your maize plot boundaries and satellite growth observations will be processed to assess crop health and trigger insurance coverage. All data is handled according to Rwandan data protection regulations.</string>
-    <string name="consent_agree">I Understand &amp; Agree</string>
+    <string name="lang_kinyarwanda_native">Ikinyarwanda</string>
+    <string name="lang_code_en">EN</string>
+    <string name="lang_code_rw">RW</string>
+    <string name="consent_title">Your data and privacy</string>
+    <string name="consent_body">Please read how Rinda uses your information.</string>
+    <string name="consent_point_1_title">We use your plot map</string>
+    <string name="consent_point_1_body">The shape of your field and satellite pictures of it are used to check crop health and insurance.</string>
+    <string name="consent_point_2_title">A person makes every decision</string>
+    <string name="consent_point_2_body">Rinda only gives advice. An insurance officer decides every claim and explains why.</string>
+    <string name="consent_point_3_title">You stay in control</string>
+    <string name="consent_point_3_body">You can see or delete your data. Records of open claims are kept until the claim closes.</string>
+    <string name="consent_point_4_title">This is a practice project</string>
+    <string name="consent_point_4_body">Payouts are simulated. No real money is sent.</string>
+    <string name="consent_checkbox">I have read this and I agree</string>
+    <string name="consent_agree">Agree and continue</string>
 
     <!-- Auth -->
-    <string name="login_title">Log In with Phone</string>
-    <string name="login_subtitle">Enter your Rwandan mobile number to receive a one-time verification code.</string>
-    <string name="phone_label">Mobile Phone Number</string>
+    <string name="login_title">Log in with your phone</string>
+    <string name="login_subtitle">We will send a 6-digit code to your phone by SMS.</string>
+    <string name="phone_label">Phone number</string>
     <string name="phone_hint">078 000 0001</string>
-    <string name="btn_send_code">Send Verification Code</string>
-    <string name="otp_title">Verify Code</string>
-    <string name="otp_subtitle">Enter the 6-digit code sent to %s</string>
-    <string name="otp_dev_hint">(Dev mode: Check backend log for DEV OTP)</string>
-    <string name="btn_verify_code">Verify &amp; Continue</string>
-    <string name="resend_code">Resend code</string>
-    <string name="signup_title">Farmer Registration</string>
-    <string name="signup_subtitle">This phone is new to Rinda. Please provide your name and primary cooperative to complete registration.</string>
-    <string name="full_name_label">Full Name</string>
+    <string name="phone_helper">MTN or Airtel number</string>
+    <string name="phone_prefix">+250</string>
+    <string name="btn_send_code">Send me a code</string>
+    <string name="demo_accounts_title">Demo accounts</string>
+    <string name="demo_accounts_hint">For testing only. Tap one to fill in the number.</string>
+    <string name="demo_farmer_1">Farmer 1 (3 plots)</string>
+    <string name="demo_farmer_2">Farmer 2 (pending)</string>
+    <string name="demo_agent">Agent</string>
+    <string name="demo_new_farmer">New farmer</string>
+    <string name="code_sent">Code sent</string>
+    <string name="otp_title">Enter your code</string>
+    <string name="otp_subtitle">We sent a 6-digit code to %s</string>
+    <string name="otp_label">6-digit code</string>
+    <string name="otp_dev_hint">Test mode: the code is printed in the backend log as [DEV OTP].</string>
+    <string name="btn_verify_code">Confirm code</string>
+    <string name="resend_code">Send a new code</string>
+    <string name="resend_code_in">Send a new code in %d s</string>
+    <string name="change_number">Wrong number? Change it</string>
+    <string name="new_code_sent">A new code was sent.</string>
+    <string name="signup_title">Create your account</string>
+    <string name="signup_subtitle">This phone number is new to Rinda. Tell us your name and your cooperative.</string>
+    <string name="signup_account_type">Account type: Maize farmer</string>
+    <string name="full_name_label">Your full name</string>
     <string name="full_name_hint">e.g. Jean Mugabo</string>
-    <string name="cooperative_label">Cooperative</string>
-    <string name="cooperative_select">Select your cooperative</string>
-    <string name="btn_complete_signup">Complete Registration</string>
+    <string name="full_name_helper">Use the same name as on your ID and mobile money.</string>
+    <string name="cooperative_label">Your cooperative</string>
+    <string name="cooperative_select">Choose your cooperative</string>
+    <string name="cooperative_loading">Loading cooperatives…</string>
+    <string name="cooperative_load_failed">Could not load cooperatives. Check your internet and try again.</string>
+    <string name="btn_complete_signup">Create my account</string>
+    <string name="error_name_required">Please write your full name.</string>
+    <string name="error_cooperative_required">Please choose your cooperative.</string>
 
     <!-- Roles -->
     <string name="role_farmer">Farmer</string>
-    <string name="role_agent">Cooperative Agent</string>
-    <string name="role_officer">Insurance Officer</string>
-    <string name="role_admin">System Administrator</string>
+    <string name="role_agent">Cooperative agent</string>
+    <string name="role_officer">Insurance officer</string>
+    <string name="role_admin">Administrator</string>
 
     <!-- Plot Statuses (Verification) -->
-    <string name="plot_status_pending">Pending Verification</string>
-    <string name="plot_status_active">Active &amp; Covered</string>
-    <string name="plot_status_rejected">Rejected</string>
+    <string name="plot_status_pending">Waiting for check</string>
+    <string name="plot_status_active">Verified</string>
+    <string name="plot_status_rejected">Not accepted</string>
     <string name="plot_status_archived">Archived</string>
+    <string name="plot_status_pending_meaning">Your cooperative agent will check the plot boundary. Monitoring starts after that.</string>
+    <string name="plot_status_active_meaning">Your plot is checked. Satellites watch it every 5 days.</string>
+    <string name="plot_status_rejected_meaning">The boundary could not be accepted. Please talk to your cooperative agent.</string>
+    <string name="plot_status_archived_meaning">This plot is no longer monitored.</string>
 
     <!-- Crop Health Statuses (Always word + icon) -->
     <string name="health_healthy">Healthy</string>
-    <string name="health_watch">Watch (Mild Stress)</string>
-    <string name="health_at_risk">At Risk (Severe Stress)</string>
+    <string name="health_watch">Watch</string>
+    <string name="health_at_risk">At risk</string>
     <string name="health_not_enough_data">Not enough satellite data yet</string>
+    <string name="health_not_analysed">Not checked yet</string>
+    <string name="health_healthy_meaning">Your maize is growing like a normal season.</string>
+    <string name="health_watch_meaning">Your maize looks a little weaker than normal. Keep an eye on it.</string>
+    <string name="health_at_risk_meaning">Your maize looks much weaker than normal. Check the field soon.</string>
+    <string name="health_no_data_meaning">Clouds or missing pictures mean we cannot judge this plot yet. We will try again on the next satellite pass.</string>
+    <string name="health_not_analysed_meaning">This plot has not been checked by satellite yet.</string>
+    <string name="health_what_to_do">What you can do</string>
+    <string name="health_healthy_todo">Nothing for now. We will tell you if this changes.</string>
+    <string name="health_watch_todo">Look at the field this week. If you see a problem, tell your cooperative agent.</string>
+    <string name="health_at_risk_todo">Visit the field soon and talk to your cooperative agent.</string>
+    <string name="health_no_data_todo">Nothing to do. Your plot will not be judged on missing data.</string>
+    <string name="health_checked_on">Checked on %s</string>
 
     <!-- Stress Causes & Confidence -->
-    <string name="cause_water_deficit">Water Deficit (Drought)</string>
-    <string name="cause_unexplained">Unexplained Stress (Field visit recommended)</string>
-    <string name="confidence_high">High Confidence</string>
-    <string name="confidence_medium">Medium Confidence</string>
-    <string name="confidence_low">Low Confidence (Human review required)</string>
+    <string name="cause_water_deficit">Not enough rain</string>
+    <string name="cause_unexplained">Cause unknown: a field visit is needed</string>
+    <string name="likely_cause">Likely cause: %s</string>
+    <string name="needs_field_visit">An agent should visit this field.</string>
+    <string name="confidence_high">High confidence</string>
+    <string name="confidence_medium">Medium confidence</string>
+    <string name="confidence_low">Low confidence: a person will check</string>
+    <string name="confidence_unknown">Confidence: %s</string>
+    <string name="rain_vs_normal">Rain in the last 30 days: %1$.0f%% of normal</string>
+
+    <!-- Home -->
+    <string name="greeting_morning">Good morning,</string>
+    <string name="greeting_afternoon">Good afternoon,</string>
+    <string name="greeting_evening">Good evening,</string>
+    <string name="greeting_fallback">Farmer</string>
+    <string name="home_subtitle">Maize • Rwanda</string>
+    <string name="home_summary_title">Your farm</string>
+    <string name="home_stat_plots">Plots</string>
+    <string name="home_stat_area">Hectares</string>
+    <string name="home_stat_verified">Verified</string>
+    <string name="home_latest_alert">Latest alert</string>
+    <string name="home_no_alerts">No alerts. We check your plots every 5 days.</string>
+    <string name="home_see_all">See all</string>
+    <string name="home_quick_actions">What do you want to do?</string>
+    <string name="home_action_add_plot">Add a plot</string>
+    <string name="home_action_my_plots">My plots</string>
+    <string name="home_action_alerts">Alerts</string>
+    <string name="home_action_claims">My claims</string>
+    <string name="home_weather_title">Rain</string>
+    <string name="home_weather_none">No rain data yet for your plots.</string>
+    <string name="home_weather_latest">%1$s mm of rain on %2$s</string>
+    <string name="home_how_it_works">How Rinda works</string>
+    <string name="getting_started_title">Get started in 3 steps</string>
+    <string name="getting_started_step_1">Add your maize plot by drawing it on the map.</string>
+    <string name="getting_started_step_2">Your cooperative agent checks the plot.</string>
+    <string name="getting_started_step_3">We watch it every 5 days and alert you early.</string>
+    <string name="getting_started_cta">Add my first plot</string>
 
     <!-- Plots Management -->
-    <string name="my_plots_title">My Maize Plots</string>
-    <string name="empty_plots">No maize plots registered yet. Tap + to add your first plot.</string>
-    <string name="btn_register_plot">Register New Plot</string>
-    <string name="plot_name_label">Plot Name</string>
-    <string name="plot_name_hint">e.g. Hillside Field</string>
-    <string name="planting_date_label">Planting Date</string>
-    <string name="planting_date_hint">Select planting date</string>
+    <string name="my_plots_title">My maize plots</string>
+    <string name="empty_plots_title">No plots yet</string>
+    <string name="empty_plots">Add your maize plot so we can start watching it.</string>
+    <string name="btn_register_plot">Add a plot</string>
+    <string name="plot_name_label">Plot name</string>
+    <string name="plot_name_hint">e.g. Field by the river</string>
+    <string name="plot_name_helper">A name that helps you recognise this field.</string>
+    <string name="planting_date_label">Planting date</string>
+    <string name="planting_date_hint">Choose a date</string>
+    <string name="planting_date_helper">The day you planted the maize seeds. It must be correct: we compare your crop with normal growth from this day.</string>
     <string name="crop_label">Crop</string>
-    <string name="crop_maize">Maize (Fixed)</string>
-    <string name="draw_boundary_instruction">Tap on the map to add boundary points around your maize field. Close the polygon to finish.</string>
-    <string name="area_ha">%1$.2f ha</string>
-    <string name="days_after_planting">%1$d Days After Planting (DAP)</string>
-    <string name="chart_ndvi_title">Crop Health (NDVI vs Normal Band)</string>
-    <string name="chart_rain_title">Daily Rainfall (mm)</string>
-    <string name="chart_legend_plot">This Plot</string>
-    <string name="chart_legend_normal">Normal Band (p10–p90)</string>
-    <string name="harvest_forecast_title">Harvest Forecast</string>
-    <string name="harvest_forecast_range">%1$.0f%% – %2$.0f%% of normal</string>
-    <string name="harvest_forecast_disclaimer">Prototype estimate based on seasonal NDVI trajectory.</string>
-    <string name="enrollment_status_label">Coverage Status</string>
-    <string name="enrollment_covered">Covered for Season %s</string>
-    <string name="enrollment_pending">Coverage Request Pending</string>
+    <string name="crop_maize">Maize</string>
+    <string name="plot_area">%1$.2f ha</string>
+    <string name="plot_planted_on">Planted %s</string>
+    <string name="plot_planting_unconfirmed">Planting date not confirmed</string>
+    <string name="plot_number">Plot #%d</string>
+    <string name="plot_days_since_planting">Day %d after planting</string>
+
+    <!-- Register plot (3 steps) -->
+    <string name="register_step_draw">Draw your field</string>
+    <string name="register_step_details">About this plot</string>
+    <string name="register_step_review">Check and send</string>
+    <string name="draw_boundary_instruction">Walk around your field in your mind. Tap each corner of the field on the map.</string>
+    <string name="draw_points_needed">Tap at least %d more corners</string>
+    <string name="draw_points_ready">%d corners: field shape is ready</string>
+    <string name="draw_area_estimate">About %1$.2f ha</string>
+    <string name="draw_area_empty">Area appears here</string>
+    <string name="draw_undo">Undo</string>
+    <string name="draw_clear">Start again</string>
+    <string name="draw_need_three">Tap at least 3 corners of your field first.</string>
+    <string name="review_name">Name</string>
+    <string name="review_area">Size</string>
+    <string name="review_planting">Planted</string>
+    <string name="review_crop">Crop</string>
+    <string name="review_corners">Corners</string>
+    <string name="review_next_title">What happens next</string>
+    <string name="review_next_body">Your cooperative agent checks the boundary. When it is verified, satellites start watching your maize.</string>
+    <string name="btn_send_plot">Send for checking</string>
+    <string name="error_plot_name_required">Please give your plot a name.</string>
+    <string name="error_planting_date_required">Please choose the planting date.</string>
+    <string name="register_success_title">Plot sent</string>
+    <string name="register_success_body">\"%1$s\" (%2$s) was sent to your cooperative agent for checking.</string>
+    <string name="register_success_next">You will get an alert when it is verified.</string>
+    <string name="btn_see_my_plots">See my plots</string>
+    <string name="draw_point_title">Corner %d</string>
+    <string name="cd_map">Map. Tap to add a corner of your field.</string>
+
+    <!-- Plot detail -->
+    <string name="plot_detail_title">Plot</string>
+    <string name="crop_health_title">Crop health</string>
+    <string name="coverage_title">Insurance cover</string>
+    <string name="coverage_sum_insured">Sum insured</string>
+    <string name="coverage_not_confirmed">Not confirmed yet</string>
+    <string name="coverage_checking">Checking…</string>
+    <string name="enrollment_status_label">Cover status</string>
+    <string name="enrollment_covered">Covered: season %s</string>
+    <string name="enrollment_covered_no_season">Covered</string>
+    <string name="enrollment_pending">Cover requested</string>
+    <string name="enrollment_cancelled">Cover cancelled</string>
+    <string name="enrollment_not_enrolled">Not covered</string>
+    <string name="enrollment_not_enrolled_hint">Ask your cooperative how to get this plot covered.</string>
+    <string name="enrollment_dates">%1$s to %2$s</string>
+    <string name="chart_ndvi_title">Crop health (NDVI) compared with normal</string>
+    <string name="chart_ndvi_subtitle">Green band = normal for maize on the same day after planting. Dark line = your plot.</string>
+    <string name="chart_rain_title">Daily rain (mm)</string>
+    <string name="chart_rain_subtitle">How much rain fell on your plot each day.</string>
+    <string name="chart_legend_plot">Your plot</string>
+    <string name="chart_legend_normal">Normal</string>
+    <string name="chart_legend_normal_low">Normal (low)</string>
+    <string name="chart_legend_normal_high">Normal (high)</string>
+    <string name="chart_legend_rain">Rain (mm)</string>
+    <string name="chart_no_data">No satellite readings yet.</string>
+    <string name="chart_x_days">Days after planting</string>
+    <string name="chart_legend_band">Normal range</string>
+    <string name="chart_rain_no_data">No rain readings yet.</string>
+    <string name="harvest_forecast_title">Harvest forecast</string>
+    <string name="harvest_forecast_range">%1$.0f%% – %2$.0f%% of a normal harvest</string>
+    <string name="harvest_forecast_disclaimer">Prototype estimate from crop greenness. It is a range, not a promise.</string>
+    <string name="harvest_too_early">Too early in the season to estimate.</string>
+    <string name="harvest_not_enough_data">Not enough satellite data yet.</string>
+    <string name="harvest_not_analysed">Waiting for the first satellite check.</string>
+    <string name="harvest_pending">Estimate not ready yet.</string>
+    <string name="plot_manage_title">Manage plot</string>
+    <string name="btn_rename_plot">Rename plot</string>
+    <string name="btn_delete_plot">Delete plot</string>
+    <string name="rename_plot_title">Rename plot</string>
+    <string name="rename_not_allowed_title">This plot cannot be renamed yet</string>
+    <string name="rename_not_allowed_body">Its planting date has not been confirmed. Ask your cooperative agent to confirm it first.</string>
+    <string name="plot_updated">Plot name saved</string>
+    <string name="delete_plot_title">Delete this plot?</string>
+    <string name="delete_plot_body">The plot will stop being monitored. If it has cover or an open claim, it is kept until the season or claim closes.</string>
+    <string name="plot_archived">Plot deleted</string>
+    <string name="delete_deferred_title">Cannot delete yet</string>
 
     <!-- Claims Flow -->
-    <string name="claims_title">Insurance Claims</string>
-    <string name="empty_claims">No insurance claims triggered. Claims are automatically initiated when crop stress passes agreed thresholds.</string>
-    <string name="claim_status_under_review">Under Review</string>
-    <string name="claim_status_field_visit">Field Visit Requested</string>
+    <string name="claims_title">Insurance claims</string>
+    <string name="claims_info">Claims start by themselves when satellites see a big loss on a covered plot. A person decides every claim.</string>
+    <string name="empty_claims_title">No claims</string>
+    <string name="empty_claims">That is good news. If a covered plot loses too much, a claim will appear here by itself.</string>
+    <string name="claim_status_under_review">Being checked</string>
+    <string name="claim_status_field_visit">Field visit planned</string>
     <string name="claim_status_approved">Approved</string>
     <string name="claim_status_declined">Declined</string>
-    <string name="claim_status_paid">Paid (Simulated)</string>
-    <string name="claim_status_review_requested">Review Requested</string>
-    <string name="claim_status_final">Final</string>
-    <string name="why_decision_title">Why This Decision?</string>
-    <string name="officer_reason_label">Officer Assessment:</string>
-    <string name="evidence_snapshot_title">Satellite &amp; Weather Evidence</string>
-    <string name="ask_review_title">Request Claim Review</string>
-    <string name="ask_review_hint">Explain why this claim should be reviewed (e.g. localized slope or water conditions)…</string>
+    <string name="claim_status_paid">Paid (simulated)</string>
+    <string name="claim_status_review_requested">Review requested</string>
+    <string name="claim_status_final">Closed</string>
+    <string name="claim_status_under_review_meaning">An insurance officer is looking at the satellite and weather evidence.</string>
+    <string name="claim_status_field_visit_meaning">An agent will visit your field to look at the crop.</string>
+    <string name="claim_status_approved_meaning">The claim was approved. The payout is being prepared.</string>
+    <string name="claim_status_declined_meaning">The officer declined this claim. See the reason below. You can ask for a review.</string>
+    <string name="claim_status_paid_meaning">The payout was sent (simulated in this project).</string>
+    <string name="claim_status_review_requested_meaning">You asked for a review. An officer will look again.</string>
+    <string name="claim_status_final_meaning">This claim is closed.</string>
+    <string name="claim_triggered_on">Started %s</string>
+    <string name="claim_trigger_date_pending">Start date not available</string>
+    <string name="claim_season">Season %d</string>
+    <string name="claim_progress_title">Claim progress</string>
+    <string name="claim_step_triggered">Claim started</string>
+    <string name="claim_step_triggered_desc">Satellites saw a big loss on your plot.</string>
+    <string name="claim_step_assessment">Officer checks</string>
+    <string name="claim_step_assessment_desc">A person looks at the evidence.</string>
+    <string name="claim_step_payout">Payout</string>
+    <string name="claim_step_payout_desc">Money is sent to your mobile money (simulated).</string>
+    <string name="claim_payout_title">Payout</string>
+    <string name="claim_amount_pending">Not decided yet</string>
+    <string name="claim_rate_pending">Payout rate not confirmed yet</string>
+    <string name="claim_rate">%1$.0f%% payout rate</string>
+    <string name="claim_rate_confirmed">%1$.0f%% payout rate, confirmed by the insurer</string>
+    <string name="claim_simulated_notice">Practice project: no real money is sent.</string>
+    <string name="claim_amount_rwf">%s RWF</string>
+    <string name="why_decision_title">Why this decision?</string>
+    <string name="officer_reason_label">What the officer said</string>
+    <string name="officer_pending">The officer has not decided yet. An agent may visit your field.</string>
+    <string name="officer_decision">Decision: %s</string>
+    <string name="evidence_snapshot_title">Satellite and weather evidence</string>
+    <string name="evidence_unavailable">The evidence details are not available in the app yet.</string>
+    <string name="evidence_ndvi_anomaly">Crop greenness was %s below normal</string>
+    <string name="evidence_rain_deficit">Rain was %s%% below normal</string>
+    <string name="ask_review_title">Ask for a review</string>
+    <string name="ask_review_subtitle">Do you think the decision is wrong? Tell us what you see in your field. An officer will look again.</string>
+    <string name="ask_review_hint">For example: the low part of my field flooded, or my neighbour\'s crop is fine but mine failed.</string>
+    <string name="ask_review_once">You can ask once for each decision.</string>
+    <string name="ask_review_empty">Please write a few words about what you see.</string>
+    <string name="ask_review_sent_title">Review requested</string>
+    <string name="ask_review_sent_body">An insurance officer will look at your notes together with the satellite and weather evidence.</string>
+    <string name="ask_review_failed">Your request was not sent. Check your internet and try again.</string>
+    <string name="review_in_progress">Review in progress</string>
+    <string name="claim_closed">Claim closed</string>
+
+    <!-- Alerts -->
+    <string name="empty_alerts_title">No alerts</string>
+    <string name="empty_alerts">We check your maize every 5 days. You will see an alert here if something changes.</string>
+    <string name="alert_title_at_risk">Your maize is at risk</string>
+    <string name="alert_title_watch">Watch your maize</string>
+    <string name="alert_title_recovered">Your maize looks healthy again</string>
+    <string name="alert_fallback_title">Notice</string>
+    <string name="alert_open_plot">Open plot</string>
+    <string name="alert_open_claim">Open claim</string>
+
+    <!-- Profile -->
+    <string name="profile_settings">Settings</string>
+    <string name="profile_language">Language</string>
+    <string name="profile_server">Server address (testing)</string>
+    <string name="profile_help">How Rinda works</string>
+    <string name="profile_privacy">Your data and privacy</string>
+    <string name="server_dialog_title">Server address</string>
+    <string name="server_dialog_body">• Phone on USB: http://127.0.0.1:8080/api/v1/\n• Emulator: http://10.0.2.2:8080/api/v1/\n• Wi-Fi: http://&lt;PC address&gt;:8080/api/v1/</string>
+    <string name="server_updated">Server address saved</string>
+    <string name="logout_title">Log out?</string>
+    <string name="logout_body">Saved plots and alerts are removed from this phone. Log in again with your phone number to see them.</string>
+    <string name="app_version">Rinda version %s</string>
+
+    <!-- Help sheets (plain-language explanations behind the "?" buttons) -->
+    <string name="help_ndvi_title">What is crop health (NDVI)?</string>
+    <string name="help_ndvi_body">Satellites measure how green your maize is. Green, strong maize gives a high number. Weak or dry maize gives a low number.\n\nWe compare your plot with what is normal for maize planted on the same day. If your plot stays below normal for more than one satellite pass, we tell you.</string>
+    <string name="help_confidence_title">What does confidence mean?</string>
+    <string name="help_confidence_body">Confidence shows how sure the system is. Clouds and missing pictures lower it.\n\nWhen confidence is low, a person checks the result. A plot is never judged on missing data.</string>
+    <string name="help_coverage_title">What is insurance cover?</string>
+    <string name="help_coverage_body">A covered plot is insured for the season. If satellites see a big loss, a claim starts by itself.\n\nYour cooperative or insurer adds plots to the cover. You do not pay in the app.</string>
+    <string name="help_forecast_title">How is the harvest forecast made?</string>
+    <string name="help_forecast_body">We add up how green your maize has been this season and compare it with past seasons on the same plot.\n\nIt is an early prototype and a wide range. It is not a promise about your harvest.</string>
+    <string name="help_claims_title">How do claims work?</string>
+    <string name="help_claims_body">1. Satellites watch every covered plot.\n2. If the loss passes the agreed level, a claim starts by itself. You do not need to fill a form.\n3. An insurance officer checks the evidence. An agent may visit.\n4. If approved, the payout goes to your mobile money (simulated here).\n\nYou can ask for a review once for each decision.</string>
+    <string name="help_how_it_works_title">How Rinda works</string>
+    <string name="help_how_it_works_body">1. Add your maize plot by drawing it on the map.\n2. Your cooperative agent checks the plot.\n3. Satellites look at your maize every 5 days.\n4. If your maize looks weak, you get an alert.\n5. If a covered plot loses too much, a claim starts by itself and a person decides it.</string>
+    <string name="help_planting_title">Why does the planting date matter?</string>
+    <string name="help_planting_body">Maize grows differently each week. We compare your plot with normal maize of the same age, so the planting date must be right.\n\nYour cooperative agent can correct it.</string>
+    <string name="help_draw_title">How to draw your field</string>
+    <string name="help_draw_body">1. Move the map to your field. Pinch with two fingers to zoom.\n2. Tap each corner of the field, one after another, going around the edge.\n3. Tap at least 3 corners. The green shape shows your field.\n4. Made a mistake? Tap Undo, or Start again.</string>
 
     <!-- Problem Reports -->
-    <string name="report_problem_title">Report a Problem</string>
-    <string name="report_disclaimer">Problem reports serve as ground evidence. They do not automatically trigger payouts.</string>
-    <string name="report_reason_label">What do you observe?</string>
-    <string name="report_note_label">Notes &amp; Description</string>
-    <string name="report_agent_visit">Request an agent field visit</string>
-    <string name="report_add_photo">Attach Photo (Optional)</string>
+    <string name="report_problem_title">Report a problem</string>
+    <string name="report_disclaimer">Your report is saved as evidence. It does not start a claim or a payout by itself.</string>
+    <string name="report_reason_label">What do you see?</string>
+    <string name="report_note_label">Describe the problem</string>
+    <string name="report_agent_visit">Ask an agent to visit</string>
+    <string name="report_add_photo">Add a photo (optional)</string>
 
     <!-- Payout Account -->
-    <string name="payout_account_title">Payout Account</string>
+    <string name="payout_account_title">Payout account</string>
     <string name="payout_provider_momo">MTN Mobile Money</string>
     <string name="payout_provider_airtel">Airtel Money</string>
     <string name="payout_verified">Verified</string>
-    <string name="payout_unverified">Not Verified</string>
-    <string name="payout_simulated_notice">Simulated payments only. No real money moves in this academic project.</string>
+    <string name="payout_unverified">Not verified</string>
+    <string name="payout_simulated_notice">Practice project: payments are simulated. No real money is sent.</string>
 
     <!-- Agent Screens -->
-    <string name="agent_farmers_title">My Cooperative Farmers</string>
-    <string name="verify_plot_title">Verify Plot Boundary</string>
-    <string name="confirm_planting_date">Confirm Planting Date</string>
-    <string name="btn_approve_plot">Approve Plot (Activate)</string>
-    <string name="btn_reject_plot">Reject Boundary</string>
-    <string name="field_visit_title">Record Field Visit</string>
-    <string name="field_condition_label">Crop Condition</string>
-    <string name="field_cause_label">Observed Cause</string>
-    <string name="field_stage_label">Growth Stage</string>
+    <string name="agent_farmers_title">My cooperative farmers</string>
+    <string name="verify_plot_title">Check plot boundary</string>
+    <string name="confirm_planting_date">Confirm planting date</string>
+    <string name="btn_approve_plot">Verify plot</string>
+    <string name="btn_reject_plot">Reject boundary</string>
+    <string name="field_visit_title">Record a field visit</string>
+    <string name="field_condition_label">Crop condition</string>
+    <string name="field_cause_label">What you saw</string>
+    <string name="field_stage_label">Growth stage</string>
 
     <!-- Error Messages (Mapped from API codes) -->
-    <string name="error_phone_invalid">Please enter a valid Rwandan mobile number (MTN or Airtel).</string>
-    <string name="error_otp_invalid">The verification code is invalid or has expired.</string>
-    <string name="error_otp_rate_limited">Please wait 60 seconds before requesting a new code.</string>
-    <string name="error_cooperative_not_found">The selected cooperative was not found.</string>
-    <string name="error_plot_outside_rwanda">The plot boundary must be located inside Rwanda.</string>
-    <string name="error_plot_too_small">The plot is too small for reliable satellite monitoring (min 0.1 ha).</string>
-    <string name="error_plot_too_large">The plot exceeds the maximum permitted size.</string>
-    <string name="error_plot_geometry_invalid">Invalid polygon boundary. Points must form a closed shape without self-intersections.</string>
-    <string name="error_planting_date_invalid">The planting date cannot be in the future or outside the planting window.</string>
-    <string name="error_plot_locked">Only the plot name can be updated once the plot has been verified and activated.</string>
-    <string name="error_plot_delete_deferred">This plot has active insurance cover or an open claim and cannot be deleted yet.</string>
-    <string name="error_unauthorized">Your session has expired. Please log in again.</string>
-    <string name="error_forbidden">Your account does not have permission to perform this action.</string>
-    <string name="error_network">Unable to connect to Rinda server. Showing cached data.</string>
-    <string name="error_generic">Something went wrong. Please try again later.</string>
+    <string name="error_phone_invalid">Please enter a valid MTN or Airtel number, e.g. 078 000 0001.</string>
+    <string name="error_otp_invalid">This code is wrong or too old. Check the SMS or ask for a new code.</string>
+    <string name="error_otp_rate_limited">Please wait 60 seconds before asking for a new code.</string>
+    <string name="error_cooperative_not_found">We could not find that cooperative. Please choose again.</string>
+    <string name="error_plot_outside_rwanda">The plot must be inside Rwanda. Check the corners on the map.</string>
+    <string name="error_plot_too_small">The plot is too small for satellites to watch (at least 0.1 ha).</string>
+    <string name="error_plot_too_large">The plot is bigger than allowed. Check the corners on the map.</string>
+    <string name="error_plot_geometry_invalid">The field shape is not valid. Tap the corners in order around the edge, without crossing lines.</string>
+    <string name="error_planting_date_invalid">The planting date cannot be in the future or outside the planting season.</string>
+    <string name="error_plot_locked">After a plot is verified, only its name can be changed.</string>
+    <string name="error_plot_delete_deferred">This plot has cover or an open claim, so it is kept until the season or claim closes.</string>
+    <string name="error_unauthorized">You were logged out. Please log in again.</string>
+    <string name="error_forbidden">Your account cannot do this.</string>
+    <string name="error_network">No connection to Rinda. Showing saved information.</string>
+    <string name="error_network_action">No connection to Rinda. Check your internet and try again.</string>
+    <string name="error_generic">Something went wrong. Please try again.</string>
 </resources>

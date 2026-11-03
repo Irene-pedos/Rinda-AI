@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import com.google.android.material.card.MaterialCardView;
 import com.rinda.app.R;
 import com.rinda.app.databinding.ActivityLanguageBinding;
 import com.rinda.app.util.LocaleHelper;
@@ -51,14 +52,15 @@ public class LanguageActivity extends AppCompatActivity {
         boolean isEn = "en".equalsIgnoreCase(lang);
         binding.rbEnglish.setChecked(isEn);
         binding.rbKinyarwanda.setChecked(!isEn);
+        styleCard(binding.cardEnglish, isEn);
+        styleCard(binding.cardKinyarwanda, !isEn);
+    }
 
-        int activeBorder = ContextCompat.getColor(this, R.color.rinda_green);
-        int inactiveBorder = ContextCompat.getColor(this, R.color.divider_light);
-
-        binding.cardEnglish.setStrokeColor(isEn ? activeBorder : inactiveBorder);
-        binding.cardEnglish.setStrokeWidth(isEn ? 4 : 2);
-
-        binding.cardKinyarwanda.setStrokeColor(!isEn ? activeBorder : inactiveBorder);
-        binding.cardKinyarwanda.setStrokeWidth(!isEn ? 4 : 2);
+    /** Selected card: thick green outline and a tinted background, not colour alone (the radio is checked too). */
+    private void styleCard(MaterialCardView card, boolean selected) {
+        card.setStrokeColor(ContextCompat.getColor(this, selected ? R.color.rinda_primary : R.color.rinda_outline));
+        card.setStrokeWidth(getResources().getDimensionPixelSize(selected ? R.dimen.stroke_selected : R.dimen.stroke_thin));
+        card.setCardBackgroundColor(ContextCompat.getColor(this, selected ? R.color.rinda_primary_container : R.color.rinda_surface));
+        card.setSelected(selected);
     }
 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!--
+        New English strings fall back to English until the team adds Kinyarwanda drafts in values-rw
+        (spec §10.1: Kinyarwanda review is cut for the MVP). Lint still lists them as warnings, so the
+        list of strings to translate is in the lint report. See docs/OPEN_QUESTIONS.md.
+    -->
+    <issue id="MissingTranslation" severity="warning" />
+</lint>

@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.animation.OvershootInterpolator;
 import androidx.appcompat.app.AppCompatActivity;
 import com.rinda.app.data.api.ApiClient;
 import com.rinda.app.data.api.TokenManager;
@@ -29,14 +30,23 @@ public class SplashActivity extends AppCompatActivity {
         // Apply saved language preference
         LocaleHelper.setLocale(this, LocaleHelper.getLanguage(this));
 
-        new Handler(Looper.getMainLooper()).postDelayed(this::checkAuthAndNavigate, 800);
+        // Logo grows in gently, then the text fades up.
+        binding.brandGroup.setScaleX(0.85f);
+        binding.brandGroup.setScaleY(0.85f);
+        binding.brandGroup.setAlpha(0f);
+        binding.brandGroup.animate()
+                .scaleX(1f).scaleY(1f).alpha(1f)
+                .setDuration(500)
+                .setInterpolator(new OvershootInterpolator(1.2f))
+                .start();
+
+        new Handler(Looper.getMainLooper()).postDelayed(this::checkAuthAndNavigate, 900);
     }
 
     private void checkAuthAndNavigate() {
         TokenManager tokenManager = TokenManager.getInstance(this);
 
         if (tokenManager.isLoggedIn()) {
-            // Verify session or update profile
             ApiClient.getInstance(this).getService().getMe().enqueue(new Callback<UserResponse>() {
                 @Override
                 public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
@@ -47,14 +57,14 @@ public class SplashActivity extends AppCompatActivity {
                         tokenManager.clear();
                         goToLoginOrLanguage();
                     } else {
-                        // Offline or server issue: proceed with cached user profile
+                        // Server issue: continue with the cached profile
                         goToHome();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<UserResponse> call, Throwable t) {
-                    // Offline fallback: server data wins, but allow offline access
+                    // Offline: continue with the cached profile; screens show the offline banner
                     goToHome();
                 }
             });

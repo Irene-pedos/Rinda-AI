@@ -1,48 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Claims tab: an explanation of automatic claims (with help), then the list or an empty state. -->
 <androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/swipeRefresh"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/bg_light">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Parametric Insurance Explanation Banner -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardClaimsInfo"
+            style="@style/Widget.Rinda.Card.Info"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_base"
-            android:layout_marginTop="@dimen/spacing_base"
-            android:layout_marginEnd="@dimen/spacing_base"
-            app:cardBackgroundColor="@color/rinda_green_container"
-            app:cardCornerRadius="@dimen/radius_md"
-            app:cardElevation="@dimen/elevation_none">
+            android:layout_marginStart="@dimen/screen_padding"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:layout_marginEnd="@dimen/screen_padding"
+            android:clickable="true"
+            android:focusable="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:padding="@dimen/spacing_md">
 
                 <ImageView
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_nav_claims" />
+                    style="@style/Widget.Rinda.IconBadge"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_shield" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/spacing_sm"
+                    android:layout_marginStart="@dimen/spacing_md"
                     android:layout_weight="1"
-                    android:lineSpacingExtra="3dp"
-                    android:text="Parametric Cover: Claims trigger automatically when satellite observations detect persistent crop loss. Insurer officers make all final claim decisions."
-                    android:textColor="@color/rinda_green_on_container"
-                    android:textSize="12sp" />
+                    android:text="@string/claims_info"
+                    android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                    android:textColor="@color/rinda_text_primary" />
+
+                <ImageView
+                    android:layout_width="@dimen/icon_md"
+                    android:layout_height="@dimen/icon_md"
+                    android:layout_marginStart="@dimen/spacing_sm"
+                    android:contentDescription="@string/cd_help"
+                    android:src="@drawable/ic_help" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -56,43 +64,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:padding="@dimen/spacing_base" />
+                android:layoutAnimation="@anim/list_rise"
+                android:paddingStart="@dimen/screen_padding"
+                android:paddingTop="@dimen/spacing_xs"
+                android:paddingEnd="@dimen/screen_padding"
+                android:paddingBottom="@dimen/spacing_xl" />
 
-            <!-- Empty State -->
-            <LinearLayout
+            <include
                 android:id="@+id/layoutEmpty"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="@dimen/spacing_xl">
-
-                <ImageView
-                    android:layout_width="72dp"
-                    android:layout_height="72dp"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_nav_claims" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_lg"
-                    android:text="No Claims Triggered"
-                    android:textColor="@color/text_primary_light"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_sm"
-                    android:gravity="center"
-                    android:lineSpacingExtra="3dp"
-                    android:text="@string/empty_claims"
-                    android:textColor="@color/text_secondary_light"
-                    android:textSize="14sp" />
-            </LinearLayout>
-
+                layout="@layout/view_empty_state"
+                android:visibility="gone" />
         </FrameLayout>
     </LinearLayout>
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

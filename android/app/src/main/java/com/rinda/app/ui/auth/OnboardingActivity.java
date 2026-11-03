@@ -5,14 +5,14 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.rinda.app.R;
 import com.rinda.app.databinding.ActivityOnboardingBinding;
+import com.rinda.app.databinding.ItemOnboardingPageBinding;
 
 public class OnboardingActivity extends AppCompatActivity {
 
@@ -31,9 +31,9 @@ public class OnboardingActivity extends AppCompatActivity {
     }
 
     private final Slide[] slides = new Slide[]{
-            new Slide(R.drawable.ic_rinda_sprout, R.string.onboarding_welcome_title, R.string.onboarding_welcome_desc),
-            new Slide(R.drawable.ic_nav_plots, R.string.onboarding_satellite_title, R.string.onboarding_satellite_desc),
-            new Slide(R.drawable.ic_nav_claims, R.string.onboarding_claims_title, R.string.onboarding_claims_desc)
+            new Slide(R.drawable.ic_leaf, R.string.onboarding_welcome_title, R.string.onboarding_welcome_desc),
+            new Slide(R.drawable.ic_satellite, R.string.onboarding_satellite_title, R.string.onboarding_satellite_desc),
+            new Slide(R.drawable.ic_shield, R.string.onboarding_claims_title, R.string.onboarding_claims_desc)
     };
 
     @Override
@@ -43,15 +43,17 @@ public class OnboardingActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         binding.viewPager.setAdapter(new OnboardingAdapter());
+        new TabLayoutMediator(binding.tabDots, binding.viewPager, (tab, position) -> {
+        }).attach();
         binding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
-                updatePageIndicator(position);
+                updateControls(position);
             }
         });
 
         binding.btnSkip.setOnClickListener(v -> finishOnboarding());
-
+        binding.btnBack.setOnClickListener(v -> binding.viewPager.setCurrentItem(binding.viewPager.getCurrentItem() - 1));
         binding.btnNext.setOnClickListener(v -> {
             int current = binding.viewPager.getCurrentItem();
             if (current < slides.length - 1) {
@@ -60,17 +62,15 @@ public class OnboardingActivity extends AppCompatActivity {
                 finishOnboarding();
             }
         });
+        updateControls(0);
     }
 
-    private void updatePageIndicator(int position) {
-        binding.tvPageIndicator.setText((position + 1) + " / " + slides.length);
-        if (position == slides.length - 1) {
-            binding.btnNext.setText(R.string.btn_continue);
-            binding.btnSkip.setVisibility(View.INVISIBLE);
-        } else {
-            binding.btnNext.setText(R.string.btn_continue);
-            binding.btnSkip.setVisibility(View.VISIBLE);
-        }
+    private void updateControls(int position) {
+        boolean last = position == slides.length - 1;
+        binding.tvPageIndicator.setText(getString(R.string.step_of, position + 1, slides.length));
+        binding.btnNext.setText(last ? R.string.btn_get_started : R.string.btn_next);
+        binding.btnBack.setVisibility(position == 0 ? View.INVISIBLE : View.VISIBLE);
+        binding.btnSkip.setVisibility(last ? View.INVISIBLE : View.VISIBLE);
     }
 
     private void finishOnboarding() {
@@ -83,16 +83,24 @@ public class OnboardingActivity extends AppCompatActivity {
         @NonNull
         @Override
         public SlideViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_onboarding_page, parent, false);
-            return new SlideViewHolder(view);
+            return new SlideViewHolder(ItemOnboardingPageBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
         }
 
         @Override
         public void onBindViewHolder(@NonNull SlideViewHolder holder, int position) {
             Slide slide = slides[position];
-            holder.ivImage.setImageResource(slide.iconRes);
-            holder.tvTitle.setText(slide.titleRes);
-            holder.tvDesc.setText(slide.descRes);
+            holder.binding.ivSlideImage.setImageResource(slide.iconRes);
+            holder.binding.tvSlideTitle.setText(slide.titleRes);
+            holder.binding.tvSlideDesc.setText(slide.descRes);
+        }
+
+        @Override
+        public void onViewAttachedToWindow(@NonNull SlideViewHolder holder) {
+            // A small "pop" of the picture each time a slide appears
+            View art = holder.binding.illustration;
+            art.setScaleX(0.9f);
+            art.setScaleY(0.9f);
+            art.animate().scaleX(1f).scaleY(1f).setDuration(350).start();
         }
 
         @Override
@@ -101,15 +109,11 @@ public class OnboardingActivity extends AppCompatActivity {
         }
 
         class SlideViewHolder extends RecyclerView.ViewHolder {
-            final ImageView ivImage;
-            final TextView tvTitle;
-            final TextView tvDesc;
+            final ItemOnboardingPageBinding binding;
 
-            SlideViewHolder(View itemView) {
-                super(itemView);
-                ivImage = itemView.findViewById(R.id.ivSlideImage);
-                tvTitle = itemView.findViewById(R.id.tvSlideTitle);
-                tvDesc = itemView.findViewById(R.id.tvSlideDesc);
+            SlideViewHolder(ItemOnboardingPageBinding binding) {
+                super(binding.getRoot());
+                this.binding = binding;
             }
         }
     }

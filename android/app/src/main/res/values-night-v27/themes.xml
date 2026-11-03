@@ -1,0 +1,6 @@
+<resources>
+    <!-- API 27+, dark theme: light navigation bar icons on the dark surface. -->
+    <style name="Platform.Theme.Rinda" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>

@@ -1,448 +1,479 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+    Plot detail (spec §9.4). Order = what the farmer cares about first:
+    1 plot header + verification, 2 crop health (+ meaning, what to do, confidence),
+    3 harvest forecast, 4 insurance cover, 5 charts, 6 manage.
+    Health alerts open this screen; claim updates never do (spec §2.2 #7).
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light">
+    android:orientation="vertical">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appBar"
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/surface_light"
-        app:elevation="@dimen/elevation_low">
+        android:layout_height="?attr/actionBarSize"
+        app:navigationContentDescription="@string/cd_back"
+        app:navigationIcon="@drawable/ic_back"
+        app:title="@string/plot_detail_title">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:navigationIcon="@drawable/ic_chevron_right"
-            app:title="Plot Detail"
-            app:titleTextColor="@color/text_primary_light">
-
-            <TextView
-                android:id="@+id/tvHeaderDemoBadge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end|center_vertical"
-                android:layout_marginEnd="@dimen/spacing_base"
-                android:background="@drawable/ic_status_demo_bg"
-                android:paddingStart="@dimen/spacing_sm"
-                android:paddingTop="2dp"
-                android:paddingEnd="@dimen/spacing_sm"
-                android:paddingBottom="2dp"
-                android:text="@string/app_demo_badge"
-                android:textColor="@color/status_demo"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:visibility="gone" />
-        </androidx.appcompat.widget.Toolbar>
-    </com.google.android.material.appbar.AppBarLayout>
+        <TextView
+            android:id="@+id/tvHeaderDemoBadge"
+            style="@style/Widget.Rinda.Tag.Demo"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="@dimen/spacing_base"
+            android:visibility="gone" />
+    </com.google.android.material.appbar.MaterialToolbar>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-        <ScrollView
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fillViewport="true">
+            android:layout_height="match_parent">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:animateLayoutChanges="true"
                 android:orientation="vertical"
-                android:padding="@dimen/spacing_base">
+                android:paddingStart="@dimen/screen_padding"
+                android:paddingEnd="@dimen/screen_padding"
+                android:paddingBottom="@dimen/spacing_xxl">
 
-                <!-- Plot Header Card -->
-                <com.google.android.material.card.MaterialCardView
+                <!-- 1. Header -->
+                <TextView
+                    android:id="@+id/tvPlotName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardBackgroundColor="@color/surface_light"
-                    app:cardCornerRadius="@dimen/radius_md"
-                    app:cardElevation="@dimen/elevation_card">
+                    android:accessibilityHeading="true"
+                    android:textAppearance="@style/TextAppearance.Rinda.Display" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvArea"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="@dimen/spacing_xs"
+                        android:gravity="center_vertical"
+                        android:textAppearance="@style/TextAppearance.Rinda.Label"
+                        android:textColor="@color/rinda_secondary"
+                        app:drawableStartCompat="@drawable/ic_area"
+                        app:drawableTint="@color/rinda_secondary" />
+
+                    <TextView
+                        android:id="@+id/tvPlantingDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_base"
+                        android:drawablePadding="@dimen/spacing_xs"
+                        android:gravity="center_vertical"
+                        android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                        app:drawableStartCompat="@drawable/ic_calendar"
+                        app:drawableTint="@color/rinda_text_tertiary" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvDap"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:textAppearance="@style/TextAppearance.Rinda.Caption"
+                    android:visibility="gone" />
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Rinda.Card.Info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_base">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="@dimen/spacing_base">
+                        android:padding="@dimen/spacing_md">
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
+                        <TextView
+                            android:id="@+id/tvVerificationText"
+                            style="@style/Widget.Rinda.StatusPill" />
 
-                            <TextView
-                                android:id="@+id/tvPlotName"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Demo plot 1"
-                                android:textColor="@color/text_primary_light"
-                                android:textSize="20sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:id="@+id/tvArea"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="4.92 ha"
-                                android:textColor="@color/rinda_gold_dark"
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-
-                        <LinearLayout
+                        <TextView
+                            android:id="@+id/tvVerificationMeaning"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/spacing_sm"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:id="@+id/tvPlantingDate"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Planted: 2026-09-20"
-                                android:textColor="@color/text_secondary_light"
-                                android:textSize="13sp" />
-
-                            <TextView
-                                android:id="@+id/tvDap"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="45 DAP"
-                                android:textColor="@color/text_secondary_light"
-                                android:textSize="13sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-
-                        <!-- Verification Status Badge -->
-                        <LinearLayout
-                            android:id="@+id/layoutVerificationChip"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_md"
-                            android:background="@drawable/ic_status_healthy_bg"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:paddingStart="@dimen/spacing_sm"
-                            android:paddingTop="3dp"
-                            android:paddingEnd="@dimen/spacing_sm"
-                            android:paddingBottom="3dp">
-
-                            <ImageView
-                                android:id="@+id/ivVerificationIcon"
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:contentDescription="@null"
-                                android:src="@drawable/ic_status_healthy" />
-
-                            <TextView
-                                android:id="@+id/tvVerificationText"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="4dp"
-                                android:text="@string/plot_status_active"
-                                android:textColor="@color/status_healthy"
-                                android:textSize="12sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-
-                        <!-- Coverage / Insurance Enrollment Status -->
-                        <LinearLayout
-                            android:id="@+id/layoutEnrollment"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_sm"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:id="@+id/tvEnrollmentStatus"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Coverage: Checking…"
-                                android:textColor="@color/text_secondary_light"
-                                android:textSize="12sp" />
-
-                            <TextView
-                                android:id="@+id/tvSumInsured"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textColor="@color/text_secondary_light"
-                                android:textSize="12sp"
-                                android:text="Not confirmed yet" />
-                        </LinearLayout>
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Crop Health Status Card -->
+                <!-- 2. Crop health -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardHealthStatus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_md"
-                    app:cardBackgroundColor="@color/surface_light"
-                    app:cardCornerRadius="@dimen/radius_md"
-                    app:cardElevation="@dimen/elevation_card">
+                    android:layout_marginTop="@dimen/card_gap">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="@dimen/spacing_base">
+                        android:paddingStart="@dimen/card_padding"
+                        android:paddingTop="@dimen/spacing_xs"
+                        android:paddingEnd="@dimen/card_padding"
+                        android:paddingBottom="@dimen/card_padding">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Crop Health Status"
-                            android:textColor="@color/text_primary_light"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
+                        <include
+                            android:id="@+id/healthHeader"
+                            layout="@layout/view_card_header" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_sm"
+                            android:layout_marginTop="@dimen/spacing_xs"
                             android:gravity="center_vertical"
                             android:orientation="horizontal">
 
                             <ImageView
                                 android:id="@+id/ivHealthIcon"
-                                android:layout_width="22dp"
-                                android:layout_height="22dp"
-                                android:contentDescription="@null"
-                                android:src="@drawable/ic_status_healthy" />
+                                style="@style/Widget.Rinda.IconBadge"
+                                android:layout_width="56dp"
+                                android:layout_height="56dp"
+                                android:padding="14dp"
+                                android:src="@drawable/ic_status_no_data" />
 
-                            <TextView
-                                android:id="@+id/tvHealthWord"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="@dimen/spacing_sm"
-                                android:text="@string/health_healthy"
-                                android:textColor="@color/status_healthy"
-                                android:textSize="17sp"
-                                android:textStyle="bold" />
-
-                            <!-- Confidence Chip -->
-                            <TextView
-                                android:id="@+id/tvConfidenceBadge"
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="@dimen/spacing_md"
-                                android:background="@drawable/ic_status_watch_bg"
-                                android:paddingStart="@dimen/spacing_xs"
-                                android:paddingTop="2dp"
-                                android:paddingEnd="@dimen/spacing_xs"
-                                android:paddingBottom="2dp"
-                                android:text="High Confidence"
-                                android:textColor="@color/status_watch"
-                                android:textSize="11sp" />
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tvHealthWord"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:accessibilityLiveRegion="polite"
+                                    android:text="@string/health_not_analysed"
+                                    android:textAppearance="@style/TextAppearance.Rinda.Headline" />
+
+                                <TextView
+                                    android:id="@+id/tvHealthDate"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textAppearance="@style/TextAppearance.Rinda.Caption"
+                                    android:visibility="gone" />
+                            </LinearLayout>
                         </LinearLayout>
 
-                        <!-- Cause and Explanation -->
+                        <TextView
+                            android:id="@+id/tvHealthMeaning"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_md"
+                            android:text="@string/health_not_analysed_meaning"
+                            android:textAppearance="@style/TextAppearance.Rinda.Body"
+                            android:textColor="@color/rinda_text_primary" />
+
                         <TextView
                             android:id="@+id/tvCause"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/spacing_sm"
-                            android:text="Cause: Normal Growth"
-                            android:textColor="@color/text_primary_light"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
+                            android:textAppearance="@style/TextAppearance.Rinda.Subtitle"
+                            android:visibility="gone" />
 
                         <TextView
                             android:id="@+id/tvExplanation"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:lineSpacingExtra="3dp"
-                            android:text="Vegetation index is within normal historical band."
-                            android:textColor="@color/text_secondary_light"
-                            android:textSize="13sp" />
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:drawablePadding="@dimen/spacing_xs"
+                            android:gravity="center_vertical"
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                            android:visibility="gone"
+                            app:drawableStartCompat="@drawable/ic_weather_rain"
+                            app:drawableTint="@color/rinda_tertiary" />
+
+                        <!-- What you can do -->
+                        <LinearLayout
+                            android:id="@+id/layoutTodo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_md"
+                            android:background="@drawable/bg_rounded"
+                            android:backgroundTint="@color/rinda_surface_variant"
+                            android:orientation="horizontal"
+                            android:padding="@dimen/spacing_md"
+                            android:visibility="gone">
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_md"
+                                android:layout_height="@dimen/icon_md"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_lightbulb"
+                                app:tint="@color/rinda_secondary" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/spacing_sm"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/health_what_to_do"
+                                    android:textAppearance="@style/TextAppearance.Rinda.Label" />
+
+                                <TextView
+                                    android:id="@+id/tvTodo"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="@dimen/spacing_xxs"
+                                    android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvFieldVisit"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_sm"
+                            android:drawablePadding="@dimen/spacing_sm"
+                            android:gravity="center_vertical"
+                            android:text="@string/needs_field_visit"
+                            android:textAppearance="@style/TextAppearance.Rinda.Label"
+                            android:textColor="@color/status_watch"
+                            android:visibility="gone"
+                            app:drawableStartCompat="@drawable/ic_visit"
+                            app:drawableTint="@color/status_watch" />
+
+                        <LinearLayout
+                            android:id="@+id/layoutConfidence"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_md"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:id="@+id/tvConfidenceBadge"
+                                style="@style/Widget.Rinda.Tag"
+                                android:backgroundTint="@color/rinda_surface_variant"
+                                android:textColor="@color/rinda_text_secondary" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnConfidenceHelp"
+                                style="@style/Widget.Rinda.IconButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:contentDescription="@string/cd_help"
+                                app:icon="@drawable/ic_help"
+                                app:iconSize="@dimen/icon_sm" />
+                        </LinearLayout>
 
                         <TextView
                             android:id="@+id/tvDataQualityNote"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_xs"
-                            android:text="Sentinel-2 Optical (10m) cloud-free observation."
-                            android:textColor="@color/text_tertiary_light"
-                            android:textSize="11sp" />
+                            android:textAppearance="@style/TextAppearance.Rinda.Caption"
+                            android:visibility="gone" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- NDVI vs Normal Band Chart Card -->
+                <!-- 3. Harvest forecast: always a range, labelled as a prototype -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_md"
-                    app:cardBackgroundColor="@color/surface_light"
-                    app:cardCornerRadius="@dimen/radius_md"
-                    app:cardElevation="@dimen/elevation_card">
+                    android:layout_marginTop="@dimen/card_gap">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="@dimen/spacing_base">
+                        android:paddingStart="@dimen/card_padding"
+                        android:paddingTop="@dimen/spacing_xs"
+                        android:paddingEnd="@dimen/card_padding"
+                        android:paddingBottom="@dimen/card_padding">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/chart_ndvi_title"
-                            android:textColor="@color/text_primary_light"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tvNdviSubtitle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Plotted against days after planting (DAP). Band shows p10 to p90 normal."
-                            android:textColor="@color/text_secondary_light"
-                            android:textSize="12sp" />
-
-                        <com.github.mikephil.charting.charts.LineChart
-                            android:id="@+id/chartNdvi"
-                            android:layout_width="match_parent"
-                            android:layout_height="220dp"
-                            android:layout_marginTop="@dimen/spacing_sm" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Daily Rainfall Chart Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_md"
-                    app:cardBackgroundColor="@color/surface_light"
-                    app:cardCornerRadius="@dimen/radius_md"
-                    app:cardElevation="@dimen/elevation_card">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="@dimen/spacing_base">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/chart_rain_title"
-                            android:textColor="@color/text_primary_light"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="CHIRPS daily rainfall records in mm."
-                            android:textColor="@color/text_secondary_light"
-                            android:textSize="12sp" />
-
-                        <com.github.mikephil.charting.charts.BarChart
-                            android:id="@+id/chartRain"
-                            android:layout_width="match_parent"
-                            android:layout_height="180dp"
-                            android:layout_marginTop="@dimen/spacing_sm" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Harvest Forecast Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_md"
-                    app:cardBackgroundColor="@color/surface_light"
-                    app:cardCornerRadius="@dimen/radius_md"
-                    app:cardElevation="@dimen/elevation_card">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="@dimen/spacing_base">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/harvest_forecast_title"
-                            android:textColor="@color/text_primary_light"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
+                        <include
+                            android:id="@+id/forecastHeader"
+                            layout="@layout/view_card_header" />
 
                         <TextView
                             android:id="@+id/tvHarvestForecastRange"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_sm"
-                            android:text="75% – 90% of normal"
-                            android:textColor="@color/rinda_gold_dark"
-                            android:textSize="20sp"
-                            android:textStyle="bold" />
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:text="@string/harvest_pending"
+                            android:textAppearance="@style/TextAppearance.Rinda.Headline"
+                            android:textColor="@color/rinda_secondary" />
 
                         <TextView
                             android:id="@+id/tvForecastDisclaimer"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_xs"
-                            android:background="@drawable/ic_status_watch_bg"
-                            android:lineSpacingExtra="2dp"
-                            android:padding="@dimen/spacing_sm"
+                            android:layout_marginTop="@dimen/spacing_sm"
+                            android:drawablePadding="@dimen/spacing_sm"
                             android:text="@string/harvest_forecast_disclaimer"
-                            android:textColor="@color/status_watch"
-                            android:textSize="12sp"
-                            android:textStyle="italic" />
+                            android:textAppearance="@style/TextAppearance.Rinda.Caption"
+                            app:drawableStartCompat="@drawable/ic_info"
+                            app:drawableTint="@color/rinda_text_tertiary" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Action Buttons: Edit Name & Delete Plot -->
-                <LinearLayout
+                <!-- 4. Insurance cover (enrollment, spec §2.2 #5) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardCoverage"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_xl"
-                    android:layout_marginBottom="@dimen/spacing_xl"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="@dimen/card_gap">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnEditPlot"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/button_height"
-                        android:layout_marginEnd="@dimen/spacing_sm"
-                        android:layout_weight="1"
-                        android:text="@string/btn_edit"
-                        android:textAllCaps="false"
-                        android:textColor="@color/rinda_green"
-                        app:cornerRadius="@dimen/radius_md"
-                        app:strokeColor="@color/rinda_green" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingStart="@dimen/card_padding"
+                        android:paddingTop="@dimen/spacing_xs"
+                        android:paddingEnd="@dimen/card_padding"
+                        android:paddingBottom="@dimen/card_padding">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnDeletePlot"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="@dimen/button_height"
-                        android:layout_marginStart="@dimen/spacing_sm"
-                        android:layout_weight="1"
-                        android:text="@string/btn_delete"
-                        android:textAllCaps="false"
-                        android:textColor="@color/status_at_risk"
-                        app:cornerRadius="@dimen/radius_md"
-                        app:strokeColor="@color/status_at_risk" />
-                </LinearLayout>
+                        <include
+                            android:id="@+id/coverageHeader"
+                            layout="@layout/view_card_header" />
 
+                        <TextView
+                            android:id="@+id/tvEnrollmentStatus"
+                            style="@style/Widget.Rinda.StatusPill"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:text="@string/coverage_checking" />
+
+                        <TextView
+                            android:id="@+id/tvEnrollmentHint"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_sm"
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                            android:visibility="gone" />
+
+                        <include
+                            android:id="@+id/rowSumInsured"
+                            layout="@layout/view_detail_row"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- 5a. NDVI chart, labelled as crop health vs the normal band (spec §2.2 #8) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/card_gap">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingStart="@dimen/card_padding"
+                        android:paddingTop="@dimen/spacing_xs"
+                        android:paddingEnd="@dimen/card_padding"
+                        android:paddingBottom="@dimen/card_padding">
+
+                        <include
+                            android:id="@+id/ndviHeader"
+                            layout="@layout/view_card_header" />
+
+                        <TextView
+                            android:id="@+id/tvNdviSubtitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/chart_ndvi_subtitle"
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
+
+                        <com.github.mikephil.charting.charts.LineChart
+                            android:id="@+id/chartNdvi"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/chart_height_lg"
+                            android:layout_marginTop="@dimen/spacing_md"
+                            android:contentDescription="@string/chart_ndvi_title" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- 5b. Rain chart -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/card_gap">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingStart="@dimen/card_padding"
+                        android:paddingTop="@dimen/spacing_xs"
+                        android:paddingEnd="@dimen/card_padding"
+                        android:paddingBottom="@dimen/card_padding">
+
+                        <include
+                            android:id="@+id/rainHeader"
+                            layout="@layout/view_card_header" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/chart_rain_subtitle"
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
+
+                        <com.github.mikephil.charting.charts.BarChart
+                            android:id="@+id/chartRain"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/chart_height_md"
+                            android:layout_marginTop="@dimen/spacing_md"
+                            android:contentDescription="@string/chart_rain_title" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- 6. Manage -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/section_gap"
+                    android:layout_marginBottom="@dimen/spacing_sm"
+                    android:accessibilityHeading="true"
+                    android:text="@string/plot_manage_title"
+                    android:textAppearance="@style/TextAppearance.Rinda.Section" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnEditPlot"
+                    style="@style/Widget.Rinda.Button.Outlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_rename_plot"
+                    app:icon="@drawable/ic_edit" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDeletePlot"
+                    style="@style/Widget.Rinda.Button.Danger"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:text="@string/btn_delete_plot"
+                    app:icon="@drawable/ic_delete" />
             </LinearLayout>
-        </ScrollView>
+        </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</LinearLayout>

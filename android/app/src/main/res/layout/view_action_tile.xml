@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Big square shortcut on Home: icon + one or two words. Whole tile is the touch target. -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tileCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="112dp"
+        android:orientation="vertical"
+        android:padding="@dimen/card_padding">
+
+        <ImageView
+            android:id="@+id/ivTileIcon"
+            style="@style/Widget.Rinda.IconBadge" />
+
+        <TextView
+            android:id="@+id/tvTileLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:maxLines="2"
+            android:textAppearance="@style/TextAppearance.Rinda.Subtitle" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

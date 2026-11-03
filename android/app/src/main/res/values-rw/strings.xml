@@ -103,8 +103,6 @@
     <string name="crop_label">Igihingwa</string>
     <string name="crop_maize">Ikigori (Maize)</string>
     <string name="draw_boundary_instruction">Kanda ku ikarita kugira ngo ushyireho imbibi z\'umurima wawe w\'ibigori. Funga ishusho kugira ngo urangize.</string>
-    <string name="area_ha">%1$.2f ha</string>
-    <string name="days_after_planting">Iminsi %1$d nyuma yo gutera (DAP)</string>
     <string name="chart_ndvi_title">Ubuzima bw\'Igihingwa (NDVI n\'Urwego Rusanzwe)</string>
     <string name="chart_rain_title">Imvura Yaguye buri munsi (mm)</string>
     <string name="chart_legend_plot">Uyu Murima</string>

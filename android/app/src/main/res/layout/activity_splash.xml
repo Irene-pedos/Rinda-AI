@@ -1,58 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<!-- Splash: the window background is already the green hero (Theme.Rinda.Splash), so there is no white flash. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light"
+    android:gravity="center"
+    android:orientation="vertical"
     android:padding="@dimen/spacing_xl">
 
-    <ImageView
-        android:id="@+id/ivLogo"
-        android:layout_width="96dp"
-        android:layout_height="96dp"
-        android:contentDescription="@string/app_name"
-        android:src="@drawable/ic_rinda_sprout"
-        app:layout_constraintBottom_toTopOf="@+id/tvAppName"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed" />
-
-    <TextView
-        android:id="@+id/tvAppName"
+    <LinearLayout
+        android:id="@+id/brandGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_base"
-        android:text="@string/app_name"
-        android:textColor="@color/rinda_green_dark"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/tvTagline"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ivLogo" />
+        android:gravity="center"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tvTagline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_sm"
-        android:text="@string/app_tagline"
-        android:textColor="@color/text_secondary_light"
-        android:textSize="14sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvAppName" />
+        <FrameLayout
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:background="@drawable/bg_circle"
+            android:backgroundTint="@color/rinda_hero_overlay">
 
-    <ProgressBar
+            <ImageView
+                android:id="@+id/ivLogo"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_gravity="center"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_rinda_mark_light" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tvAppName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xl"
+            android:text="@string/app_name"
+            android:textAppearance="@style/TextAppearance.Rinda.Display"
+            android:textColor="@color/rinda_on_hero"
+            android:textSize="40sp" />
+
+        <TextView
+            android:id="@+id/tvTagline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:gravity="center"
+            android:text="@string/app_tagline"
+            android:textAppearance="@style/TextAppearance.Rinda.Body"
+            android:textColor="@color/rinda_on_hero_muted" />
+    </LinearLayout>
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/progressBar"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginBottom="@dimen/spacing_xxl"
-        android:indeterminateTint="@color/rinda_green"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_3xl"
+        android:contentDescription="@string/loading"
+        android:indeterminate="true"
+        app:indicatorColor="@color/rinda_on_hero"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
+</LinearLayout>

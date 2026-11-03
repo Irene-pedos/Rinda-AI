@@ -1,30 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme (Dark) -->
-    <style name="Base.Theme.Rinda" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/rinda_green_light</item>
-        <item name="colorOnPrimary">@color/rinda_green_on_container</item>
-        <item name="colorPrimaryContainer">@color/rinda_green_dark</item>
-        <item name="colorOnPrimaryContainer">@color/rinda_green_container</item>
-
-        <item name="colorSecondary">@color/rinda_gold_light</item>
-        <item name="colorOnSecondary">@color/rinda_gold_on_container</item>
-        <item name="colorSecondaryContainer">@color/rinda_gold_dark</item>
-        <item name="colorOnSecondaryContainer">@color/rinda_gold_container</item>
-
-        <item name="colorTertiary">@color/rinda_blue_light</item>
-        <item name="colorOnTertiary">@color/black</item>
-
-        <item name="android:colorBackground">@color/bg_dark</item>
-        <item name="colorSurface">@color/surface_dark</item>
-        <item name="colorSurfaceVariant">@color/surface_variant_dark</item>
-        <item name="colorOnSurface">@color/text_primary_dark</item>
-        <item name="colorOnSurfaceVariant">@color/text_secondary_dark</item>
-
-        <item name="android:statusBarColor">@color/bg_dark</item>
+    <!-- Dark theme: same as values/themes.xml; only the system bar icon colours change.
+         All colours switch automatically through values-night/colors.xml. -->
+    <style name="Theme.Rinda" parent="Base.Theme.Rinda">
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:navigationBarColor">@color/surface_dark</item>
-        <item name="android:windowLightNavigationBar">false</item>
     </style>
-
-    <style name="Theme.Rinda" parent="Base.Theme.Rinda" />
 </resources>

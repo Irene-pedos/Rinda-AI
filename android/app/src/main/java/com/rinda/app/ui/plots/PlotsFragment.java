@@ -5,11 +5,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import com.rinda.app.R;
 import com.rinda.app.data.api.ApiClient;
 import com.rinda.app.data.local.PlotEntity;
@@ -17,6 +17,7 @@ import com.rinda.app.data.local.RindaDatabase;
 import com.rinda.app.data.model.PageResponse;
 import com.rinda.app.data.model.PlotResponse;
 import com.rinda.app.databinding.FragmentPlotsBinding;
+import com.rinda.app.ui.common.EmptyState;
 import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
@@ -48,25 +49,46 @@ public class PlotsFragment extends Fragment {
 
         binding.rvPlots.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvPlots.setAdapter(adapter);
+        // The button shrinks to an icon while scrolling, so it never hides a card for long.
+        binding.rvPlots.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                if (dy > 8 && binding.fabAddPlot.isExtended()) {
+                    binding.fabAddPlot.shrink();
+                } else if (dy < -8 && !binding.fabAddPlot.isExtended()) {
+                    binding.fabAddPlot.extend();
+                }
+            }
+        });
 
-        binding.swipeRefresh.setColorSchemeResources(R.color.rinda_green);
+        EmptyState.bind(binding.layoutEmpty, R.drawable.ic_nav_plots, R.string.empty_plots_title,
+                R.string.empty_plots, R.string.getting_started_cta, v -> openRegister());
+
+        binding.swipeRefresh.setColorSchemeResources(R.color.rinda_primary);
         binding.swipeRefresh.setOnRefreshListener(this::fetchPlots);
 
-        binding.fabAddPlot.setOnClickListener(v -> {
-            Intent intent = new Intent(requireContext(), RegisterPlotActivity.class);
-            startActivity(intent);
-        });
+        binding.fabAddPlot.setOnClickListener(v -> openRegister());
 
         observeCachedPlots();
         fetchPlots();
     }
 
+    private void openRegister() {
+        startActivity(new Intent(requireContext(), RegisterPlotActivity.class));
+    }
+
     private void observeCachedPlots() {
         RindaDatabase.getInstance(requireContext()).plotDao().getAllPlotsLiveData()
                 .observe(getViewLifecycleOwner(), plotEntities -> {
-                    if (plotEntities != null) {
+                    if (plotEntities != null && binding != null) {
+                        boolean wasEmpty = adapter.getItemCount() == 0;
                         adapter.setItems(plotEntities);
-                        binding.layoutEmpty.setVisibility(plotEntities.isEmpty() ? View.VISIBLE : View.GONE);
+                        if (wasEmpty && !plotEntities.isEmpty()) {
+                            binding.rvPlots.scheduleLayoutAnimation();
+                        }
+                        boolean empty = plotEntities.isEmpty();
+                        EmptyState.show(binding.layoutEmpty, empty);
+                        binding.fabAddPlot.setVisibility(empty ? View.GONE : View.VISIBLE);
                     }
                 });
     }
@@ -87,13 +109,14 @@ public class PlotsFragment extends Fragment {
                     @Override
                     public void onFailure(Call<PageResponse<PlotResponse>> call, Throwable t) {
                         if (binding == null) return;
+                        // Offline: cached plots stay on screen and the shell shows the offline banner.
                         binding.swipeRefresh.setRefreshing(false);
-                        Toast.makeText(requireContext(), "Offline: Showing cached plots", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
     private void saveToLocalCache(List<PlotResponse> plots) {
+        final android.content.Context app = requireContext().getApplicationContext();
         new Thread(() -> {
             List<PlotEntity> entities = new ArrayList<>();
             for (PlotResponse p : plots) {
@@ -113,7 +136,7 @@ public class PlotsFragment extends Fragment {
                 e.cachedAt = System.currentTimeMillis();
                 entities.add(e);
             }
-            RindaDatabase.getInstance(requireContext()).plotDao().insertOrUpdateAll(entities);
+            RindaDatabase.getInstance(app).plotDao().insertOrUpdateAll(entities);
         }).start();
     }
 

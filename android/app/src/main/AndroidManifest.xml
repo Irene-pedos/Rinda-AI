@@ -8,6 +8,11 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- Photos are optional (problem reports), so phones without a camera can still install the app -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
     <application
         android:name=".RindaApplication"
         android:allowBackup="true"
@@ -26,7 +31,7 @@
         <activity
             android:name=".ui.auth.SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.Rinda">
+            android:theme="@style/Theme.Rinda.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

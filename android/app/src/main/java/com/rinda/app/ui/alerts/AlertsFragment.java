@@ -1,8 +1,5 @@
 package com.rinda.app.ui.alerts;
 
-import android.app.AlertDialog;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,8 +15,7 @@ import com.rinda.app.data.local.RindaDatabase;
 import com.rinda.app.data.model.NotificationResponse;
 import com.rinda.app.data.model.PageResponse;
 import com.rinda.app.databinding.FragmentAlertsBinding;
-import com.rinda.app.ui.claims.ClaimDetailActivity;
-import com.rinda.app.ui.plots.PlotDetailActivity;
+import com.rinda.app.ui.common.EmptyState;
 import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
@@ -42,11 +38,13 @@ public class AlertsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        adapter = new NotificationsAdapter(this::onNotificationClicked);
+        adapter = new NotificationsAdapter(item -> AlertRouter.open(requireContext(), item));
         binding.rvAlerts.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvAlerts.setAdapter(adapter);
 
-        binding.swipeRefresh.setColorSchemeResources(R.color.rinda_green);
+        EmptyState.bind(binding.layoutEmpty, R.drawable.ic_satellite, R.string.empty_alerts_title, R.string.empty_alerts);
+
+        binding.swipeRefresh.setColorSchemeResources(R.color.rinda_primary);
         binding.swipeRefresh.setOnRefreshListener(this::fetchNotifications);
 
         observeCachedNotifications();
@@ -55,14 +53,17 @@ public class AlertsFragment extends Fragment {
 
     private void observeCachedNotifications() {
         RindaDatabase.getInstance(requireContext()).notificationDao().getAllNotificationsLiveData()
-                .observe(getViewLifecycleOwner(), notificationEntities -> {
-                    if (notificationEntities == null || notificationEntities.isEmpty()) {
-                        binding.layoutEmpty.setVisibility(View.VISIBLE);
-                        binding.rvAlerts.setVisibility(View.GONE);
-                    } else {
-                        binding.layoutEmpty.setVisibility(View.GONE);
-                        binding.rvAlerts.setVisibility(View.VISIBLE);
-                        adapter.setItems(notificationEntities);
+                .observe(getViewLifecycleOwner(), list -> {
+                    if (binding == null) return;
+                    boolean empty = list == null || list.isEmpty();
+                    EmptyState.show(binding.layoutEmpty, empty);
+                    binding.rvAlerts.setVisibility(empty ? View.GONE : View.VISIBLE);
+                    if (!empty) {
+                        boolean first = adapter.getItemCount() == 0;
+                        adapter.setItems(list);
+                        if (first) {
+                            binding.rvAlerts.scheduleLayoutAnimation();
+                        }
                     }
                 });
     }
@@ -90,6 +91,7 @@ public class AlertsFragment extends Fragment {
 
     private void saveNotificationsToCache(List<NotificationResponse> list) {
         if (list == null) return;
+        final android.content.Context app = requireContext().getApplicationContext();
         new Thread(() -> {
             List<NotificationEntity> entities = new ArrayList<>();
             for (NotificationResponse r : list) {
@@ -108,72 +110,8 @@ public class AlertsFragment extends Fragment {
                 e.cachedAt = System.currentTimeMillis();
                 entities.add(e);
             }
-            RindaDatabase.getInstance(requireContext()).notificationDao().insertAll(entities);
+            RindaDatabase.getInstance(app).notificationDao().insertAll(entities);
         }).start();
-    }
-
-    private void onNotificationClicked(NotificationEntity item) {
-        // 1. Mark read on backend and locally
-        if (!item.isRead) {
-            ApiClient.getInstance(requireContext()).getService().markNotificationRead(item.id)
-                    .enqueue(new Callback<Void>() {
-                        @Override
-                        public void onResponse(Call<Void> call, Response<Void> response) {
-                        }
-
-                        @Override
-                        public void onFailure(Call<Void> call, Throwable t) {
-                        }
-                    });
-            new Thread(() -> RindaDatabase.getInstance(requireContext()).notificationDao().markAsRead(item.id)).start();
-        }
-
-        // 2. Route based on type
-        String type = item.type != null ? item.type : "SYSTEM";
-        if ("HEALTH".equalsIgnoreCase(type)) {
-            long plotId = item.plotId != null ? item.plotId : parsePlotIdFromLink(item.link);
-            if (plotId > 0) {
-                Intent intent = new Intent(requireContext(), PlotDetailActivity.class);
-                intent.putExtra(PlotDetailActivity.EXTRA_PLOT_ID, plotId);
-                intent.putExtra(PlotDetailActivity.EXTRA_PLOT_NAME, item.plotName);
-                startActivity(intent);
-            }
-        } else if ("CLAIM".equalsIgnoreCase(type)) {
-            long claimId = parseClaimIdFromLink(item.link);
-            Intent intent = new Intent(requireContext(), ClaimDetailActivity.class);
-            intent.putExtra(ClaimDetailActivity.EXTRA_CLAIM_ID, claimId);
-            intent.putExtra(ClaimDetailActivity.EXTRA_PLOT_NAME, item.plotName);
-            startActivity(intent);
-        } else {
-            // SYSTEM notice dialog
-            new AlertDialog.Builder(requireContext())
-                    .setTitle(item.title != null ? item.title : "Notice")
-                    .setMessage(item.body != null ? item.body : "")
-                    .setPositiveButton(R.string.btn_done, null)
-                    .show();
-        }
-    }
-
-    private long parsePlotIdFromLink(String link) {
-        if (link == null) return -1;
-        try {
-            // e.g. "/plots/9001"
-            String cleaned = link.replace("/plots/", "").replace("/", "").trim();
-            return Long.parseLong(cleaned);
-        } catch (Exception e) {
-            return -1;
-        }
-    }
-
-    private long parseClaimIdFromLink(String link) {
-        if (link == null) return -1;
-        try {
-            // e.g. "/claims/101"
-            String cleaned = link.replace("/claims/", "").replace("/", "").trim();
-            return Long.parseLong(cleaned);
-        } catch (Exception e) {
-            return -1;
-        }
     }
 
     @Override

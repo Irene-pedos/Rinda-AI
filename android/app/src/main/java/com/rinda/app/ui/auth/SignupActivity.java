@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.rinda.app.R;
 import com.rinda.app.data.api.ApiClient;
@@ -15,6 +14,7 @@ import com.rinda.app.data.model.CooperativeResponse;
 import com.rinda.app.data.model.OtpVerifyRequest;
 import com.rinda.app.data.model.TokenResponse;
 import com.rinda.app.databinding.ActivitySignupBinding;
+import com.rinda.app.ui.common.Ui;
 import com.rinda.app.ui.home.HomeActivity;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,8 @@ public class SignupActivity extends AppCompatActivity {
     private String phone;
     private String code;
     private final List<CooperativeResponse> cooperatives = new ArrayList<>();
-    private ArrayAdapter<CooperativeResponse> spinnerAdapter;
+    private ArrayAdapter<CooperativeResponse> coopAdapter;
+    private CooperativeResponse selectedCoop;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +45,14 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
-        spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, cooperatives);
-        binding.spinnerCooperative.setAdapter(spinnerAdapter);
+        binding.toolbar.setNavigationOnClickListener(v -> finish());
+
+        coopAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, cooperatives);
+        binding.actCooperative.setAdapter(coopAdapter);
+        binding.actCooperative.setOnItemClickListener((parent, view, position, id) -> {
+            selectedCoop = coopAdapter.getItem(position);
+            binding.tilCooperative.setError(null);
+        });
 
         loadCooperatives();
 
@@ -53,46 +60,52 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private void loadCooperatives() {
-        binding.pbCoops.setVisibility(View.VISIBLE);
+        binding.tilCooperative.setHelperText(getString(R.string.cooperative_loading));
         ApiClient.getInstance(this).getService().getCooperatives()
                 .enqueue(new Callback<List<CooperativeResponse>>() {
                     @Override
                     public void onResponse(Call<List<CooperativeResponse>> call, Response<List<CooperativeResponse>> response) {
-                        binding.pbCoops.setVisibility(View.GONE);
                         if (response.isSuccessful() && response.body() != null) {
                             cooperatives.clear();
                             cooperatives.addAll(response.body());
-                            spinnerAdapter.notifyDataSetChanged();
+                            coopAdapter.notifyDataSetChanged();
+                            binding.tilCooperative.setHelperText(getString(R.string.cooperative_select));
+                            if (cooperatives.size() == 1) {
+                                selectedCoop = cooperatives.get(0);
+                                binding.actCooperative.setText(selectedCoop.toString(), false);
+                            }
                         } else {
-                            Toast.makeText(SignupActivity.this, "Unable to load cooperatives list", Toast.LENGTH_SHORT).show();
+                            showCoopLoadError();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<List<CooperativeResponse>> call, Throwable t) {
-                        binding.pbCoops.setVisibility(View.GONE);
-                        Toast.makeText(SignupActivity.this, getString(R.string.error_network), Toast.LENGTH_SHORT).show();
+                        showCoopLoadError();
                     }
                 });
     }
 
+    private void showCoopLoadError() {
+        binding.tilCooperative.setHelperText(getString(R.string.cooperative_load_failed));
+        Ui.error(binding.getRoot(), getString(R.string.cooperative_load_failed), this::loadCooperatives);
+    }
+
     private void completeRegistration() {
         binding.tilFullName.setError(null);
+        binding.tilCooperative.setError(null);
         String fullName = binding.etFullName.getText() != null ? binding.etFullName.getText().toString().trim() : "";
 
+        boolean ok = true;
         if (fullName.isEmpty()) {
-            binding.tilFullName.setError("Please enter your full name");
-            return;
+            binding.tilFullName.setError(getString(R.string.error_name_required));
+            ok = false;
         }
-
-        if (cooperatives.isEmpty()) {
-            Toast.makeText(this, "Please wait for cooperatives to load", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        CooperativeResponse selectedCoop = (CooperativeResponse) binding.spinnerCooperative.getSelectedItem();
         if (selectedCoop == null) {
-            Toast.makeText(this, "Please select a cooperative", Toast.LENGTH_SHORT).show();
+            binding.tilCooperative.setError(getString(R.string.error_cooperative_required));
+            ok = false;
+        }
+        if (!ok) {
             return;
         }
 
@@ -109,15 +122,14 @@ public class SignupActivity extends AppCompatActivity {
                             goToHome();
                         } else {
                             ApiProblem problem = ApiErrorParser.parse(response);
-                            String msg = ApiErrorParser.getFriendlyMessage(SignupActivity.this, problem);
-                            binding.tilFullName.setError(msg);
+                            Ui.toast(binding.getRoot(), ApiErrorParser.getFriendlyMessage(SignupActivity.this, problem));
                         }
                     }
 
                     @Override
                     public void onFailure(Call<TokenResponse> call, Throwable t) {
                         setLoading(false);
-                        Toast.makeText(SignupActivity.this, getString(R.string.error_network), Toast.LENGTH_SHORT).show();
+                        Ui.error(binding.getRoot(), getString(R.string.error_network_action), SignupActivity.this::completeRegistration);
                     }
                 });
     }

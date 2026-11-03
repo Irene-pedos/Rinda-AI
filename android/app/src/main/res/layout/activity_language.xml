@@ -1,127 +1,170 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Language choice. Each card shows the language written in itself, so it works before the user reads English. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light"
-    android:padding="@dimen/spacing_xl">
+    android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/ivLangIcon"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_marginTop="@dimen/spacing_3xl"
-        android:contentDescription="@string/select_language"
-        android:src="@drawable/ic_language"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_base"
-        android:text="@string/select_language"
-        android:textColor="@color/text_primary_light"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ivLangIcon" />
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardEnglish"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_xl"
-        android:clickable="true"
-        android:focusable="true"
-        app:cardCornerRadius="@dimen/radius_md"
-        app:cardElevation="@dimen/elevation_low"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvTitle"
-        app:strokeColor="@color/rinda_green"
-        app:strokeWidth="2dp">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="@dimen/spacing_base">
+            android:orientation="vertical"
+            android:padding="@dimen/screen_padding">
 
-            <RadioButton
-                android:id="@+id/rbEnglish"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:clickable="false" />
+            <ImageView
+                style="@style/Widget.Rinda.IconBadge"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_marginTop="@dimen/spacing_xxl"
+                android:padding="16dp"
+                android:src="@drawable/ic_language" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/spacing_md"
-                android:text="@string/lang_english"
-                android:textColor="@color/text_primary_light"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="@dimen/spacing_xl"
+                android:accessibilityHeading="true"
+                android:text="@string/select_language"
+                android:textAppearance="@style/TextAppearance.Rinda.Headline" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs"
+                android:text="@string/select_language_sub"
+                android:textAppearance="@style/TextAppearance.Rinda.Title"
+                android:textColor="@color/rinda_text_secondary" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardKinyarwanda"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xl"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:minHeight="80dp"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/card_padding">
+
+                    <TextView
+                        android:layout_width="@dimen/icon_badge"
+                        android:layout_height="@dimen/icon_badge"
+                        android:background="@drawable/bg_circle"
+                        android:backgroundTint="@color/rinda_secondary_container"
+                        android:gravity="center"
+                        android:importantForAccessibility="no"
+                        android:text="@string/lang_code_rw"
+                        android:textAppearance="@style/TextAppearance.Rinda.Label"
+                        android:textColor="@color/rinda_on_secondary_container" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_base"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/lang_kinyarwanda_native"
+                            android:textAppearance="@style/TextAppearance.Rinda.Title" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/lang_kinyarwanda"
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
+                    </LinearLayout>
+
+                    <RadioButton
+                        android:id="@+id/rbKinyarwanda"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:importantForAccessibility="no" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardEnglish"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/card_gap"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:minHeight="80dp"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/card_padding">
+
+                    <TextView
+                        android:layout_width="@dimen/icon_badge"
+                        android:layout_height="@dimen/icon_badge"
+                        android:background="@drawable/bg_circle"
+                        android:backgroundTint="@color/rinda_tertiary_container"
+                        android:gravity="center"
+                        android:importantForAccessibility="no"
+                        android:text="@string/lang_code_en"
+                        android:textAppearance="@style/TextAppearance.Rinda.Label"
+                        android:textColor="@color/rinda_on_tertiary_container" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_base"
+                        android:layout_weight="1"
+                        android:text="@string/lang_english_native"
+                        android:textAppearance="@style/TextAppearance.Rinda.Title" />
+
+                    <RadioButton
+                        android:id="@+id/rbEnglish"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:importantForAccessibility="no" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_base"
+                android:drawablePadding="@dimen/spacing_sm"
+                android:gravity="center_vertical"
+                android:text="@string/select_language_hint"
+                android:textAppearance="@style/TextAppearance.Rinda.Caption"
+                app:drawableStartCompat="@drawable/ic_info"
+                app:drawableTint="@color/rinda_text_tertiary" />
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+    </ScrollView>
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardKinyarwanda"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_base"
-        android:clickable="true"
-        android:focusable="true"
-        app:cardCornerRadius="@dimen/radius_md"
-        app:cardElevation="@dimen/elevation_low"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cardEnglish"
-        app:strokeColor="@color/divider_light"
-        app:strokeWidth="1dp">
+    <LinearLayout style="@style/Rinda.BottomBar">
 
-        <LinearLayout
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnContinue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="@dimen/spacing_base">
-
-            <RadioButton
-                android:id="@+id/rbKinyarwanda"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="false"
-                android:clickable="false" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/spacing_md"
-                android:text="@string/lang_kinyarwanda"
-                android:textColor="@color/text_primary_light"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnContinue"
-        android:layout_width="0dp"
-        android:layout_height="@dimen/button_height"
-        android:layout_marginBottom="@dimen/spacing_base"
-        android:backgroundTint="@color/rinda_green"
-        android:text="@string/btn_continue"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        app:cornerRadius="@dimen/radius_md"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+            android:text="@string/btn_continue"
+            app:icon="@drawable/ic_arrow_forward"
+            app:iconGravity="textEnd" />
+    </LinearLayout>
+</LinearLayout>

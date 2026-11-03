@@ -1,30 +1,122 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme (Light) -->
-    <style name="Base.Theme.Rinda" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/rinda_green</item>
-        <item name="colorOnPrimary">@color/white</item>
-        <item name="colorPrimaryContainer">@color/rinda_green_container</item>
-        <item name="colorOnPrimaryContainer">@color/rinda_green_on_container</item>
+    <!--
+        Rinda app theme. Colours come from values/colors.xml (light) and values-night/colors.xml (dark).
+        Widgets pick up the Rinda styles by default (see styles.xml), so most layouts need no style attribute.
+    -->
+    <!-- Platform layer: API-specific window items go here (see values-v27, values-night-v27). -->
+    <style name="Platform.Theme.Rinda" parent="Theme.Material3.DayNight.NoActionBar" />
 
-        <item name="colorSecondary">@color/rinda_gold</item>
-        <item name="colorOnSecondary">@color/white</item>
-        <item name="colorSecondaryContainer">@color/rinda_gold_container</item>
-        <item name="colorOnSecondaryContainer">@color/rinda_gold_on_container</item>
+    <style name="Base.Theme.Rinda" parent="Platform.Theme.Rinda">
+        <item name="colorPrimary">@color/rinda_primary</item>
+        <item name="colorOnPrimary">@color/rinda_on_primary</item>
+        <item name="colorPrimaryContainer">@color/rinda_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/rinda_on_primary_container</item>
+        <item name="colorSecondary">@color/rinda_secondary</item>
+        <item name="colorOnSecondary">@color/rinda_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/rinda_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/rinda_on_secondary_container</item>
+        <item name="colorTertiary">@color/rinda_tertiary</item>
+        <item name="colorOnTertiary">@color/rinda_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/rinda_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/rinda_on_tertiary_container</item>
+        <item name="colorError">@color/rinda_error</item>
+        <item name="colorOnError">@color/rinda_on_error</item>
+        <item name="colorErrorContainer">@color/rinda_error_container</item>
+        <item name="colorOnErrorContainer">@color/rinda_on_error_container</item>
 
-        <item name="colorTertiary">@color/rinda_blue</item>
-        <item name="colorOnTertiary">@color/white</item>
+        <item name="android:colorBackground">@color/rinda_bg</item>
+        <item name="colorOnBackground">@color/rinda_text_primary</item>
+        <item name="colorSurface">@color/rinda_surface</item>
+        <item name="colorOnSurface">@color/rinda_text_primary</item>
+        <item name="colorSurfaceVariant">@color/rinda_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/rinda_text_secondary</item>
+        <item name="colorSurfaceContainerLowest">@color/rinda_surface</item>
+        <item name="colorSurfaceContainerLow">@color/rinda_surface</item>
+        <item name="colorSurfaceContainer">@color/rinda_surface_container</item>
+        <item name="colorSurfaceContainerHigh">@color/rinda_surface_container_high</item>
+        <item name="colorSurfaceContainerHighest">@color/rinda_surface_variant</item>
+        <item name="colorOutline">@color/rinda_outline_strong</item>
+        <item name="colorOutlineVariant">@color/rinda_outline</item>
+        <item name="colorControlNormal">@color/rinda_text_secondary</item>
 
-        <item name="android:colorBackground">@color/bg_light</item>
-        <item name="colorSurface">@color/surface_light</item>
-        <item name="colorSurfaceVariant">@color/surface_variant_light</item>
-        <item name="colorOnSurface">@color/text_primary_light</item>
-        <item name="colorOnSurfaceVariant">@color/text_secondary_light</item>
+        <!-- Type scale -->
+        <item name="textAppearanceDisplaySmall">@style/TextAppearance.Rinda.Display</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Rinda.Headline</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Rinda.Headline</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Rinda.Title</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Rinda.Subtitle</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Rinda.Body</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Rinda.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Rinda.Button</item>
 
-        <item name="android:statusBarColor">@color/bg_light</item>
+        <!-- Default widget styles -->
+        <item name="materialButtonStyle">@style/Widget.Rinda.Button</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.Rinda.Button.Outlined</item>
+        <item name="borderlessButtonStyle">@style/Widget.Rinda.Button.Text</item>
+        <item name="materialCardViewStyle">@style/Widget.Rinda.Card</item>
+        <item name="textInputStyle">@style/Widget.Rinda.TextInput</item>
+        <item name="toolbarStyle">@style/Widget.Rinda.Toolbar</item>
+        <item name="bottomNavigationStyle">@style/Widget.Rinda.BottomNav</item>
+        <item name="chipStyle">@style/Widget.Rinda.Chip</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Rinda.Dialog</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.Rinda.BottomSheet</item>
+        <item name="snackbarStyle">@style/Widget.Rinda.Snackbar</item>
+        <item name="swipeRefreshLayoutProgressSpinnerBackgroundColor">@color/rinda_surface</item>
+
+        <!-- Shapes -->
+        <item name="shapeAppearanceCornerSmall">@style/ShapeAppearance.Rinda.Small</item>
+        <item name="shapeAppearanceCornerMedium">@style/ShapeAppearance.Rinda.Medium</item>
+        <item name="shapeAppearanceCornerLarge">@style/ShapeAppearance.Rinda.Large</item>
+        <item name="shapeAppearanceCornerExtraLarge">@style/ShapeAppearance.Rinda.ExtraLarge</item>
+
+        <!-- Window -->
+        <item name="android:windowBackground">@color/rinda_bg</item>
+        <item name="android:statusBarColor">@color/rinda_bg</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:navigationBarColor">@color/surface_light</item>
-        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:navigationBarColor">@color/rinda_surface</item>
+        <item name="android:windowAnimationStyle">@style/Rinda.ActivityAnimation</item>
     </style>
 
     <style name="Theme.Rinda" parent="Base.Theme.Rinda" />
+
+    <!-- Splash: the hero green fills the window from the first frame -->
+    <style name="Theme.Rinda.Splash" parent="Theme.Rinda">
+        <item name="android:windowBackground">@drawable/bg_hero</item>
+        <item name="android:statusBarColor">@color/rinda_hero_start</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/rinda_hero_end</item>
+    </style>
+
+    <!-- Activity transitions: a short slide + fade, the same everywhere -->
+    <style name="Rinda.ActivityAnimation" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/screen_enter</item>
+        <item name="android:activityOpenExitAnimation">@anim/screen_exit</item>
+        <item name="android:activityCloseEnterAnimation">@anim/screen_pop_enter</item>
+        <item name="android:activityCloseExitAnimation">@anim/screen_pop_exit</item>
+    </style>
+
+    <style name="ThemeOverlay.Rinda.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.Rinda.ExtraLarge</item>
+        <item name="colorSurfaceContainerHigh">@color/rinda_surface_container_high</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/Rinda.DialogTitle</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/Rinda.DialogBody</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.Rinda.Button.Text.Dialog</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.Rinda.Button.Text.Dialog</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Widget.Rinda.Button.Text.Dialog</item>
+    </style>
+
+    <style name="Rinda.DialogTitle" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:textAppearance">@style/TextAppearance.Rinda.Title</item>
+    </style>
+
+    <style name="Rinda.DialogBody" parent="MaterialAlertDialog.Material3.Body.Text">
+        <item name="android:textAppearance">@style/TextAppearance.Rinda.Body</item>
+        <item name="android:textColor">@color/rinda_text_secondary</item>
+    </style>
+
+    <style name="ThemeOverlay.Rinda.BottomSheet" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.Rinda.BottomSheet</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+        <item name="android:navigationBarColor">@color/rinda_surface_container_high</item>
+    </style>
 </resources>

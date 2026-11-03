@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Numbered step ("1  Add your plot…"). Used by the Getting started card. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/min_touch_target"
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/tvStepNumber"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@drawable/bg_circle"
+        android:backgroundTint="@color/rinda_primary"
+        android:gravity="center"
+        android:importantForAccessibility="no"
+        android:textAppearance="@style/TextAppearance.Rinda.Label"
+        android:textColor="@color/rinda_on_primary" />
+
+    <TextView
+        android:id="@+id/tvStepText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:layout_weight="1"
+        android:textAppearance="@style/TextAppearance.Rinda.Body"
+        android:textColor="@color/rinda_on_primary_container" />
+</LinearLayout>

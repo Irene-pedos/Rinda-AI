@@ -1,7 +1,13 @@
 package com.rinda.app.ui.home;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.view.View;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import com.rinda.app.R;
@@ -11,6 +17,7 @@ import com.rinda.app.data.model.UserResponse;
 import com.rinda.app.databinding.ActivityHomeBinding;
 import com.rinda.app.ui.alerts.AlertsFragment;
 import com.rinda.app.ui.claims.ClaimsFragment;
+import com.rinda.app.ui.common.Ui;
 import com.rinda.app.ui.plots.PlotsFragment;
 import com.rinda.app.ui.profile.ProfileFragment;
 
@@ -23,6 +30,19 @@ public class HomeActivity extends AppCompatActivity {
     private final Fragment claimsFragment = new ClaimsFragment();
     private final Fragment profileFragment = new ProfileFragment();
 
+    private ConnectivityManager connectivityManager;
+    private final ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback() {
+        @Override
+        public void onAvailable(@NonNull Network network) {
+            runOnUiThread(() -> updateOfflineBanner());
+        }
+
+        @Override
+        public void onLost(@NonNull Network network) {
+            runOnUiThread(() -> updateOfflineBanner());
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,28 +53,50 @@ public class HomeActivity extends AppCompatActivity {
         setupBottomNavigation();
 
         if (savedInstanceState == null) {
-            loadFragment(homeFragment);
+            loadFragment(homeFragment, false);
+        }
+
+        connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (connectivityManager != null) {
+            NetworkRequest request = new NetworkRequest.Builder()
+                    .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                    .build();
+            connectivityManager.registerNetworkCallback(request, networkCallback);
+        }
+        updateOfflineBanner();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (connectivityManager != null) {
+            try {
+                connectivityManager.unregisterNetworkCallback(networkCallback);
+            } catch (IllegalArgumentException ignored) {
+                // Already unregistered
+            }
+        }
+    }
+
+    private void updateOfflineBanner() {
+        boolean offline = !Ui.isOnline(this);
+        if (offline) {
+            Ui.reveal(binding.tvOfflineBanner);
+        } else {
+            binding.tvOfflineBanner.setVisibility(View.GONE);
         }
     }
 
     private void setupToolbar() {
-        TokenManager tokenManager = TokenManager.getInstance(this);
-        UserResponse user = tokenManager.getUser();
-
+        UserResponse user = TokenManager.getInstance(this).getUser();
         if (user != null) {
-            // Display Demo label if isDemo == true
             binding.tvDemoBadge.setVisibility(user.isDemo() ? View.VISIBLE : View.GONE);
-
-            // Display Role badge
-            if (user.getRole() == Role.AGENT) {
-                binding.tvRoleBadge.setText(R.string.role_agent);
-                binding.tvRoleBadge.setBackgroundResource(R.drawable.ic_status_watch_bg);
-                binding.tvRoleBadge.setTextColor(getColor(R.color.rinda_gold_dark));
-            } else {
-                binding.tvRoleBadge.setText(R.string.role_farmer);
-                binding.tvRoleBadge.setBackgroundResource(R.drawable.ic_status_healthy_bg);
-                binding.tvRoleBadge.setTextColor(getColor(R.color.rinda_green));
-            }
+            binding.tvRoleBadge.setText(user.getRole() == Role.AGENT ? R.string.role_agent : R.string.role_farmer);
         }
     }
 
@@ -62,37 +104,40 @@ public class HomeActivity extends AppCompatActivity {
         binding.bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
-                binding.tvToolbarTitle.setText(R.string.app_name);
-                loadFragment(homeFragment);
-                return true;
+                show(R.string.app_name, homeFragment);
             } else if (itemId == R.id.nav_plots) {
-                binding.tvToolbarTitle.setText(R.string.nav_plots);
-                loadFragment(plotsFragment);
-                return true;
+                show(R.string.my_plots_title, plotsFragment);
             } else if (itemId == R.id.nav_alerts) {
-                binding.tvToolbarTitle.setText(R.string.nav_alerts);
-                loadFragment(alertsFragment);
-                return true;
+                show(R.string.nav_alerts, alertsFragment);
             } else if (itemId == R.id.nav_claims) {
-                binding.tvToolbarTitle.setText(R.string.nav_claims);
-                loadFragment(claimsFragment);
-                return true;
+                show(R.string.claims_title, claimsFragment);
             } else if (itemId == R.id.nav_profile) {
-                binding.tvToolbarTitle.setText(R.string.nav_profile);
-                loadFragment(profileFragment);
-                return true;
+                show(R.string.nav_profile, profileFragment);
+            } else {
+                return false;
             }
-            return false;
+            return true;
         });
+        // Tapping the current tab again does nothing (no reload flash).
+        binding.bottomNav.setOnItemReselectedListener(item -> {
+        });
+    }
+
+    private void show(int titleRes, Fragment fragment) {
+        binding.tvToolbarTitle.setText(titleRes);
+        loadFragment(fragment, true);
     }
 
     public void selectTab(int navItemId) {
         binding.bottomNav.setSelectedItemId(navItemId);
     }
 
-    private void loadFragment(Fragment fragment) {
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragmentContainer, fragment)
-                .commit();
+    private void loadFragment(Fragment fragment, boolean animate) {
+        androidx.fragment.app.FragmentTransaction tx = getSupportFragmentManager().beginTransaction()
+                .setReorderingAllowed(true);
+        if (animate) {
+            tx.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
+        }
+        tx.replace(R.id.fragmentContainer, fragment).commit();
     }
 }

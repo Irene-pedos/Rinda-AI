@@ -1,5 +1,7 @@
 package com.rinda.app.ui.alerts;
 
+import android.content.Context;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.rinda.app.R;
 import com.rinda.app.data.local.NotificationEntity;
 import com.rinda.app.databinding.ItemNotificationBinding;
+import com.rinda.app.ui.common.StatusUi;
 import com.rinda.app.util.DateTimeUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,10 +39,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemNotificationBinding binding = ItemNotificationBinding.inflate(
-                LayoutInflater.from(parent.getContext()), parent, false
-        );
-        return new ViewHolder(binding);
+        return new ViewHolder(ItemNotificationBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -61,70 +61,37 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         }
 
         void bind(NotificationEntity item) {
-            // Unread dot and style
-            binding.vUnreadDot.setVisibility(item.isRead ? View.GONE : View.VISIBLE);
-            binding.tvTitle.setText(getLocalizedTitle(item));
-            binding.tvBody.setText(item.body != null ? item.body : "");
+            Context context = itemView.getContext();
 
-            // Relative time
+            // Unread: dot + bold title (not colour alone)
+            binding.vUnreadDot.setVisibility(item.isRead ? View.GONE : View.VISIBLE);
+            binding.tvTitle.setTypeface(null, item.isRead ? Typeface.NORMAL : Typeface.BOLD);
+            binding.tvTitle.setText(AlertRouter.title(context, item));
+            binding.tvBody.setText(item.body != null ? item.body : "");
+            binding.tvBody.setVisibility(item.body != null && !item.body.isEmpty() ? View.VISIBLE : View.GONE);
             binding.tvTime.setText(DateTimeUtils.formatRelativeTime(item.createdAt));
 
-            // Plot Name Chip
             if (item.plotName != null && !item.plotName.isEmpty()) {
                 binding.tvPlotName.setVisibility(View.VISIBLE);
                 binding.tvPlotName.setText(item.plotName);
             } else if (item.plotId != null && item.plotId > 0) {
                 binding.tvPlotName.setVisibility(View.VISIBLE);
-                binding.tvPlotName.setText("Plot #" + item.plotId);
+                binding.tvPlotName.setText(context.getString(R.string.plot_number, item.plotId));
             } else {
                 binding.tvPlotName.setVisibility(View.GONE);
             }
 
-            // Demo Badge
             binding.tvDemoBadge.setVisibility(item.isDemo ? View.VISIBLE : View.GONE);
 
-            // Icon & Background based on type / code
-            String type = item.type != null ? item.type : "SYSTEM";
-            switch (type) {
-                case "HEALTH":
-                    if ("HEALTH_AT_RISK".equalsIgnoreCase(item.code)) {
-                        binding.layoutIconContainer.setBackgroundResource(R.drawable.ic_status_at_risk_bg);
-                        binding.ivTypeIcon.setImageResource(R.drawable.ic_status_at_risk);
-                    } else if ("HEALTH_WATCH".equalsIgnoreCase(item.code)) {
-                        binding.layoutIconContainer.setBackgroundResource(R.drawable.ic_status_watch_bg);
-                        binding.ivTypeIcon.setImageResource(R.drawable.ic_status_watch);
-                    } else {
-                        binding.layoutIconContainer.setBackgroundResource(R.drawable.ic_status_healthy_bg);
-                        binding.ivTypeIcon.setImageResource(R.drawable.ic_status_healthy);
-                    }
-                    break;
-                case "CLAIM":
-                    binding.layoutIconContainer.setBackgroundResource(R.drawable.ic_status_pending_bg);
-                    binding.ivTypeIcon.setImageResource(R.drawable.ic_nav_claims);
-                    break;
-                case "SYSTEM":
-                default:
-                    binding.layoutIconContainer.setBackgroundResource(R.drawable.ic_status_pending_bg);
-                    binding.ivTypeIcon.setImageResource(R.drawable.ic_nav_alerts);
-                    break;
-            }
+            StatusUi.Spec look = AlertRouter.look(item);
+            StatusUi.applyBadge(binding.ivTypeIcon, look);
+            binding.ivTypeIcon.setImageResource(AlertRouter.icon(item));
 
             itemView.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onNotificationClick(item);
                 }
             });
-        }
-
-        private String getLocalizedTitle(NotificationEntity item) {
-            if ("HEALTH_AT_RISK".equalsIgnoreCase(item.code)) {
-                return itemView.getContext().getString(R.string.health_at_risk) + " Alert";
-            } else if ("HEALTH_WATCH".equalsIgnoreCase(item.code)) {
-                return itemView.getContext().getString(R.string.health_watch) + " Alert";
-            } else if ("HEALTH_RECOVERED".equalsIgnoreCase(item.code)) {
-                return itemView.getContext().getString(R.string.health_healthy) + " Notice";
-            }
-            return item.title != null ? item.title : "Notification";
         }
     }
 }

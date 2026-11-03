@@ -1,7 +1,6 @@
 package com.rinda.app.ui.claims;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.rinda.app.R;
 import com.rinda.app.data.local.ClaimEntity;
 import com.rinda.app.databinding.ItemClaimBinding;
+import com.rinda.app.ui.common.StatusUi;
 import com.rinda.app.util.DateTimeUtils;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -41,10 +41,7 @@ public class ClaimsAdapter extends RecyclerView.Adapter<ClaimsAdapter.ViewHolder
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemClaimBinding binding = ItemClaimBinding.inflate(
-                LayoutInflater.from(parent.getContext()), parent, false
-        );
-        return new ViewHolder(binding);
+        return new ViewHolder(ItemClaimBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -68,90 +65,40 @@ public class ClaimsAdapter extends RecyclerView.Adapter<ClaimsAdapter.ViewHolder
         void bind(ClaimEntity claim) {
             Context context = itemView.getContext();
 
-            // Plot Name
-            binding.tvPlotName.setText(claim.plotName != null ? claim.plotName : ("Plot #" + claim.plotId));
+            binding.tvPlotName.setText(claim.plotName != null ? claim.plotName : context.getString(R.string.plot_number, claim.plotId));
 
-            // Trigger Date
             if (claim.triggerDate != null && !claim.triggerDate.isEmpty()) {
-                binding.tvTriggerDate.setText("Triggered: " + DateTimeUtils.formatDate(claim.triggerDate));
+                binding.tvTriggerDate.setText(context.getString(R.string.claim_triggered_on, DateTimeUtils.formatDate(claim.triggerDate)));
             } else {
-                binding.tvTriggerDate.setText("Trigger date pending");
+                binding.tvTriggerDate.setText(R.string.claim_trigger_date_pending);
             }
 
-            // Demo Badge
             binding.tvDemoBadge.setVisibility(claim.isDemo ? View.VISIBLE : View.GONE);
 
-            // Amount: if null, show pending text (never 0!)
+            // Amount: only what the server says; null means "not decided", never 0 (spec §0 rule 2)
             if (claim.amount != null) {
-                NumberFormat format = NumberFormat.getNumberInstance(Locale.US);
-                binding.tvAmount.setText(format.format(claim.amount) + " RWF");
-                binding.tvAmount.setTextColor(ContextCompat.getColor(context, R.color.rinda_green));
+                binding.tvAmount.setText(context.getString(R.string.claim_amount_rwf,
+                        NumberFormat.getNumberInstance(Locale.getDefault()).format(claim.amount)));
+                binding.tvAmount.setTextColor(ContextCompat.getColor(context, R.color.rinda_text_primary));
             } else {
-                binding.tvAmount.setText("Rate pending confirmation");
-                binding.tvAmount.setTextColor(ContextCompat.getColor(context, R.color.text_secondary_light));
+                binding.tvAmount.setText(R.string.claim_amount_pending);
+                binding.tvAmount.setTextColor(ContextCompat.getColor(context, R.color.rinda_text_secondary));
             }
 
-            // Payout Rate
             if (claim.payoutRate != null) {
-                double pct = claim.payoutRate.doubleValue() * 100.0;
+                binding.tvPayoutRate.setText(context.getString(R.string.claim_rate, claim.payoutRate.doubleValue() * 100.0));
                 binding.tvPayoutRate.setVisibility(View.VISIBLE);
-                binding.tvPayoutRate.setText(String.format(Locale.US, "%.0f%% payout rate", pct));
             } else {
                 binding.tvPayoutRate.setVisibility(View.GONE);
             }
 
-            // Status Chip
-            bindStatusChip(claim.status);
+            StatusUi.applyPill(binding.tvStatusChip, StatusUi.forClaim(claim.status));
 
             itemView.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onClaimClick(claim);
                 }
             });
-        }
-
-        private void bindStatusChip(String status) {
-            Context context = itemView.getContext();
-            String s = status != null ? status : "UNDER_REVIEW";
-
-            switch (s) {
-                case "APPROVED":
-                    binding.tvStatusChip.setText(R.string.claim_status_approved);
-                    binding.tvStatusChip.setBackgroundResource(R.drawable.ic_status_healthy_bg);
-                    binding.tvStatusChip.setTextColor(ContextCompat.getColor(context, R.color.status_healthy));
-                    break;
-                case "DECLINED":
-                    binding.tvStatusChip.setText(R.string.claim_status_declined);
-                    binding.tvStatusChip.setBackgroundResource(R.drawable.ic_status_at_risk_bg);
-                    binding.tvStatusChip.setTextColor(ContextCompat.getColor(context, R.color.status_at_risk));
-                    break;
-                case "PAID":
-                    binding.tvStatusChip.setText(R.string.claim_status_paid);
-                    binding.tvStatusChip.setBackgroundResource(R.drawable.ic_status_healthy_bg);
-                    binding.tvStatusChip.setTextColor(ContextCompat.getColor(context, R.color.rinda_green_dark));
-                    break;
-                case "FIELD_VISIT_REQUESTED":
-                    binding.tvStatusChip.setText(R.string.claim_status_field_visit);
-                    binding.tvStatusChip.setBackgroundResource(R.drawable.ic_status_watch_bg);
-                    binding.tvStatusChip.setTextColor(ContextCompat.getColor(context, R.color.rinda_blue));
-                    break;
-                case "REVIEW_REQUESTED":
-                    binding.tvStatusChip.setText(R.string.claim_status_review_requested);
-                    binding.tvStatusChip.setBackgroundResource(R.drawable.ic_status_pending_bg);
-                    binding.tvStatusChip.setTextColor(Color.parseColor("#7B1FA2"));
-                    break;
-                case "FINAL":
-                    binding.tvStatusChip.setText(R.string.claim_status_final);
-                    binding.tvStatusChip.setBackgroundResource(R.drawable.ic_status_pending_bg);
-                    binding.tvStatusChip.setTextColor(ContextCompat.getColor(context, R.color.text_secondary_light));
-                    break;
-                case "UNDER_REVIEW":
-                default:
-                    binding.tvStatusChip.setText(R.string.claim_status_under_review);
-                    binding.tvStatusChip.setBackgroundResource(R.drawable.ic_status_pending_bg);
-                    binding.tvStatusChip.setTextColor(ContextCompat.getColor(context, R.color.status_pending));
-                    break;
-            }
         }
     }
 }

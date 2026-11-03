@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rinda design tokens (dark). Same names as values/colors.xml. -->
+<resources>
+    <color name="rinda_primary">#8FD6A2</color>
+    <color name="rinda_on_primary">#00391B</color>
+    <color name="rinda_primary_container">#14522C</color>
+    <color name="rinda_on_primary_container">#CDEBD4</color>
+
+    <color name="rinda_secondary">#F5C065</color>
+    <color name="rinda_on_secondary">#3F2A00</color>
+    <color name="rinda_secondary_container">#5C4000</color>
+    <color name="rinda_on_secondary_container">#FFE3A8</color>
+    <color name="rinda_accent">#F5C065</color>
+
+    <color name="rinda_tertiary">#9CCBF0</color>
+    <color name="rinda_on_tertiary">#00344F</color>
+    <color name="rinda_tertiary_container">#164B71</color>
+    <color name="rinda_on_tertiary_container">#D3E6F6</color>
+
+    <color name="rinda_error">#F2B8B5</color>
+    <color name="rinda_on_error">#601410</color>
+    <color name="rinda_error_container">#8C1D18</color>
+    <color name="rinda_on_error_container">#FADEDB</color>
+
+    <color name="rinda_bg">#10140F</color>
+    <color name="rinda_surface">#181D17</color>
+    <color name="rinda_surface_variant">#252C24</color>
+    <color name="rinda_surface_container">#1C221B</color>
+    <color name="rinda_surface_container_high">#262D25</color>
+    <color name="rinda_text_primary">#E3E7DE</color>
+    <color name="rinda_text_secondary">#BCC3B7</color>
+    <color name="rinda_text_tertiary">#959D91</color>
+    <color name="rinda_outline">#323A31</color>
+    <color name="rinda_outline_strong">#5A6357</color>
+    <color name="rinda_scrim">#CC000000</color>
+    <color name="rinda_hero_start">#14522C</color>
+    <color name="rinda_hero_end">#1C6A3A</color>
+    <color name="rinda_on_hero">#FFFFFF</color>
+    <color name="rinda_on_hero_muted">#CDEBD4</color>
+
+    <color name="status_healthy">#8FD6A2</color>
+    <color name="status_healthy_bg">#173322</color>
+    <color name="status_watch">#F5C065</color>
+    <color name="status_watch_bg">#3A2A0B</color>
+    <color name="status_at_risk">#F2B8B5</color>
+    <color name="status_at_risk_bg">#3D1A18</color>
+    <color name="status_pending">#A8C8F5</color>
+    <color name="status_pending_bg">#172A44</color>
+    <color name="status_not_enough_data">#B6C3CB</color>
+    <color name="status_not_enough_data_bg">#263036</color>
+    <color name="status_demo">#D7B8F2</color>
+    <color name="status_demo_bg">#2E1F3D</color>
+
+    <color name="chart_plot_line">#8FD6A2</color>
+    <color name="chart_normal_median">#5E9C6E</color>
+    <color name="chart_normal_band">#2E5A3A</color>
+    <color name="chart_rain_bar">#9CCBF0</color>
+    <color name="chart_axis_text">#959D91</color>
+    <color name="chart_grid">#2A3229</color>
+</resources>

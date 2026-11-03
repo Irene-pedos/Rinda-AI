@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Rinda type scale and component styles. Use these instead of setting textSize / textColor /
+    backgroundTint on each view. See docs/ANDROID_UI_GUIDELINES.md for when to use each one.
+-->
+<resources>
+
+    <!-- ===== Type scale (minimum 13sp anywhere; body text is 16sp) ===== -->
+    <style name="TextAppearance.Rinda.Display" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:textSize">30sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/rinda_text_primary</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
+    <style name="TextAppearance.Rinda.Headline" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textSize">24sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/rinda_text_primary</item>
+    </style>
+
+    <style name="TextAppearance.Rinda.Title" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">18sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/rinda_text_primary</item>
+    </style>
+
+    <style name="TextAppearance.Rinda.Subtitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/rinda_text_primary</item>
+    </style>
+
+    <style name="TextAppearance.Rinda.Body" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/rinda_text_secondary</item>
+        <item name="android:lineSpacingExtra">4sp</item>
+    </style>
+
+    <style name="TextAppearance.Rinda.BodySmall" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/rinda_text_secondary</item>
+        <item name="android:lineSpacingExtra">3sp</item>
+    </style>
+
+    <style name="TextAppearance.Rinda.Caption" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/rinda_text_tertiary</item>
+    </style>
+
+    <style name="TextAppearance.Rinda.Label" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/rinda_text_primary</item>
+    </style>
+
+    <!-- Section header above a group of cards -->
+    <style name="TextAppearance.Rinda.Section" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/rinda_text_secondary</item>
+    </style>
+
+    <!-- Text on buttons: no colour, so the button style decides it -->
+    <style name="TextAppearance.Rinda.Button" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!-- ===== Buttons ===== -->
+    <!-- Primary filled: ONE per screen, for the main next step -->
+    <style name="Widget.Rinda.Button" parent="Widget.Material3.Button">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingStart">@dimen/spacing_xl</item>
+        <item name="android:paddingEnd">@dimen/spacing_xl</item>
+        <item name="android:textAppearance">@style/TextAppearance.Rinda.Button</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Rinda.Medium</item>
+        <item name="iconGravity">textStart</item>
+        <item name="iconPadding">@dimen/spacing_sm</item>
+        <item name="iconSize">@dimen/icon_md</item>
+    </style>
+
+    <!-- Secondary: a softer filled button for the second most important action -->
+    <style name="Widget.Rinda.Button.Tonal" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Rinda.Button</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Rinda.Medium</item>
+        <item name="iconGravity">textStart</item>
+        <item name="iconPadding">@dimen/spacing_sm</item>
+        <item name="iconSize">@dimen/icon_md</item>
+        <item name="backgroundTint">@color/rinda_primary_container</item>
+        <item name="android:textColor">@color/rinda_on_primary_container</item>
+        <item name="iconTint">@color/rinda_on_primary_container</item>
+    </style>
+
+    <style name="Widget.Rinda.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Rinda.Button</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Rinda.Medium</item>
+        <item name="strokeColor">@color/rinda_outline_strong</item>
+        <item name="android:textColor">@color/rinda_primary</item>
+        <item name="iconTint">@color/rinda_primary</item>
+        <item name="iconGravity">textStart</item>
+        <item name="iconPadding">@dimen/spacing_sm</item>
+        <item name="iconSize">@dimen/icon_md</item>
+    </style>
+
+    <!-- Destructive (delete, log out): outlined in the error colour, never the primary button -->
+    <style name="Widget.Rinda.Button.Danger" parent="Widget.Rinda.Button.Outlined">
+        <item name="strokeColor">@color/rinda_error</item>
+        <item name="android:textColor">@color/rinda_error</item>
+        <item name="iconTint">@color/rinda_error</item>
+    </style>
+
+    <style name="Widget.Rinda.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:textAppearance">@style/TextAppearance.Rinda.Button</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/rinda_primary</item>
+        <item name="iconTint">@color/rinda_primary</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Rinda.Medium</item>
+    </style>
+
+    <style name="Widget.Rinda.Button.Text.Dialog" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:textAppearance">@style/TextAppearance.Rinda.Button</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/rinda_primary</item>
+    </style>
+
+    <!-- Light button on the green hero header -->
+    <style name="Widget.Rinda.Button.OnHero" parent="Widget.Rinda.Button">
+        <item name="backgroundTint">@color/rinda_on_hero</item>
+        <item name="android:textColor">@color/rinda_hero_start</item>
+        <item name="iconTint">@color/rinda_hero_start</item>
+    </style>
+
+    <!-- Round icon-only button (help "?", map controls) with a 48dp touch area -->
+    <style name="Widget.Rinda.IconButton" parent="Widget.Material3.Button.IconButton">
+        <item name="android:minWidth">@dimen/min_touch_target</item>
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="iconTint">@color/rinda_text_secondary</item>
+        <item name="iconSize">@dimen/icon_md</item>
+    </style>
+
+    <style name="Widget.Rinda.IconButton.Filled" parent="Widget.Material3.Button.IconButton.Filled.Tonal">
+        <item name="android:minWidth">@dimen/min_touch_target</item>
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="backgroundTint">@color/rinda_surface</item>
+        <item name="iconTint">@color/rinda_text_primary</item>
+        <item name="iconSize">@dimen/icon_md</item>
+        <item name="elevation">@dimen/elevation_low</item>
+    </style>
+
+    <!-- ===== Cards ===== -->
+    <!-- Default card: flat, white, 1dp outline, 20dp corners -->
+    <style name="Widget.Rinda.Card" parent="Widget.Material3.CardView.Outlined">
+        <item name="cardBackgroundColor">@color/rinda_surface</item>
+        <item name="strokeColor">@color/rinda_outline</item>
+        <item name="strokeWidth">@dimen/stroke_thin</item>
+        <item name="cardElevation">@dimen/elevation_none</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Rinda.Large</item>
+    </style>
+
+    <!-- Highlight card: tinted, no outline. Use for "Getting started" and tips. -->
+    <style name="Widget.Rinda.Card.Tinted" parent="Widget.Rinda.Card">
+        <item name="cardBackgroundColor">@color/rinda_primary_container</item>
+        <item name="strokeWidth">0dp</item>
+    </style>
+
+    <style name="Widget.Rinda.Card.Info" parent="Widget.Rinda.Card">
+        <item name="cardBackgroundColor">@color/rinda_surface_variant</item>
+        <item name="strokeWidth">0dp</item>
+    </style>
+
+    <style name="Widget.Rinda.Card.Demo" parent="Widget.Rinda.Card">
+        <item name="cardBackgroundColor">@color/status_demo_bg</item>
+        <item name="strokeColor">@color/status_demo</item>
+    </style>
+
+    <!-- ===== Inputs ===== -->
+    <style name="Widget.Rinda.TextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/rinda_primary</item>
+        <item name="boxStrokeWidth">@dimen/stroke_thin</item>
+        <item name="boxStrokeWidthFocused">@dimen/stroke_selected</item>
+        <item name="boxBackgroundColor">@color/rinda_surface</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Rinda.Medium</item>
+        <item name="hintTextAppearance">@style/TextAppearance.Rinda.Label</item>
+        <item name="helperTextTextAppearance">@style/TextAppearance.Rinda.Caption</item>
+        <item name="errorTextAppearance">@style/TextAppearance.Rinda.Caption</item>
+        <item name="android:textColorHint">@color/rinda_text_tertiary</item>
+    </style>
+
+    <style name="Widget.Rinda.TextInput.Dropdown" parent="Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        <item name="boxStrokeColor">@color/rinda_primary</item>
+        <item name="boxStrokeWidthFocused">@dimen/stroke_selected</item>
+        <item name="boxBackgroundColor">@color/rinda_surface</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Rinda.Medium</item>
+        <item name="hintTextAppearance">@style/TextAppearance.Rinda.Label</item>
+        <item name="helperTextTextAppearance">@style/TextAppearance.Rinda.Caption</item>
+        <item name="errorTextAppearance">@style/TextAppearance.Rinda.Caption</item>
+    </style>
+
+    <style name="Rinda.InputText" parent="">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/rinda_text_primary</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+    </style>
+
+    <!-- ===== Status pill (icon + word on a tinted background). Set by StatusUi.applyPill(). ===== -->
+    <style name="Widget.Rinda.StatusPill" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">32dp</item>
+        <item name="android:background">@drawable/bg_pill</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">@dimen/spacing_md</item>
+        <item name="android:paddingEnd">@dimen/spacing_md</item>
+        <item name="android:paddingTop">@dimen/spacing_xs</item>
+        <item name="android:paddingBottom">@dimen/spacing_xs</item>
+        <item name="android:drawablePadding">6dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Rinda.Label</item>
+        <item name="android:maxLines">2</item>
+    </style>
+
+    <!-- Small pill for "Demo", role and confidence -->
+    <style name="Widget.Rinda.Tag" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_pill</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="android:paddingTop">3dp</item>
+        <item name="android:paddingBottom">3dp</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:maxLines">1</item>
+    </style>
+
+    <style name="Widget.Rinda.Tag.Demo" parent="Widget.Rinda.Tag">
+        <item name="android:backgroundTint">@color/status_demo_bg</item>
+        <item name="android:textColor">@color/status_demo</item>
+        <item name="android:text">@string/app_demo_badge</item>
+    </style>
+
+    <!-- Round tinted icon badge at the start of a card or row -->
+    <style name="Widget.Rinda.IconBadge" parent="">
+        <item name="android:layout_width">@dimen/icon_badge</item>
+        <item name="android:layout_height">@dimen/icon_badge</item>
+        <item name="android:background">@drawable/bg_circle</item>
+        <item name="android:backgroundTint">@color/rinda_primary_container</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="tint">@color/rinda_primary</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+
+    <!-- ===== Chips ===== -->
+    <style name="Widget.Rinda.Chip" parent="Widget.Material3.Chip.Assist">
+        <item name="android:textAppearance">@style/TextAppearance.Rinda.Label</item>
+        <item name="chipMinHeight">@dimen/min_touch_target</item>
+        <item name="chipBackgroundColor">@color/rinda_surface</item>
+        <item name="chipStrokeColor">@color/rinda_outline_strong</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Rinda.Full</item>
+    </style>
+
+    <!-- ===== Bars ===== -->
+    <style name="Widget.Rinda.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:background">@color/rinda_bg</item>
+        <item name="titleTextAppearance">@style/TextAppearance.Rinda.Title</item>
+        <item name="navigationIconTint">@color/rinda_text_primary</item>
+        <item name="contentInsetStartWithNavigation">0dp</item>
+    </style>
+
+    <style name="Widget.Rinda.BottomNav" parent="Widget.Material3.BottomNavigationView">
+        <item name="backgroundTint">@color/rinda_surface</item>
+        <item name="itemIconTint">@color/nav_item_color</item>
+        <item name="itemTextColor">@color/nav_item_color</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.Rinda.BottomNav.Indicator</item>
+        <item name="itemTextAppearanceActive">@style/TextAppearance.Rinda.NavLabel.Active</item>
+        <item name="itemTextAppearanceInactive">@style/TextAppearance.Rinda.NavLabel</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="itemIconSize">@dimen/icon_md</item>
+        <item name="elevation">@dimen/elevation_high</item>
+    </style>
+
+    <style name="Widget.Rinda.BottomNav.Indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/rinda_primary_container</item>
+    </style>
+
+    <style name="TextAppearance.Rinda.NavLabel" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.Rinda.NavLabel.Active" parent="TextAppearance.Rinda.NavLabel">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.Rinda.BottomSheet" parent="Widget.Material3.BottomSheet">
+        <item name="backgroundTint">@color/rinda_surface_container_high</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Rinda.SheetTop</item>
+    </style>
+
+    <style name="Widget.Rinda.Snackbar" parent="Widget.Material3.Snackbar">
+        <item name="shapeAppearance">@style/ShapeAppearance.Rinda.Medium</item>
+    </style>
+
+    <!-- Fixed area at the bottom of a screen holding the primary button -->
+    <style name="Rinda.BottomBar" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@color/rinda_bg</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingStart">@dimen/screen_padding</item>
+        <item name="android:paddingEnd">@dimen/screen_padding</item>
+        <item name="android:paddingTop">@dimen/spacing_md</item>
+        <item name="android:paddingBottom">@dimen/spacing_base</item>
+    </style>
+
+    <style name="Rinda.Divider" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">@color/rinda_outline</item>
+    </style>
+
+    <!-- ===== Shapes ===== -->
+    <style name="ShapeAppearance.Rinda.Small" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerSize">@dimen/radius_sm</item>
+    </style>
+
+    <style name="ShapeAppearance.Rinda.Medium" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerSize">@dimen/radius_md</item>
+    </style>
+
+    <style name="ShapeAppearance.Rinda.Large" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerSize">@dimen/radius_lg</item>
+    </style>
+
+    <style name="ShapeAppearance.Rinda.ExtraLarge" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerSize">@dimen/radius_xl</item>
+    </style>
+
+    <style name="ShapeAppearance.Rinda.Full" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="ShapeAppearance.Rinda.SheetTop" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerSizeTopLeft">@dimen/radius_xl</item>
+        <item name="cornerSizeTopRight">@dimen/radius_xl</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+</resources>

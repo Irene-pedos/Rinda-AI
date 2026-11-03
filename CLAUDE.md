@@ -12,7 +12,7 @@ The repo root is the workspace, with `backend/`, `ml-service/`, `android/`, `das
 
 The lab computer has no admin rights for this work, and its defaults are wrong for this project:
 
-- **Java:** `java` on PATH is JDK 26. Spring Boot uses JDK 17 (`JAVA_17_HOME` in `.env`). Android's Gradle uses Android Studio's bundled JDK 21.
+- **Java:** `java` on PATH is JDK 26. Spring Boot uses JDK 17 (`JAVA_17_HOME` in `.env`). Android's Gradle also uses JDK 17, because Android Studio's bundled JDK is now 25, which Gradle 8.11.1 does not support.
 - **Database:** port 3306 and the `mysql` Windows service are XAMPP's MariaDB 10.4, not MySQL. Rinda's MySQL 8 is on port **3307**. Never point the app at 3306: MariaDB does not support `POLYGON SRID 4326` columns.
 - **MySQL does not survive a reboot.** Start it with `powershell -ExecutionPolicy Bypass -File database\mysql-dev.ps1 -Action start`.
 - **Secrets** are in `.env`, generated per computer by `scripts\new-env.ps1`.
@@ -54,10 +54,10 @@ Run from `ml-service/`. The Python is in `.venv` (3.13). Tests need neither Eart
 
 ## Android build
 
-Run from `android/`. **The build currently fails** with `checkDebugAarMetadata`: `androidx.activity:1.13.0` and its transitive dependencies need `compileSdk` 36 or later, but `app/build.gradle.kts` sets 35. The `android-36` platform is installed. Until this is fixed, the commands below will not succeed. The JDK 26 failure shows only the message `26.0.2.1`.
+Run from `android/` with **JDK 17**. Gradle 8.11.1 cannot run on Android Studio 2026.2's bundled JDK 25 (`jbr`) or on JDK 26, and either failure shows only the version number (`25.0.4`, `26.0.2.1`). Android Studio's Gradle JDK is set to 17 in `.idea/gradle.xml`. `BackendApiIntegrationTest` needs the backend running on port 8080; without it, those 3 tests fail with `ConnectException`.
 
 ```powershell
-$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-17"
 .\gradlew.bat assembleDebug
 .\gradlew.bat testDebugUnitTest
 .\gradlew.bat testDebugUnitTest --tests "com.example.rindaai.ExampleUnitTest"
@@ -101,8 +101,10 @@ Where the Figma design conflicts with the spec, follow the Figma for look and fe
 
 ## Android conventions (spec §5.3, §9)
 
+- **Follow `docs/ANDROID_UI_GUIDELINES.md`** for every screen: design tokens, components, templates and copy rules.
 - One Activity per main flow, with Fragments for the tabs.
 - All strings go in `strings.xml`: `values/` for English, `values-rw/` for Kinyarwanda.
-- Colours and styles go in `res/values`, with dark variants in `values-night`.
+- Colours are tokens in `res/values/colors.xml`, with the same names in `values-night/colors.xml`. Never write a hex colour in a layout or in Java.
+- Show every status through `ui/common/StatusUi.java` (icon + word + meaning), never with a hand-written `switch`.
 - Touch targets are at least 48 dp, and status is never shown by colour alone.
 - The JWT goes in EncryptedSharedPreferences, not SQLite. Never store OTPs or other users' data on the phone.

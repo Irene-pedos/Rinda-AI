@@ -1,0 +1,15 @@
+<resources>
+    <!-- API 27+: dark navigation bar icons on the light surface. -->
+    <style name="Platform.Theme.Rinda" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+
+    <!-- Splash: light icons on the green navigation bar. Same items as values/themes.xml plus the API 27 one. -->
+    <style name="Theme.Rinda.Splash" parent="Theme.Rinda">
+        <item name="android:windowBackground">@drawable/bg_hero</item>
+        <item name="android:statusBarColor">@color/rinda_hero_start</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/rinda_hero_end</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>

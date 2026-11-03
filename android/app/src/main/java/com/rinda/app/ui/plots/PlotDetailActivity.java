@@ -1,15 +1,15 @@
 package com.rinda.app.ui.plots;
 
-import android.app.AlertDialog;
-import android.graphics.Color;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.LegendEntry;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
@@ -18,6 +18,7 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.rinda.app.R;
 import com.rinda.app.data.api.ApiClient;
 import com.rinda.app.data.api.ApiErrorParser;
@@ -32,11 +33,17 @@ import com.rinda.app.data.model.ObservationResponse;
 import com.rinda.app.data.model.PlotHealthStatusResponse;
 import com.rinda.app.data.model.PlotRequest;
 import com.rinda.app.data.model.PlotResponse;
-import com.rinda.app.data.model.PlotStatus;
-import com.rinda.app.data.model.WeatherResponse;
 import com.rinda.app.databinding.ActivityPlotDetailBinding;
+import com.rinda.app.databinding.DialogTextInputBinding;
+import com.rinda.app.databinding.ViewCardHeaderBinding;
+import com.rinda.app.ui.common.InfoSheet;
+import com.rinda.app.ui.common.StatusUi;
+import com.rinda.app.ui.common.Ui;
+import com.rinda.app.util.DateTimeUtils;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -63,19 +70,28 @@ public class PlotDetailActivity extends AppCompatActivity {
         if (name != null) {
             binding.tvPlotName.setText(name);
         }
-
         if (plotId == -1) {
             finish();
             return;
         }
 
-        setSupportActionBar(binding.toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
         binding.toolbar.setNavigationOnClickListener(v -> finish());
 
-        binding.swipeRefresh.setColorSchemeResources(R.color.rinda_green);
+        header(binding.healthHeader, R.drawable.ic_leaf, R.string.crop_health_title, R.string.help_ndvi_title, R.string.help_ndvi_body);
+        header(binding.forecastHeader, R.drawable.ic_trending, R.string.harvest_forecast_title, R.string.help_forecast_title, R.string.help_forecast_body);
+        header(binding.coverageHeader, R.drawable.ic_shield, R.string.coverage_title, R.string.help_coverage_title, R.string.help_coverage_body);
+        header(binding.ndviHeader, R.drawable.ic_satellite, R.string.chart_ndvi_title, R.string.help_ndvi_title, R.string.help_ndvi_body);
+        header(binding.rainHeader, R.drawable.ic_weather_rain, R.string.chart_rain_title, 0, 0);
+        binding.btnConfidenceHelp.setOnClickListener(v ->
+                InfoSheet.show(this, R.string.help_confidence_title, R.string.help_confidence_body));
+
+        binding.rowSumInsured.ivRowIcon.setImageResource(R.drawable.ic_wallet);
+        binding.rowSumInsured.tvRowLabel.setText(R.string.coverage_sum_insured);
+        binding.rowSumInsured.tvRowValue.setText(R.string.coverage_not_confirmed);
+
+        setupCharts();
+
+        binding.swipeRefresh.setColorSchemeResources(R.color.rinda_primary);
         binding.swipeRefresh.setOnRefreshListener(this::fetchAllData);
 
         binding.btnEditPlot.setOnClickListener(v -> showEditNameDialog());
@@ -83,6 +99,15 @@ public class PlotDetailActivity extends AppCompatActivity {
 
         observeLocalPlot();
         fetchAllData();
+    }
+
+    private void header(ViewCardHeaderBinding h, int iconRes, int titleRes, int helpTitleRes, int helpBodyRes) {
+        h.ivHeaderIcon.setImageResource(iconRes);
+        h.tvHeaderTitle.setText(titleRes);
+        if (helpTitleRes != 0) {
+            h.btnHeaderHelp.setVisibility(View.VISIBLE);
+            InfoSheet.bind(h.btnHeaderHelp, helpTitleRes, helpBodyRes);
+        }
     }
 
     private void observeLocalPlot() {
@@ -106,6 +131,8 @@ public class PlotDetailActivity extends AppCompatActivity {
         fetchWeather();
     }
 
+    // ===== Plot header =====
+
     private void fetchPlotMetadata() {
         ApiClient.getInstance(this).getService().getPlot(plotId)
                 .enqueue(new Callback<PlotResponse>() {
@@ -118,7 +145,7 @@ public class PlotDetailActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(Call<PlotResponse> call, Throwable t) {
-                        // Offline: cache displays
+                        // Offline: the cached plot is shown
                     }
                 });
     }
@@ -128,43 +155,20 @@ public class PlotDetailActivity extends AppCompatActivity {
         binding.tvHeaderDemoBadge.setVisibility(plot.isDemo ? View.VISIBLE : View.GONE);
 
         double area = plot.areaHa != null ? plot.areaHa.doubleValue() : 0.0;
-        binding.tvArea.setText(String.format("%.2f ha", area));
+        binding.tvArea.setText(getString(R.string.plot_area, area));
 
         if (plot.plantingDate != null && !plot.plantingDate.isEmpty()) {
-            binding.tvPlantingDate.setText("Planted: " + plot.plantingDate);
+            binding.tvPlantingDate.setText(getString(R.string.plot_planted_on, DateTimeUtils.formatDate(plot.plantingDate)));
         } else {
-            binding.tvPlantingDate.setText("Planting date unconfirmed");
+            binding.tvPlantingDate.setText(R.string.plot_planting_unconfirmed);
         }
 
-        PlotStatus status = plot.status != null ? plot.status : PlotStatus.PENDING_VERIFICATION;
-        switch (status) {
-            case ACTIVE:
-                binding.layoutVerificationChip.setBackgroundResource(R.drawable.ic_status_healthy_bg);
-                binding.ivVerificationIcon.setImageResource(R.drawable.ic_status_healthy);
-                binding.tvVerificationText.setText(R.string.plot_status_active);
-                binding.tvVerificationText.setTextColor(ContextCompat.getColor(this, R.color.status_healthy));
-                break;
-            case REJECTED:
-                binding.layoutVerificationChip.setBackgroundResource(R.drawable.ic_status_at_risk_bg);
-                binding.ivVerificationIcon.setImageResource(R.drawable.ic_status_at_risk);
-                binding.tvVerificationText.setText(R.string.plot_status_rejected);
-                binding.tvVerificationText.setTextColor(ContextCompat.getColor(this, R.color.status_at_risk));
-                break;
-            case ARCHIVED:
-                binding.layoutVerificationChip.setBackgroundResource(R.drawable.ic_status_watch_bg);
-                binding.ivVerificationIcon.setImageResource(R.drawable.ic_status_watch);
-                binding.tvVerificationText.setText(R.string.plot_status_archived);
-                binding.tvVerificationText.setTextColor(ContextCompat.getColor(this, R.color.status_watch));
-                break;
-            case PENDING_VERIFICATION:
-            default:
-                binding.layoutVerificationChip.setBackgroundResource(R.drawable.ic_status_pending_bg);
-                binding.ivVerificationIcon.setImageResource(R.drawable.ic_status_pending);
-                binding.tvVerificationText.setText(R.string.plot_status_pending);
-                binding.tvVerificationText.setTextColor(ContextCompat.getColor(this, R.color.status_pending));
-                break;
-        }
+        StatusUi.Spec spec = StatusUi.forPlot(plot.status);
+        StatusUi.applyPill(binding.tvVerificationText, spec);
+        binding.tvVerificationMeaning.setText(spec.meaningRes);
     }
+
+    // ===== Crop health =====
 
     private void fetchCropHealthStatus() {
         ApiClient.getInstance(this).getService().getPlotHealthStatus(plotId)
@@ -178,48 +182,109 @@ public class PlotDetailActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(Call<PlotHealthStatusResponse> call, Throwable t) {
-                        // Offline or not available
+                        // Keep "Not checked yet": never guess a status
                     }
                 });
     }
 
     private void updateHealthStatusUi(PlotHealthStatusResponse health) {
         String status = health.getStatus();
-        switch (status) {
-            case "HEALTHY":
-                binding.ivHealthIcon.setImageResource(R.drawable.ic_status_healthy);
-                binding.tvHealthWord.setText(R.string.health_healthy);
-                binding.tvHealthWord.setTextColor(ContextCompat.getColor(this, R.color.status_healthy));
-                break;
-            case "WATCH":
-                binding.ivHealthIcon.setImageResource(R.drawable.ic_status_watch);
-                binding.tvHealthWord.setText(R.string.health_watch);
-                binding.tvHealthWord.setTextColor(ContextCompat.getColor(this, R.color.status_watch));
-                break;
-            case "AT_RISK":
-                binding.ivHealthIcon.setImageResource(R.drawable.ic_status_at_risk);
-                binding.tvHealthWord.setText(R.string.health_at_risk);
-                binding.tvHealthWord.setTextColor(ContextCompat.getColor(this, R.color.status_at_risk));
-                break;
-            case "NOT_ENOUGH_DATA":
-            default:
-                binding.ivHealthIcon.setImageResource(R.drawable.ic_status_no_data);
-                binding.tvHealthWord.setText(R.string.health_not_enough_data);
-                binding.tvHealthWord.setTextColor(ContextCompat.getColor(this, R.color.status_not_enough_data));
-                break;
+        StatusUi.Spec spec = StatusUi.forHealth(status);
+        StatusUi.applyBadge(binding.ivHealthIcon, spec);
+        binding.tvHealthWord.setText(spec.labelRes);
+        binding.tvHealthWord.setTextColor(ContextCompat.getColor(this, spec.fgColorRes));
+        binding.tvHealthMeaning.setText(spec.meaningRes);
+
+        if (health.getDate() != null) {
+            binding.tvHealthDate.setText(getString(R.string.health_checked_on, DateTimeUtils.formatDate(health.getDate())));
+            binding.tvHealthDate.setVisibility(View.VISIBLE);
         }
 
-        binding.tvConfidenceBadge.setText(health.getConfidence() + " Confidence");
-        binding.tvCause.setText("Observed: " + health.getFriendlyCause());
+        if (spec.todoRes != 0) {
+            binding.tvTodo.setText(spec.todoRes);
+            binding.layoutTodo.setVisibility(View.VISIBLE);
+        } else {
+            binding.layoutTodo.setVisibility(View.GONE);
+        }
 
-        if (health.getDataQualityNote() != null) {
-            binding.tvDataQualityNote.setText(health.getDataQualityNote());
+        // Likely cause only when there is stress (spec §3.5). Never a named pest or disease.
+        boolean stressed = "WATCH".equals(status) || "AT_RISK".equals(status);
+        String cause = health.getFriendlyCause();
+        if (stressed && cause != null && !cause.trim().isEmpty()) {
+            binding.tvCause.setText(getString(R.string.likely_cause, cause));
+            binding.tvCause.setVisibility(View.VISIBLE);
+        } else {
+            binding.tvCause.setVisibility(View.GONE);
         }
 
         if (health.getRainPct() != null) {
-            binding.tvExplanation.setText(String.format("30-day rain is %.0f%% of normal. Anomaly score: %.2f.",
-                    health.getRainPct().doubleValue(), health.getAnomaly() != null ? health.getAnomaly().doubleValue() : 0.0));
+            binding.tvExplanation.setText(getString(R.string.rain_vs_normal, health.getRainPct().doubleValue()));
+            binding.tvExplanation.setVisibility(View.VISIBLE);
+        } else {
+            binding.tvExplanation.setVisibility(View.GONE);
         }
+
+        binding.tvFieldVisit.setVisibility(health.isNeedsFieldVisit() ? View.VISIBLE : View.GONE);
+
+        // Every ML output shows its confidence and data quality note (spec §3)
+        binding.tvConfidenceBadge.setText(StatusUi.confidenceLabel(this, health.getConfidence()));
+        binding.layoutConfidence.setVisibility(View.VISIBLE);
+        if (health.getDataQualityNote() != null && !health.getDataQualityNote().isEmpty()) {
+            binding.tvDataQualityNote.setText(health.getDataQualityNote());
+            binding.tvDataQualityNote.setVisibility(View.VISIBLE);
+        } else {
+            binding.tvDataQualityNote.setVisibility(View.GONE);
+        }
+    }
+
+    // ===== Charts =====
+
+    private int color(int res) {
+        return ContextCompat.getColor(this, res);
+    }
+
+    private void setupCharts() {
+        for (com.github.mikephil.charting.charts.BarLineChartBase<?> chart :
+                new com.github.mikephil.charting.charts.BarLineChartBase<?>[]{binding.chartNdvi, binding.chartRain}) {
+            chart.getDescription().setEnabled(false);
+            chart.setTouchEnabled(true);
+            chart.setPinchZoom(true);
+            chart.setDoubleTapToZoomEnabled(false);
+            chart.setDrawGridBackground(false);
+            chart.setNoDataTextColor(color(R.color.rinda_text_tertiary));
+            chart.getAxisRight().setEnabled(false);
+            chart.setExtraBottomOffset(4f);
+
+            XAxis x = chart.getXAxis();
+            x.setPosition(XAxis.XAxisPosition.BOTTOM);
+            x.setDrawGridLines(false);
+            x.setTextColor(color(R.color.chart_axis_text));
+            x.setTextSize(12f);
+            x.setAxisLineColor(color(R.color.chart_grid));
+
+            YAxis y = chart.getAxisLeft();
+            y.setTextColor(color(R.color.chart_axis_text));
+            y.setTextSize(12f);
+            y.setGridColor(color(R.color.chart_grid));
+            y.setAxisLineColor(color(R.color.chart_grid));
+
+            Legend legend = chart.getLegend();
+            legend.setTextColor(color(R.color.rinda_text_secondary));
+            legend.setTextSize(13f);
+            legend.setWordWrapEnabled(true);
+            legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+            legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
+            legend.setDrawInside(false);
+        }
+        binding.chartNdvi.setNoDataText(getString(R.string.chart_no_data));
+        binding.chartRain.setNoDataText(getString(R.string.chart_rain_no_data));
+        binding.chartNdvi.getAxisLeft().setDrawGridLines(false);
+        binding.chartNdvi.getXAxis().setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                return String.format(Locale.getDefault(), "%d", Math.round(value));
+            }
+        });
     }
 
     private void fetchBaseline() {
@@ -258,138 +323,158 @@ public class PlotDetailActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * NDVI vs the normal band (spec §2.2 #8). The band is drawn by filling p90 down to the axis in the
+     * band colour, then p10 down to the axis in the card colour, which leaves the p10–p90 range shaded.
+     */
     private void renderNdviChart() {
         LineChart chart = binding.chartNdvi;
-        chart.getDescription().setEnabled(false);
-        chart.setTouchEnabled(true);
-        chart.setPinchZoom(true);
-        chart.setDrawGridBackground(false);
+        List<com.github.mikephil.charting.interfaces.datasets.ILineDataSet> dataSets = new ArrayList<>();
 
-        List<LineDataSet> dataSets = new ArrayList<>();
-
-        // 1. Normal Band from Baseline (p10, p50, p90)
-        if (currentBaseline != null && !currentBaseline.getBins().isEmpty()) {
-            List<Entry> p10Entries = new ArrayList<>();
-            List<Entry> p50Entries = new ArrayList<>();
-            List<Entry> p90Entries = new ArrayList<>();
-
+        if (currentBaseline != null && currentBaseline.getBins() != null && !currentBaseline.getBins().isEmpty()) {
+            List<Entry> p10 = new ArrayList<>();
+            List<Entry> p50 = new ArrayList<>();
+            List<Entry> p90 = new ArrayList<>();
             for (BaselineBinResponse bin : currentBaseline.getBins()) {
+                if (bin.getP10() == null || bin.getP50() == null || bin.getP90() == null) continue;
                 float dap = bin.getDapBin();
-                p10Entries.add(new Entry(dap, bin.getP10().floatValue()));
-                p50Entries.add(new Entry(dap, bin.getP50().floatValue()));
-                p90Entries.add(new Entry(dap, bin.getP90().floatValue()));
+                p10.add(new Entry(dap, bin.getP10().floatValue()));
+                p50.add(new Entry(dap, bin.getP50().floatValue()));
+                p90.add(new Entry(dap, bin.getP90().floatValue()));
             }
+            if (!p50.isEmpty()) {
+                dataSets.add(bandEdge(p90, R.color.chart_normal_band));
+                dataSets.add(bandEdge(p10, R.color.rinda_surface));
 
-            LineDataSet p50Set = new LineDataSet(p50Entries, "Normal Median (p50)");
-            p50Set.setColor(ContextCompat.getColor(this, R.color.rinda_green_light));
-            p50Set.setLineWidth(1.8f);
-            p50Set.enableDashedLine(10f, 5f, 0f);
-            p50Set.setDrawCircles(false);
-            p50Set.setDrawValues(false);
-            dataSets.add(p50Set);
-
-            LineDataSet p90Set = new LineDataSet(p90Entries, "Upper Band (p90)");
-            p90Set.setColor(Color.parseColor("#A5D6A7"));
-            p90Set.setLineWidth(1.2f);
-            p90Set.setDrawCircles(false);
-            p90Set.setDrawValues(false);
-            dataSets.add(p90Set);
-
-            LineDataSet p10Set = new LineDataSet(p10Entries, "Lower Band (p10)");
-            p10Set.setColor(Color.parseColor("#A5D6A7"));
-            p10Set.setLineWidth(1.2f);
-            p10Set.setDrawCircles(false);
-            p10Set.setDrawValues(false);
-            dataSets.add(p10Set);
-        }
-
-        // 2. Plot Observations (NDVI)
-        if (!currentObservations.isEmpty()) {
-            List<Entry> plotEntries = new ArrayList<>();
-            for (ObservationResponse obs : currentObservations) {
-                if (obs.getSmoothedNdvi() != null && obs.getDap() != null) {
-                    plotEntries.add(new Entry(obs.getDap().floatValue(), obs.getSmoothedNdvi().floatValue()));
-                }
-            }
-
-            if (!plotEntries.isEmpty()) {
-                LineDataSet plotSet = new LineDataSet(plotEntries, "This Plot (NDVI)");
-                plotSet.setColor(ContextCompat.getColor(this, R.color.rinda_green_dark));
-                plotSet.setLineWidth(2.8f);
-                plotSet.setCircleColor(ContextCompat.getColor(this, R.color.rinda_green_dark));
-                plotSet.setCircleRadius(3.5f);
-                plotSet.setDrawCircleHole(false);
-                plotSet.setDrawValues(false);
-                dataSets.add(plotSet);
-
-                // Update DAP in header
-                Entry latest = plotEntries.get(plotEntries.size() - 1);
-                binding.tvDap.setText(String.format("%.0f DAP", latest.getX()));
+                LineDataSet median = new LineDataSet(p50, getString(R.string.chart_legend_normal));
+                median.setColor(color(R.color.chart_normal_median));
+                median.setLineWidth(1.6f);
+                median.enableDashedLine(12f, 6f, 0f);
+                median.setDrawCircles(false);
+                median.setDrawValues(false);
+                median.setHighlightEnabled(false);
+                dataSets.add(median);
             }
         }
 
-        if (!dataSets.isEmpty()) {
-            chart.setData(new LineData(dataSets.toArray(new LineDataSet[0])));
-            XAxis xAxis = chart.getXAxis();
-            xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-            xAxis.setDrawGridLines(false);
-
-            YAxis leftAxis = chart.getAxisLeft();
-            leftAxis.setAxisMinimum(-0.2f);
-            leftAxis.setAxisMaximum(1.0f);
-            chart.getAxisRight().setEnabled(false);
-
-            chart.invalidate();
+        List<Entry> plotEntries = new ArrayList<>();
+        for (ObservationResponse obs : currentObservations) {
+            if (obs.getSmoothedNdvi() != null && obs.getDap() != null) {
+                plotEntries.add(new Entry(obs.getDap().floatValue(), obs.getSmoothedNdvi().floatValue()));
+            }
         }
+        if (!plotEntries.isEmpty()) {
+            LineDataSet plotSet = new LineDataSet(plotEntries, getString(R.string.chart_legend_plot));
+            plotSet.setColor(color(R.color.chart_plot_line));
+            plotSet.setLineWidth(3f);
+            plotSet.setCircleColor(color(R.color.chart_plot_line));
+            plotSet.setCircleRadius(3.5f);
+            plotSet.setDrawCircleHole(false);
+            plotSet.setDrawValues(false);
+            plotSet.setMode(LineDataSet.Mode.HORIZONTAL_BEZIER);
+            dataSets.add(plotSet);
+
+            Entry latest = plotEntries.get(plotEntries.size() - 1);
+            binding.tvDap.setText(getString(R.string.plot_days_since_planting, Math.round(latest.getX())));
+            binding.tvDap.setVisibility(View.VISIBLE);
+        }
+
+        if (dataSets.isEmpty()) {
+            chart.clear();
+            return;
+        }
+
+        chart.setData(new LineData(dataSets));
+        chart.getAxisLeft().setAxisMinimum(-0.2f);
+        chart.getAxisLeft().setAxisMaximum(1.0f);
+
+        List<LegendEntry> legend = new ArrayList<>();
+        if (!plotEntries.isEmpty()) {
+            legend.add(new LegendEntry(getString(R.string.chart_legend_plot), Legend.LegendForm.LINE, 12f, 3f, null, color(R.color.chart_plot_line)));
+        }
+        if (dataSets.size() > (plotEntries.isEmpty() ? 0 : 1)) {
+            legend.add(new LegendEntry(getString(R.string.chart_legend_band), Legend.LegendForm.SQUARE, 10f, 0f, null, color(R.color.chart_normal_band)));
+            legend.add(new LegendEntry(getString(R.string.chart_legend_normal), Legend.LegendForm.LINE, 12f, 1.6f, null, color(R.color.chart_normal_median)));
+        }
+        chart.getLegend().setCustom(legend);
+        chart.animateX(500);
+    }
+
+    private LineDataSet bandEdge(List<Entry> entries, int fillColorRes) {
+        LineDataSet set = new LineDataSet(entries, "");
+        set.setColor(color(R.color.chart_normal_band));
+        set.setLineWidth(1f);
+        set.setDrawCircles(false);
+        set.setDrawValues(false);
+        set.setHighlightEnabled(false);
+        set.setDrawFilled(true);
+        set.setFillColor(color(fillColorRes));
+        set.setFillAlpha(255);
+        return set;
     }
 
     private void fetchWeather() {
         ApiClient.getInstance(this).getService().getWeather(plotId, null, null)
-                .enqueue(new Callback<List<WeatherResponse>>() {
+                .enqueue(new Callback<List<com.rinda.app.data.model.WeatherResponse>>() {
                     @Override
-                    public void onResponse(Call<List<WeatherResponse>> call, Response<List<WeatherResponse>> response) {
+                    public void onResponse(Call<List<com.rinda.app.data.model.WeatherResponse>> call,
+                                           Response<List<com.rinda.app.data.model.WeatherResponse>> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             renderRainChart(response.body());
                         }
                     }
 
                     @Override
-                    public void onFailure(Call<List<WeatherResponse>> call, Throwable t) {
+                    public void onFailure(Call<List<com.rinda.app.data.model.WeatherResponse>> call, Throwable t) {
                     }
                 });
     }
 
-    private void renderRainChart(List<WeatherResponse> weatherList) {
+    private void renderRainChart(List<com.rinda.app.data.model.WeatherResponse> weatherList) {
         BarChart chart = binding.chartRain;
-        chart.getDescription().setEnabled(false);
-        chart.setTouchEnabled(true);
-        chart.setPinchZoom(true);
-        chart.setDrawGridBackground(false);
-
         List<BarEntry> entries = new ArrayList<>();
+        final List<String> labels = new ArrayList<>();
         int index = 0;
-        for (WeatherResponse w : weatherList) {
+        for (com.rinda.app.data.model.WeatherResponse w : weatherList) {
             float rain = w.getRainMm() != null ? w.getRainMm().floatValue() : 0.0f;
             entries.add(new BarEntry(index++, rain));
+            labels.add(shortDate(w.getDate()));
+        }
+        if (entries.isEmpty()) {
+            chart.clear();
+            return;
         }
 
-        if (!entries.isEmpty()) {
-            BarDataSet set = new BarDataSet(entries, "Rainfall (mm)");
-            set.setColor(ContextCompat.getColor(this, R.color.rinda_blue));
-            set.setDrawValues(false);
+        BarDataSet set = new BarDataSet(entries, getString(R.string.chart_legend_rain));
+        set.setColor(color(R.color.chart_rain_bar));
+        set.setDrawValues(false);
+        BarData data = new BarData(set);
+        data.setBarWidth(0.7f);
+        chart.setData(data);
+        chart.getAxisLeft().setAxisMinimum(0f);
+        chart.getXAxis().setLabelCount(5);
+        chart.getXAxis().setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                int i = Math.round(value);
+                return i >= 0 && i < labels.size() ? labels.get(i) : "";
+            }
+        });
+        chart.getLegend().setEnabled(false);
+        chart.animateY(500);
+    }
 
-            BarData data = new BarData(set);
-            data.setBarWidth(0.6f);
-            chart.setData(data);
-
-            XAxis xAxis = chart.getXAxis();
-            xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-            xAxis.setDrawGridLines(false);
-            chart.getAxisRight().setEnabled(false);
-
-            chart.invalidate();
+    private static String shortDate(String isoDate) {
+        if (isoDate == null || isoDate.length() < 10) return "";
+        try {
+            java.util.Date d = new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(isoDate.substring(0, 10));
+            return d != null ? new java.text.SimpleDateFormat("d MMM", Locale.getDefault()).format(d) : "";
+        } catch (java.text.ParseException e) {
+            return "";
         }
     }
+
+    // ===== Harvest forecast: always a range, never a single number =====
 
     private void fetchHarvestForecast() {
         ApiClient.getInstance(this).getService().getHarvestForecast(plotId)
@@ -409,24 +494,34 @@ public class PlotDetailActivity extends AppCompatActivity {
 
     private void updateForecastUi(HarvestForecastResponse forecast) {
         if (forecast.isAvailable() && forecast.getLowPct() != null && forecast.getHighPct() != null) {
-            binding.tvHarvestForecastRange.setText(String.format(java.util.Locale.US, "%.0f%% – %.0f%% of normal",
+            binding.tvHarvestForecastRange.setText(getString(R.string.harvest_forecast_range,
                     forecast.getLowPct().doubleValue(), forecast.getHighPct().doubleValue()));
+            binding.tvHarvestForecastRange.setTextColor(color(R.color.rinda_secondary));
         } else {
             String reason = forecast.getReason();
+            int msg;
             if ("TOO_EARLY".equalsIgnoreCase(reason)) {
-                binding.tvHarvestForecastRange.setText("Too early in season");
+                msg = R.string.harvest_too_early;
             } else if ("NOT_ENOUGH_DATA".equalsIgnoreCase(reason)) {
-                binding.tvHarvestForecastRange.setText("Not enough satellite data yet");
+                msg = R.string.harvest_not_enough_data;
             } else if ("NOT_ANALYSED".equalsIgnoreCase(reason)) {
-                binding.tvHarvestForecastRange.setText("Awaiting initial satellite pass");
+                msg = R.string.harvest_not_analysed;
             } else {
-                binding.tvHarvestForecastRange.setText("Estimate pending");
+                msg = R.string.harvest_pending;
             }
+            binding.tvHarvestForecastRange.setText(msg);
+            binding.tvHarvestForecastRange.setTextColor(color(R.color.rinda_text_secondary));
         }
-        if (forecast.getDataQualityNote() != null && !forecast.getDataQualityNote().isEmpty()) {
-            binding.tvForecastDisclaimer.setText(forecast.getDataQualityNote());
+        String note = forecast.getDataQualityNote();
+        String confidence = StatusUi.confidenceLabel(this, forecast.getConfidence());
+        String disclaimer = getString(R.string.harvest_forecast_disclaimer) + " " + confidence + ".";
+        if (note != null && !note.isEmpty()) {
+            disclaimer = disclaimer + "\n" + note;
         }
+        binding.tvForecastDisclaimer.setText(disclaimer);
     }
+
+    // ===== Insurance cover =====
 
     private void fetchEnrollment() {
         ApiClient.getInstance(this).getService().getEnrollment(plotId)
@@ -445,54 +540,61 @@ public class PlotDetailActivity extends AppCompatActivity {
     }
 
     private void updateEnrollmentUi(EnrollmentResponse enrollment) {
-        String status = enrollment.getStatus();
-        if ("COVERED".equalsIgnoreCase(status)) {
-            String season = enrollment.getSeasonCode() != null ? enrollment.getSeasonCode() : "2026A";
-            binding.tvEnrollmentStatus.setText("Covered (Season " + season + ")");
-            binding.tvEnrollmentStatus.setTextColor(ContextCompat.getColor(this, R.color.rinda_green));
-        } else if ("PENDING".equalsIgnoreCase(status)) {
-            binding.tvEnrollmentStatus.setText("Coverage Pending");
-            binding.tvEnrollmentStatus.setTextColor(ContextCompat.getColor(this, R.color.status_watch));
-        } else if ("CANCELLED".equalsIgnoreCase(status)) {
-            binding.tvEnrollmentStatus.setText("Coverage Cancelled");
-            binding.tvEnrollmentStatus.setTextColor(ContextCompat.getColor(this, R.color.status_at_risk));
-        } else {
-            binding.tvEnrollmentStatus.setText("Not Enrolled");
-            binding.tvEnrollmentStatus.setTextColor(ContextCompat.getColor(this, R.color.text_secondary_light));
+        StatusUi.Spec spec = StatusUi.forEnrollment(enrollment.getStatus());
+        StatusUi.applyPill(binding.tvEnrollmentStatus, spec);
+        // Season label comes only from the server; never a made-up season code.
+        if ("COVERED".equalsIgnoreCase(enrollment.getStatus()) && enrollment.getSeasonCode() != null) {
+            binding.tvEnrollmentStatus.setText(getString(R.string.enrollment_covered, enrollment.getSeasonCode()));
         }
 
+        String hint = null;
+        if (enrollment.getStartDate() != null && enrollment.getEndDate() != null) {
+            hint = getString(R.string.enrollment_dates, DateTimeUtils.formatDate(enrollment.getStartDate()),
+                    DateTimeUtils.formatDate(enrollment.getEndDate()));
+        } else if (spec.meaningRes != 0) {
+            hint = getString(spec.meaningRes);
+        }
+        binding.tvEnrollmentHint.setText(hint);
+        binding.tvEnrollmentHint.setVisibility(hint != null ? View.VISIBLE : View.GONE);
+
+        // Sum insured is a money value: show only what the server confirms (spec §0 rule 2).
         if (enrollment.getSumInsured() != null) {
-            java.text.NumberFormat nf = java.text.NumberFormat.getNumberInstance(java.util.Locale.US);
-            binding.tvSumInsured.setText(nf.format(enrollment.getSumInsured()) + " RWF");
+            binding.rowSumInsured.tvRowValue.setText(getString(R.string.claim_amount_rwf,
+                    NumberFormat.getNumberInstance(Locale.getDefault()).format(enrollment.getSumInsured())));
         } else {
-            binding.tvSumInsured.setText("Not confirmed yet");
+            binding.rowSumInsured.tvRowValue.setText(R.string.coverage_not_confirmed);
         }
     }
 
+    // ===== Manage =====
+
     private void showEditNameDialog() {
         if (currentPlot != null && (currentPlot.plantingDate == null || currentPlot.plantingDate.isEmpty())) {
-            new AlertDialog.Builder(this)
-                    .setTitle("Cannot Edit Placeholder Plot")
-                    .setMessage("Seeded demo plots have no confirmed planting date. They cannot be edited until confirmed.")
-                    .setPositiveButton("OK", null)
+            Ui.dialog(this)
+                    .setTitle(R.string.rename_not_allowed_title)
+                    .setMessage(R.string.rename_not_allowed_body)
+                    .setPositiveButton(R.string.btn_ok, null)
                     .show();
             return;
         }
 
-        EditText input = new EditText(this);
-        input.setText(currentPlot != null ? currentPlot.name : "");
-        input.setSelection(input.getText().length());
+        DialogTextInputBinding input = DialogTextInputBinding.inflate(LayoutInflater.from(this));
+        input.tilInput.setHint(R.string.plot_name_label);
+        input.etInput.setText(currentPlot != null ? currentPlot.name : "");
+        if (input.etInput.getText() != null) {
+            input.etInput.setSelection(input.etInput.getText().length());
+        }
 
-        new AlertDialog.Builder(this)
-                .setTitle("Edit Plot Name")
-                .setView(input)
-                .setPositiveButton("Save", (dialog, which) -> {
-                    String newName = input.getText().toString().trim();
+        Ui.dialog(this)
+                .setTitle(R.string.rename_plot_title)
+                .setView(input.getRoot())
+                .setPositiveButton(R.string.btn_save, (dialog, which) -> {
+                    String newName = input.etInput.getText() != null ? input.etInput.getText().toString().trim() : "";
                     if (!newName.isEmpty() && currentPlot != null) {
                         updatePlotName(newName);
                     }
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(R.string.btn_cancel, null)
                 .show();
     }
 
@@ -504,26 +606,27 @@ public class PlotDetailActivity extends AppCompatActivity {
                     public void onResponse(Call<PlotResponse> call, Response<PlotResponse> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             savePlotLocally(response.body());
-                            Toast.makeText(PlotDetailActivity.this, "Plot updated", Toast.LENGTH_SHORT).show();
+                            Ui.toast(binding.getRoot(), R.string.plot_updated);
                         } else {
                             ApiProblem problem = ApiErrorParser.parse(response);
-                            Toast.makeText(PlotDetailActivity.this, ApiErrorParser.getFriendlyMessage(PlotDetailActivity.this, problem), Toast.LENGTH_LONG).show();
+                            Ui.toast(binding.getRoot(), ApiErrorParser.getFriendlyMessage(PlotDetailActivity.this, problem));
                         }
                     }
 
                     @Override
                     public void onFailure(Call<PlotResponse> call, Throwable t) {
-                        Toast.makeText(PlotDetailActivity.this, getString(R.string.error_network), Toast.LENGTH_SHORT).show();
+                        Ui.error(binding.getRoot(), getString(R.string.error_network_action), () -> updatePlotName(newName));
                     }
                 });
     }
 
     private void showDeleteConfirmDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.btn_delete)
-                .setMessage("Are you sure you want to delete this plot? Active covers and open claims will preserve the record.")
-                .setPositiveButton("Delete", (dialog, which) -> deletePlot())
-                .setNegativeButton("Cancel", null)
+        Ui.dialog(this)
+                .setIcon(R.drawable.ic_delete)
+                .setTitle(R.string.delete_plot_title)
+                .setMessage(R.string.delete_plot_body)
+                .setPositiveButton(R.string.btn_delete, (dialog, which) -> deletePlot())
+                .setNegativeButton(R.string.btn_cancel, null)
                 .show();
     }
 
@@ -533,29 +636,31 @@ public class PlotDetailActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<Void> call, Response<Void> response) {
                         if (response.isSuccessful() || response.code() == 204) {
-                            new Thread(() -> RindaDatabase.getInstance(PlotDetailActivity.this).plotDao().deleteById(plotId)).start();
-                            Toast.makeText(PlotDetailActivity.this, "Plot archived", Toast.LENGTH_SHORT).show();
+                            final android.content.Context app = getApplicationContext();
+                            new Thread(() -> RindaDatabase.getInstance(app).plotDao().deleteById(plotId)).start();
+                            android.widget.Toast.makeText(app, R.string.plot_archived, android.widget.Toast.LENGTH_SHORT).show();
                             finish();
                         } else if (response.code() == 409) {
-                            new AlertDialog.Builder(PlotDetailActivity.this)
-                                    .setTitle("Delete Deferred")
-                                    .setMessage(getString(R.string.error_plot_delete_deferred))
-                                    .setPositiveButton("OK", null)
+                            Ui.dialog(PlotDetailActivity.this)
+                                    .setTitle(R.string.delete_deferred_title)
+                                    .setMessage(R.string.error_plot_delete_deferred)
+                                    .setPositiveButton(R.string.btn_ok, null)
                                     .show();
                         } else {
                             ApiProblem problem = ApiErrorParser.parse(response);
-                            Toast.makeText(PlotDetailActivity.this, ApiErrorParser.getFriendlyMessage(PlotDetailActivity.this, problem), Toast.LENGTH_LONG).show();
+                            Ui.toast(binding.getRoot(), ApiErrorParser.getFriendlyMessage(PlotDetailActivity.this, problem));
                         }
                     }
 
                     @Override
                     public void onFailure(Call<Void> call, Throwable t) {
-                        Toast.makeText(PlotDetailActivity.this, getString(R.string.error_network), Toast.LENGTH_SHORT).show();
+                        Ui.error(binding.getRoot(), getString(R.string.error_network_action), PlotDetailActivity.this::deletePlot);
                     }
                 });
     }
 
     private void savePlotLocally(PlotResponse p) {
+        final android.content.Context app = getApplicationContext();
         new Thread(() -> {
             PlotEntity e = new PlotEntity();
             e.id = p.getId();
@@ -571,7 +676,7 @@ public class PlotDetailActivity extends AppCompatActivity {
             e.createdAt = p.getCreatedAt();
             e.updatedAt = p.getUpdatedAt();
             e.cachedAt = System.currentTimeMillis();
-            RindaDatabase.getInstance(PlotDetailActivity.this).plotDao().insertOrUpdate(e);
+            RindaDatabase.getInstance(app).plotDao().insertOrUpdate(e);
         }).start();
     }
 }

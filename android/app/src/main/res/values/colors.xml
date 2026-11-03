@@ -1,67 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Rinda design tokens (light). Every colour used in a layout or in Java must come from this file.
+    The same names are redefined in values-night/colors.xml, so screens get dark mode for free.
+    Never hard-code a hex value in a layout or in Java, and never use the old *_light / *_dark names.
+    See docs/ANDROID_UI_GUIDELINES.md.
+-->
 <resources>
-    <!-- Brand Primary (Maize Green) -->
-    <color name="rinda_green_dark">#1B5E20</color>
-    <color name="rinda_green">#2E7D32</color>
-    <color name="rinda_green_light">#4CAF50</color>
-    <color name="rinda_green_container">#C8E6C9</color>
-    <color name="rinda_green_on_container">#002105</color>
+    <!-- Brand: maize-leaf green (primary actions, selected states) -->
+    <color name="rinda_primary">#1E6B3C</color>
+    <color name="rinda_on_primary">#FFFFFF</color>
+    <color name="rinda_primary_container">#CDEBD4</color>
+    <color name="rinda_on_primary_container">#06311A</color>
 
-    <!-- Brand Secondary (Maize Harvest Gold / Amber) -->
-    <color name="rinda_gold_dark">#E65100</color>
-    <color name="rinda_gold">#F57F17</color>
-    <color name="rinda_gold_light">#FFB300</color>
-    <color name="rinda_gold_container">#FFE082</color>
-    <color name="rinda_gold_on_container">#2E1500</color>
+    <!-- Brand: harvest gold (highlights, area numbers, the forecast) -->
+    <color name="rinda_secondary">#8A5A00</color>
+    <color name="rinda_on_secondary">#FFFFFF</color>
+    <color name="rinda_secondary_container">#FFE3A8</color>
+    <color name="rinda_on_secondary_container">#2C1C00</color>
+    <color name="rinda_accent">#F2B33D</color>
 
-    <!-- Brand Tertiary (Rainfall / Water Blue) -->
-    <color name="rinda_blue">#0277BD</color>
-    <color name="rinda_blue_light">#03A9F4</color>
-    <color name="rinda_blue_container">#B3E5FC</color>
+    <!-- Brand: rain blue (weather, rainfall) -->
+    <color name="rinda_tertiary">#1F669C</color>
+    <color name="rinda_on_tertiary">#FFFFFF</color>
+    <color name="rinda_tertiary_container">#D3E6F6</color>
+    <color name="rinda_on_tertiary_container">#06263F</color>
 
-    <!-- Neutral Colors Light -->
-    <color name="bg_light">#F8F9FA</color>
-    <color name="surface_light">#FFFFFF</color>
-    <color name="surface_variant_light">#EDF1EC</color>
-    <color name="text_primary_light">#1A1C19</color>
-    <color name="text_secondary_light">#5C6258</color>
-    <color name="text_tertiary_light">#8C9388</color>
-    <color name="divider_light">#E0E3DD</color>
-    <color name="outline_light">#E0E3DD</color>
+    <!-- Error / destructive -->
+    <color name="rinda_error">#B3261E</color>
+    <color name="rinda_on_error">#FFFFFF</color>
+    <color name="rinda_error_container">#FADEDB</color>
+    <color name="rinda_on_error_container">#410E0B</color>
 
-    <!-- Neutral Colors Dark -->
-    <color name="bg_dark">#111411</color>
-    <color name="surface_dark">#1B201A</color>
-    <color name="surface_variant_dark">#282E27</color>
-    <color name="text_primary_dark">#E2E4DE</color>
-    <color name="text_secondary_dark">#A1A69D</color>
-    <color name="text_tertiary_dark">#72776E</color>
-    <color name="divider_dark">#2F352E</color>
-    <color name="outline_dark">#2F352E</color>
+    <!-- Neutrals: warm cream background, white cards -->
+    <color name="rinda_bg">#F6F4EC</color>
+    <color name="rinda_surface">#FFFFFF</color>
+    <color name="rinda_surface_variant">#EEEFE6</color>
+    <color name="rinda_surface_container">#F1F0E7</color>
+    <color name="rinda_surface_container_high">#FFFFFF</color>
+    <color name="rinda_text_primary">#1B1F1A</color>
+    <color name="rinda_text_secondary">#4D554A</color>
+    <color name="rinda_text_tertiary">#666E63</color>
+    <color name="rinda_outline">#DCDED3</color>
+    <color name="rinda_outline_strong">#A9AEA2</color>
+    <color name="rinda_scrim">#99000000</color>
+    <color name="rinda_hero_start">#1E6B3C</color>
+    <color name="rinda_hero_end">#2F8A4F</color>
+    <color name="rinda_on_hero">#FFFFFF</color>
+    <color name="rinda_on_hero_muted">#D9F0DF</color>
+    <color name="rinda_hero_overlay">#26FFFFFF</color>
 
-    <!-- Semantic Status Colors (always paired with icon + word) -->
-    <color name="status_healthy">#2E7D32</color>
-    <color name="status_healthy_bg">#E8F5E9</color>
+    <!-- Status colours: always paired with an icon AND a word (spec §5.3) -->
+    <color name="status_healthy">#1E7A3A</color>
+    <color name="status_healthy_bg">#E2F3E5</color>
+    <color name="status_watch">#8F5300</color>
+    <color name="status_watch_bg">#FFEFCF</color>
+    <color name="status_at_risk">#B3261E</color>
+    <color name="status_at_risk_bg">#FBE3E0</color>
+    <color name="status_pending">#1D5FA8</color>
+    <color name="status_pending_bg">#E1ECFA</color>
+    <color name="status_not_enough_data">#4B5B66</color>
+    <color name="status_not_enough_data_bg">#E7ECEE</color>
+    <color name="status_demo">#6B2F9E</color>
+    <color name="status_demo_bg">#F0E4FA</color>
 
-    <color name="status_watch">#EF6C00</color>
-    <color name="status_watch_bg">#FFF3E0</color>
+    <!-- Charts -->
+    <color name="chart_plot_line">#1E6B3C</color>
+    <color name="chart_normal_median">#6FAE7F</color>
+    <color name="chart_normal_band">#A9D3B3</color>
+    <color name="chart_rain_bar">#1F669C</color>
+    <color name="chart_axis_text">#666E63</color>
+    <color name="chart_grid">#E4E6DC</color>
 
-    <color name="status_at_risk">#C62828</color>
-    <color name="status_at_risk_bg">#FFEBEE</color>
-
-    <color name="status_pending">#1565C0</color>
-    <color name="status_pending_bg">#E3F2FD</color>
-
-    <color name="status_not_enough_data">#546E7A</color>
-    <color name="status_not_enough_data_bg">#ECEFF1</color>
-
-    <color name="status_demo">#6A1B9A</color>
-    <color name="status_demo_bg">#F3E5F5</color>
-
-    <!-- Common UI -->
+    <!-- Fixed -->
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
     <color name="transparent">#00000000</color>
-    <color name="ripple_light">#1F000000</color>
-    <color name="ripple_dark">#24FFFFFF</color>
 </resources>

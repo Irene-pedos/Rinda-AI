@@ -1,26 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- One claim: plot name, status pill (icon + word), start date, payout amount (or "Not decided yet"). -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cardClaim"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/spacing_sm"
+    android:layout_marginTop="@dimen/spacing_sm"
+    android:layout_marginBottom="@dimen/spacing_xs"
     android:clickable="true"
-    android:focusable="true"
-    app:cardBackgroundColor="@color/surface_light"
-    app:cardCornerRadius="@dimen/radius_md"
-    app:cardElevation="1dp"
-    app:strokeColor="@color/outline_light"
-    app:strokeWidth="1dp">
+    android:focusable="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/spacing_md">
+        android:padding="@dimen/card_padding">
 
-        <!-- Top Row: Plot Name & Status Chip -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -32,71 +27,41 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:drawablePadding="@dimen/spacing_sm"
                 android:ellipsize="end"
+                android:gravity="center_vertical"
                 android:maxLines="1"
-                android:textColor="@color/text_primary_light"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                tools:text="Demo plot 1" />
-
-            <TextView
-                android:id="@+id/tvStatusChip"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/ic_status_pending_bg"
-                android:paddingStart="8dp"
-                android:paddingTop="3dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="3dp"
-                android:textColor="@color/status_pending"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                tools:text="Under Review" />
-        </LinearLayout>
-
-        <!-- Subtitle: Trigger Date + Demo Badge -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_xs"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/tvTriggerDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/text_secondary_light"
-                android:textSize="12sp"
-                tools:text="Triggered: 2026-10-20" />
+                android:textAppearance="@style/TextAppearance.Rinda.Title"
+                app:drawableStartCompat="@drawable/ic_leaf"
+                app:drawableTint="@color/rinda_primary" />
 
             <TextView
                 android:id="@+id/tvDemoBadge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                style="@style/Widget.Rinda.Tag.Demo"
+                android:layout_marginStart="@dimen/spacing_sm"
+                android:visibility="gone" />
+
+            <ImageView
+                android:layout_width="@dimen/icon_md"
+                android:layout_height="@dimen/icon_md"
                 android:layout_marginStart="@dimen/spacing_xs"
-                android:background="@drawable/ic_status_demo_bg"
-                android:paddingStart="5dp"
-                android:paddingTop="1dp"
-                android:paddingEnd="5dp"
-                android:paddingBottom="1dp"
-                android:text="@string/app_demo_badge"
-                android:textColor="#E65100"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_chevron_right" />
         </LinearLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:layout_marginBottom="@dimen/spacing_sm"
-            android:background="@color/outline_light" />
+        <TextView
+            android:id="@+id/tvStatusChip"
+            style="@style/Widget.Rinda.StatusPill"
+            android:layout_marginTop="@dimen/spacing_md" />
 
-        <!-- Bottom Row: Amount + Rate + Chevron -->
+        <View
+            style="@style/Rinda.Divider"
+            android:layout_marginTop="@dimen/spacing_md" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -108,29 +73,28 @@
 
                 <TextView
                     android:id="@+id/tvAmount"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/rinda_green"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    tools:text="100,000 RWF" />
+                    android:textAppearance="@style/TextAppearance.Rinda.Subtitle" />
 
                 <TextView
                     android:id="@+id/tvPayoutRate"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/text_secondary_light"
-                    android:textSize="11sp"
-                    tools:text="40% payout rate" />
+                    android:textAppearance="@style/TextAppearance.Rinda.Caption"
+                    android:visibility="gone" />
             </LinearLayout>
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:contentDescription="@null"
-                android:src="@drawable/ic_chevron_right" />
+            <TextView
+                android:id="@+id/tvTriggerDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_md"
+                android:drawablePadding="@dimen/spacing_xs"
+                android:gravity="center_vertical"
+                android:textAppearance="@style/TextAppearance.Rinda.Caption"
+                app:drawableStartCompat="@drawable/ic_calendar"
+                app:drawableTint="@color/rinda_text_tertiary" />
         </LinearLayout>
-
     </LinearLayout>
-
 </com.google.android.material.card.MaterialCardView>

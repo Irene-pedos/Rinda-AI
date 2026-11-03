@@ -1,126 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Login step 2: the 6-digit code. Large digits, auto-submit, resend countdown, easy way back to change the number. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light"
-    android:padding="@dimen/spacing_xl">
+    android:orientation="vertical">
 
-    <ScrollView
-        android:layout_width="0dp"
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:navigationContentDescription="@string/cd_back"
+        app:navigationIcon="@drawable/ic_back" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginBottom="@dimen/spacing_base"
-        app:layout_constraintBottom_toTopOf="@+id/btnVerify"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_weight="1"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingTop="@dimen/spacing_xl">
+            android:paddingStart="@dimen/screen_padding"
+            android:paddingEnd="@dimen/screen_padding"
+            android:paddingBottom="@dimen/screen_padding">
 
             <ImageView
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:contentDescription="@string/otp_title"
-                android:src="@drawable/ic_nav_claims" />
+                style="@style/Widget.Rinda.IconBadge"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:padding="16dp"
+                android:src="@drawable/ic_lock" />
 
             <TextView
                 android:id="@+id/tvTitle"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_lg"
+                android:layout_marginTop="@dimen/spacing_xl"
+                android:accessibilityHeading="true"
                 android:text="@string/otp_title"
-                android:textColor="@color/text_primary_light"
-                android:textSize="26sp"
-                android:textStyle="bold" />
+                android:textAppearance="@style/TextAppearance.Rinda.Headline" />
 
             <TextView
                 android:id="@+id/tvSubtitle"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_sm"
-                android:lineSpacingExtra="4dp"
-                android:text="@string/otp_subtitle"
-                android:textColor="@color/text_secondary_light"
-                android:textSize="14sp" />
+                android:textAppearance="@style/TextAppearance.Rinda.Body" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilCode"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_xxl"
-                android:hint="6-Digit Code"
-                app:boxCornerRadiusBottomEnd="@dimen/radius_md"
-                app:boxCornerRadiusBottomStart="@dimen/radius_md"
-                app:boxCornerRadiusTopEnd="@dimen/radius_md"
-                app:boxCornerRadiusTopStart="@dimen/radius_md"
-                app:boxStrokeColor="@color/rinda_green">
+                android:layout_marginTop="@dimen/spacing_xl"
+                android:hint="@string/otp_label">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etCode"
+                    style="@style/Rinda.InputText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:autofillHints="smsOTPCode"
                     android:gravity="center"
+                    android:imeOptions="actionDone"
                     android:inputType="number"
-                    android:letterSpacing="0.3"
+                    android:letterSpacing="0.5"
                     android:maxLength="6"
-                    android:textSize="24sp"
+                    android:textSize="28sp"
                     android:textStyle="bold" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnResend"
+                style="@style/Widget.Rinda.Button.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:text="@string/resend_code"
+                app:icon="@drawable/ic_sync" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnChangeNumber"
+                style="@style/Widget.Rinda.Button.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/change_number"
+                app:icon="@drawable/ic_edit" />
+
             <TextView
+                android:id="@+id/tvDevOtpHint"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_lg"
-                android:background="@drawable/ic_status_watch_bg"
-                android:lineSpacingExtra="3dp"
+                android:background="@drawable/bg_rounded"
+                android:backgroundTint="@color/status_demo_bg"
+                android:drawablePadding="@dimen/spacing_sm"
                 android:padding="@dimen/spacing_md"
-                android:text="Dev Mode: Look at the backend terminal output for:\n[DEV OTP] phone=... code=XXXXXX"
-                android:textColor="@color/status_watch"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/btnResend"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="@dimen/spacing_xl"
-                android:padding="@dimen/spacing_sm"
-                android:text="@string/resend_code"
-                android:textColor="@color/rinda_green"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
+                android:text="@string/otp_dev_hint"
+                android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                android:textColor="@color/status_demo"
+                app:drawableStartCompat="@drawable/ic_info"
+                app:drawableTint="@color/status_demo" />
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:layout_marginBottom="@dimen/spacing_sm"
-        android:indeterminateTint="@color/rinda_green"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/btnVerify"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+    <LinearLayout style="@style/Rinda.BottomBar">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnVerify"
-        android:layout_width="0dp"
-        android:layout_height="@dimen/button_height"
-        android:backgroundTint="@color/rinda_green"
-        android:text="@string/btn_verify_code"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        app:cornerRadius="@dimen/radius_md"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_sm"
+            android:indeterminate="true"
+            android:visibility="gone"
+            app:trackCornerRadius="2dp" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnVerify"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="@string/btn_verify_code" />
+    </LinearLayout>
+</LinearLayout>

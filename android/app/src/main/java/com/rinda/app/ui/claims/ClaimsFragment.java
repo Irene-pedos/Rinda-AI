@@ -16,6 +16,8 @@ import com.rinda.app.data.local.RindaDatabase;
 import com.rinda.app.data.model.ClaimResponse;
 import com.rinda.app.data.model.PageResponse;
 import com.rinda.app.databinding.FragmentClaimsBinding;
+import com.rinda.app.ui.common.EmptyState;
+import com.rinda.app.ui.common.InfoSheet;
 import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
@@ -42,8 +44,14 @@ public class ClaimsFragment extends Fragment {
         binding.rvClaims.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvClaims.setAdapter(adapter);
 
-        binding.swipeRefresh.setColorSchemeResources(R.color.rinda_green);
+        EmptyState.bind(binding.layoutEmpty, R.drawable.ic_shield, R.string.empty_claims_title, R.string.empty_claims);
+        binding.cardClaimsInfo.setOnClickListener(v ->
+                InfoSheet.show(requireContext(), R.drawable.ic_shield, R.string.help_claims_title, R.string.help_claims_body));
+
+        binding.swipeRefresh.setColorSchemeResources(R.color.rinda_primary);
         binding.swipeRefresh.setOnRefreshListener(this::fetchClaims);
+        // The list is not the direct child of the refresh layout, so tell it when the list can scroll up.
+        binding.swipeRefresh.setOnChildScrollUpCallback((parent, child) -> binding.rvClaims.canScrollVertically(-1));
 
         observeCachedClaims();
         fetchClaims();
@@ -51,14 +59,17 @@ public class ClaimsFragment extends Fragment {
 
     private void observeCachedClaims() {
         RindaDatabase.getInstance(requireContext()).claimDao().getAllClaimsLiveData()
-                .observe(getViewLifecycleOwner(), claimEntities -> {
-                    if (claimEntities == null || claimEntities.isEmpty()) {
-                        binding.layoutEmpty.setVisibility(View.VISIBLE);
-                        binding.rvClaims.setVisibility(View.GONE);
-                    } else {
-                        binding.layoutEmpty.setVisibility(View.GONE);
-                        binding.rvClaims.setVisibility(View.VISIBLE);
-                        adapter.setItems(claimEntities);
+                .observe(getViewLifecycleOwner(), list -> {
+                    if (binding == null) return;
+                    boolean empty = list == null || list.isEmpty();
+                    EmptyState.show(binding.layoutEmpty, empty);
+                    binding.rvClaims.setVisibility(empty ? View.GONE : View.VISIBLE);
+                    if (!empty) {
+                        boolean first = adapter.getItemCount() == 0;
+                        adapter.setItems(list);
+                        if (first) {
+                            binding.rvClaims.scheduleLayoutAnimation();
+                        }
                     }
                 });
     }
@@ -86,30 +97,13 @@ public class ClaimsFragment extends Fragment {
 
     private void saveClaimsToCache(List<ClaimResponse> list) {
         if (list == null) return;
+        final android.content.Context app = requireContext().getApplicationContext();
         new Thread(() -> {
             List<ClaimEntity> entities = new ArrayList<>();
             for (ClaimResponse r : list) {
-                ClaimEntity e = new ClaimEntity();
-                e.id = r.getId();
-                e.plotId = r.getPlotId();
-                e.plotName = r.getPlotName();
-                e.seasonId = r.getSeasonId();
-                e.triggerDate = r.getTriggerDate();
-                e.status = r.getStatus();
-                e.payoutRate = r.getPayoutRate();
-                e.amount = r.getAmount();
-                e.evidenceSnapshotJson = r.getEvidenceSnapshot() != null ? r.getEvidenceSnapshot().toString() : null;
-                if (r.getDecision() != null) {
-                    e.officerDecision = r.getDecision().getDecision();
-                    e.officerReason = r.getDecision().getReason();
-                }
-                e.modelVersion = r.getModelVersion();
-                e.isDemo = r.isDemo();
-                e.createdAt = r.getCreatedAt();
-                e.cachedAt = System.currentTimeMillis();
-                entities.add(e);
+                entities.add(ClaimDetailActivity.toEntity(r));
             }
-            RindaDatabase.getInstance(requireContext()).claimDao().insertAll(entities);
+            RindaDatabase.getInstance(app).claimDao().insertAll(entities);
         }).start();
     }
 

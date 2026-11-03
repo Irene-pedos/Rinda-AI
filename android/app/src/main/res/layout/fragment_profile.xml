@@ -1,246 +1,155 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Profile: who you are, settings as big tappable rows, help, and log out (destructive, at the bottom). -->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/bg_light">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/spacing_base">
+        android:paddingStart="@dimen/screen_padding"
+        android:paddingTop="@dimen/spacing_sm"
+        android:paddingEnd="@dimen/screen_padding"
+        android:paddingBottom="@dimen/spacing_xxl">
 
-        <!-- User Profile Card -->
+        <!-- Who you are -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardBackgroundColor="@color/surface_light"
-            app:cardCornerRadius="@dimen/radius_md"
-            app:cardElevation="@dimen/elevation_card">
+            android:layout_height="wrap_content">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="@dimen/spacing_lg">
+                android:padding="@dimen/card_padding">
 
                 <TextView
                     android:id="@+id/tvAvatarInitials"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:background="@drawable/ic_status_healthy_bg"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:background="@drawable/bg_circle"
+                    android:backgroundTint="@color/rinda_primary"
                     android:gravity="center"
-                    android:text="F"
-                    android:textColor="@color/rinda_green"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
+                    android:importantForAccessibility="no"
+                    android:textAppearance="@style/TextAppearance.Rinda.Headline"
+                    android:textColor="@color/rinda_on_primary" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/spacing_md"
+                    android:layout_marginStart="@dimen/spacing_base"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/tvProfileName"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Farmer Name"
-                        android:textColor="@color/text_primary_light"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:textAppearance="@style/TextAppearance.Rinda.Title" />
 
                     <TextView
                         android:id="@+id/tvProfilePhone"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="+250 780 000 001"
-                        android:textColor="@color/text_secondary_light"
-                        android:textSize="14sp" />
+                        android:layout_marginTop="@dimen/spacing_xxs"
+                        android:drawablePadding="@dimen/spacing_xs"
+                        android:gravity="center_vertical"
+                        android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                        app:drawableStartCompat="@drawable/ic_phone"
+                        app:drawableTint="@color/rinda_text_tertiary" />
 
                     <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:layout_marginTop="@dimen/spacing_sm"
                         android:orientation="horizontal">
 
                         <TextView
                             android:id="@+id/tvProfileRole"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/ic_status_healthy_bg"
-                            android:paddingStart="@dimen/spacing_sm"
-                            android:paddingTop="2dp"
-                            android:paddingEnd="@dimen/spacing_sm"
-                            android:paddingBottom="2dp"
+                            style="@style/Widget.Rinda.Tag"
+                            android:backgroundTint="@color/rinda_primary_container"
                             android:text="@string/role_farmer"
-                            android:textColor="@color/rinda_green"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
+                            android:textColor="@color/rinda_on_primary_container" />
 
                         <TextView
                             android:id="@+id/tvProfileDemo"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="@dimen/spacing_xs"
-                            android:background="@drawable/ic_status_demo_bg"
-                            android:paddingStart="@dimen/spacing_sm"
-                            android:paddingTop="2dp"
-                            android:paddingEnd="@dimen/spacing_sm"
-                            android:paddingBottom="2dp"
-                            android:text="@string/app_demo_badge"
-                            android:textColor="@color/status_demo"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
+                            style="@style/Widget.Rinda.Tag.Demo"
+                            android:layout_marginStart="@dimen/spacing_sm"
                             android:visibility="gone" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Section: Settings -->
+        <!-- Settings -->
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_xs"
-            android:layout_marginTop="@dimen/spacing_xl"
-            android:text="Preferences &amp; Connection"
-            android:textColor="@color/text_secondary_light"
-            android:textSize="13sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="@dimen/section_gap"
+            android:layout_marginBottom="@dimen/spacing_sm"
+            android:accessibilityHeading="true"
+            android:text="@string/profile_settings"
+            android:textAppearance="@style/TextAppearance.Rinda.Section" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            app:cardBackgroundColor="@color/surface_light"
-            app:cardCornerRadius="@dimen/radius_md"
-            app:cardElevation="@dimen/elevation_card">
+            android:layout_height="wrap_content">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <!-- Language Option -->
-                <LinearLayout
-                    android:id="@+id/btnLanguageOption"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/spacing_base">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_language" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/spacing_md"
-                        android:layout_weight="1"
-                        android:text="@string/select_language"
-                        android:textColor="@color/text_primary_light"
-                        android:textSize="15sp" />
-
-                    <TextView
-                        android:id="@+id/tvCurrentLanguage"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="@dimen/spacing_sm"
-                        android:text="English"
-                        android:textColor="@color/text_secondary_light"
-                        android:textSize="13sp" />
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_chevron_right" />
-                </LinearLayout>
+                <include
+                    android:id="@+id/rowLanguage"
+                    layout="@layout/view_settings_row" />
 
                 <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/divider_light" />
+                    style="@style/Rinda.Divider"
+                    android:layout_marginStart="68dp" />
 
-                <!-- Server Base URL Option -->
-                <LinearLayout
-                    android:id="@+id/btnServerConfig"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/spacing_base">
+                <include
+                    android:id="@+id/rowHelp"
+                    layout="@layout/view_settings_row" />
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_server" />
+                <View
+                    style="@style/Rinda.Divider"
+                    android:layout_marginStart="68dp" />
 
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/spacing_md"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                <include
+                    android:id="@+id/rowPrivacy"
+                    layout="@layout/view_settings_row" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Backend Server URL"
-                            android:textColor="@color/text_primary_light"
-                            android:textSize="15sp" />
+                <View
+                    style="@style/Rinda.Divider"
+                    android:layout_marginStart="68dp" />
 
-                        <TextView
-                            android:id="@+id/tvActiveServerUrl"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="http://127.0.0.1:8080/api/v1/"
-                            android:textColor="@color/text_secondary_light"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_chevron_right" />
-                </LinearLayout>
-
+                <include
+                    android:id="@+id/rowServer"
+                    layout="@layout/view_settings_row" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Log Out Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogout"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/Widget.Rinda.Button.Danger"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height"
-            android:layout_marginTop="@dimen/spacing_xxl"
-            android:layout_marginBottom="@dimen/spacing_xl"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/section_gap"
             android:text="@string/btn_logout"
-            android:textAllCaps="false"
-            android:textColor="@color/status_at_risk"
-            app:cornerRadius="@dimen/radius_md"
-            app:icon="@drawable/ic_logout"
-            app:iconTint="@color/status_at_risk"
-            app:strokeColor="@color/status_at_risk" />
+            app:icon="@drawable/ic_logout" />
 
+        <TextView
+            android:id="@+id/tvVersion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_base"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.Rinda.Caption" />
     </LinearLayout>
-</ScrollView>
+</androidx.core.widget.NestedScrollView>

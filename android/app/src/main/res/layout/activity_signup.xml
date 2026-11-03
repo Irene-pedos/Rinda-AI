@@ -1,135 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Sign-up (new phone numbers only): name + cooperative. Farmers only (spec §2.2 #3). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light"
-    android:padding="@dimen/spacing_xl">
+    android:orientation="vertical">
 
-    <ScrollView
-        android:layout_width="0dp"
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:navigationContentDescription="@string/cd_back"
+        app:navigationIcon="@drawable/ic_back" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginBottom="@dimen/spacing_base"
-        app:layout_constraintBottom_toTopOf="@+id/btnCompleteSignup"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_weight="1"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingTop="@dimen/spacing_xl">
+            android:paddingStart="@dimen/screen_padding"
+            android:paddingEnd="@dimen/screen_padding"
+            android:paddingBottom="@dimen/screen_padding">
 
             <ImageView
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:contentDescription="@string/signup_title"
+                style="@style/Widget.Rinda.IconBadge"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:padding="16dp"
                 android:src="@drawable/ic_nav_profile" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_lg"
+                android:layout_marginTop="@dimen/spacing_xl"
+                android:accessibilityHeading="true"
                 android:text="@string/signup_title"
-                android:textColor="@color/text_primary_light"
-                android:textSize="26sp"
-                android:textStyle="bold" />
+                android:textAppearance="@style/TextAppearance.Rinda.Headline" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_sm"
-                android:lineSpacingExtra="4dp"
                 android:text="@string/signup_subtitle"
-                android:textColor="@color/text_secondary_light"
-                android:textSize="14sp" />
+                android:textAppearance="@style/TextAppearance.Rinda.Body" />
 
-            <com.google.android.material.chip.Chip
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <TextView
+                style="@style/Widget.Rinda.Tag"
                 android:layout_marginTop="@dimen/spacing_md"
-                android:clickable="false"
-                android:text="Account Type: Maize Farmer"
-                android:textColor="@color/rinda_green_dark"
-                app:chipBackgroundColor="@color/rinda_green_container"
-                app:chipStrokeColor="@color/rinda_green"
-                app:chipStrokeWidth="1dp" />
+                android:backgroundTint="@color/rinda_primary_container"
+                android:drawablePadding="@dimen/spacing_xs"
+                android:gravity="center_vertical"
+                android:text="@string/signup_account_type"
+                android:textColor="@color/rinda_on_primary_container"
+                app:drawableStartCompat="@drawable/ic_leaf"
+                app:drawableTint="@color/rinda_on_primary_container" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilFullName"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_xl"
                 android:hint="@string/full_name_label"
-                app:boxCornerRadiusBottomEnd="@dimen/radius_md"
-                app:boxCornerRadiusBottomStart="@dimen/radius_md"
-                app:boxCornerRadiusTopEnd="@dimen/radius_md"
-                app:boxCornerRadiusTopStart="@dimen/radius_md"
-                app:boxStrokeColor="@color/rinda_green">
+                app:helperText="@string/full_name_helper"
+                app:helperTextEnabled="true"
+                app:placeholderText="@string/full_name_hint"
+                app:startIconDrawable="@drawable/ic_nav_profile">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etFullName"
+                    style="@style/Rinda.InputText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:autofillHints="name"
+                    android:imeOptions="actionNext"
                     android:inputType="textPersonName|textCapWords"
-                    android:maxLength="120"
-                    android:textSize="16sp" />
+                    android:maxLength="120" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_lg"
-                android:text="@string/cooperative_label"
-                android:textColor="@color/text_primary_light"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <Spinner
-                android:id="@+id/spinnerCooperative"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilCooperative"
+                style="@style/Widget.Rinda.TextInput.Dropdown"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/input_field_height"
-                android:layout_marginTop="@dimen/spacing_xs"
-                android:background="@drawable/ic_status_watch_bg"
-                android:padding="@dimen/spacing_sm" />
-
-            <ProgressBar
-                android:id="@+id/pbCoops"
-                style="?android:attr/progressBarStyleSmall"
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="@dimen/spacing_sm"
-                android:indeterminateTint="@color/rinda_green" />
+                android:layout_marginTop="@dimen/spacing_base"
+                android:hint="@string/cooperative_label"
+                app:helperText="@string/cooperative_loading"
+                app:helperTextEnabled="true"
+                app:startIconDrawable="@drawable/ic_group">
 
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                    android:id="@+id/actCooperative"
+                    style="@style/Rinda.InputText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none" />
+            </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:layout_marginBottom="@dimen/spacing_sm"
-        android:indeterminateTint="@color/rinda_green"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/btnCompleteSignup"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+    <LinearLayout style="@style/Rinda.BottomBar">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnCompleteSignup"
-        android:layout_width="0dp"
-        android:layout_height="@dimen/button_height"
-        android:backgroundTint="@color/rinda_green"
-        android:text="@string/btn_complete_signup"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        app:cornerRadius="@dimen/radius_md"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_sm"
+            android:indeterminate="true"
+            android:visibility="gone"
+            app:trackCornerRadius="2dp" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCompleteSignup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_complete_signup" />
+    </LinearLayout>
+</LinearLayout>
