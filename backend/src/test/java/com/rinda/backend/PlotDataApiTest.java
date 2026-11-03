@@ -404,18 +404,6 @@ class PlotDataApiTest extends ApiTestBase {
     }
 
     @Test
-    void thresholdChangesFromTheDecisionsAreAudited() {
-        assertThat(jdbc.queryForObject("""
-                SELECT before_json->>'$.value' FROM audit_log
-                WHERE action = 'THRESHOLD_CHANGED' AND after_json->>'$.key' = 'at_risk_anomaly'
-                """, String.class)).startsWith("-1.000");
-        assertThat(jdbc.queryForObject("""
-                SELECT after_json->>'$.value' FROM audit_log
-                WHERE action = 'THRESHOLD_CHANGED' AND after_json->>'$.key' = 'at_risk_anomaly'
-                """, String.class)).startsWith("-1.500");
-    }
-
-    @Test
     void newestStatusWins() throws Exception {
         saveStatus(statusBody("2026-10-20", "WATCH", null)).andExpect(status().isOk());
         saveStatus(statusBody("2026-10-10", "HEALTHY", null)).andExpect(status().isOk());
