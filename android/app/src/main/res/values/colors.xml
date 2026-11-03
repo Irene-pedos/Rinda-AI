@@ -27,6 +27,7 @@
     <color name="text_secondary_light">#5C6258</color>
     <color name="text_tertiary_light">#8C9388</color>
     <color name="divider_light">#E0E3DD</color>
+    <color name="outline_light">#E0E3DD</color>
 
     <!-- Neutral Colors Dark -->
     <color name="bg_dark">#111411</color>
@@ -36,6 +37,7 @@
     <color name="text_secondary_dark">#A1A69D</color>
     <color name="text_tertiary_dark">#72776E</color>
     <color name="divider_dark">#2F352E</color>
+    <color name="outline_dark">#2F352E</color>
 
     <!-- Semantic Status Colors (always paired with icon + word) -->
     <color name="status_healthy">#2E7D32</color>

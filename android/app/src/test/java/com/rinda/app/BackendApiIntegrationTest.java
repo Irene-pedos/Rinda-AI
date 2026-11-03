@@ -54,4 +54,10 @@ public class BackendApiIntegrationTest {
         // 202 Accepted, or 429 if rate limited from previous call
         assertTrue(response.code() == 202 || response.code() == 429);
     }
+
+    @Test
+    public void testNotificationsEndpointRequiresAuth() throws Exception {
+        Response<?> response = apiService.getNotifications(0, 20).execute();
+        assertEquals("Unauthenticated call to /notifications should return 401", 401, response.code());
+    }
 }

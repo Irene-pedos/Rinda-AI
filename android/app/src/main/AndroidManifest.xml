@@ -70,6 +70,11 @@
             android:name=".ui.plots.PlotDetailActivity"
             android:exported="false" />
 
+        <!-- Claims Activities -->
+        <activity
+            android:name=".ui.claims.ClaimDetailActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
