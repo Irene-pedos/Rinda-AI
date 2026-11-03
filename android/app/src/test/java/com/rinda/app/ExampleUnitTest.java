@@ -1,4 +1,4 @@
-package com.example.rindaai;
+package com.rinda.app;
 
 import org.junit.Test;
 
