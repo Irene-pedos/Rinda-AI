@@ -9,6 +9,8 @@ import com.rinda.backend.common.ApiException;
 import com.rinda.backend.ml.MlDtos.DataOrigin;
 import com.rinda.backend.plot.PlotDataDtos.BaselineBinResponse;
 import com.rinda.backend.plot.PlotDataDtos.BaselineResponse;
+import com.rinda.backend.plot.PlotDataDtos.EnrollmentResponse;
+import com.rinda.backend.plot.PlotDataDtos.ForecastResponse;
 import com.rinda.backend.plot.PlotDataDtos.ObservationResponse;
 import com.rinda.backend.plot.PlotDataDtos.StatusResponse;
 import com.rinda.backend.plot.PlotDataDtos.WeatherResponse;
@@ -141,6 +143,42 @@ public class PlotDataService {
         return new StatusResponse(null, NOT_ENOUGH_DATA, null, null, null, "LOW", false,
                 JsonNodeFactory.instance.arrayNode(), "This plot has not been analysed yet.", null, null, null, null,
                 null);
+    }
+
+    /** The newest forecast, which is either a range or the reason there isn't one. */
+    @Transactional(readOnly = true)
+    public ForecastResponse forecast(AuthPrincipal principal, long plotId) {
+        plots.get(principal, plotId);
+        return jdbc.query("""
+                SELECT forecast_date, low_pct, high_pct, confidence, reason, data_quality_note, model_version,
+                       data_origin, thresholds_json
+                FROM harvest_forecasts
+                WHERE plot_id = ?
+                ORDER BY forecast_date DESC, id DESC
+                LIMIT 1
+                """, (rs, n) -> new ForecastResponse(rs.getString(5) == null, rs.getObject(1, LocalDate.class),
+                rs.getBigDecimal(2), rs.getBigDecimal(3), rs.getString(4), rs.getString(5), rs.getString(6),
+                rs.getString(7), DataOrigin.valueOf(rs.getString(8)), readJson(rs.getString(9))), plotId)
+                .stream().findFirst()
+                .orElseGet(() -> new ForecastResponse(false, null, null, null, "LOW", "NOT_ANALYSED",
+                        "This plot has not been analysed yet.", null, null, null));
+    }
+
+    @Transactional(readOnly = true)
+    public EnrollmentResponse enrollment(AuthPrincipal principal, long plotId) {
+        boolean demoPlot = plots.get(principal, plotId).isDemo();
+        return jdbc.query("""
+                SELECT e.status, s.code, e.start_date, e.end_date, e.sum_insured, e.premium, e.is_demo
+                FROM enrollments e
+                JOIN seasons s ON s.id = e.season_id
+                WHERE e.plot_id = ?
+                ORDER BY e.id DESC
+                LIMIT 1
+                """, (rs, n) -> new EnrollmentResponse(rs.getString(1), rs.getString(2),
+                rs.getObject(3, LocalDate.class), rs.getObject(4, LocalDate.class), rs.getBigDecimal(5),
+                rs.getBigDecimal(6), rs.getBoolean(7)), plotId)
+                .stream().findFirst()
+                .orElseGet(() -> new EnrollmentResponse("NOT_ENROLLED", null, null, null, null, null, demoPlot));
     }
 
     private JsonNode readJson(String json) {

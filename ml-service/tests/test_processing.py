@@ -5,6 +5,7 @@ import pytest
 from app import params
 from app.processing import (
     BaselineBin,
+    ForecastLimits,
     Observation,
     RainComparison,
     RainDay,
@@ -16,6 +17,7 @@ from app.processing import (
     dap_bin,
     days_after_planting,
     fill_short_gaps,
+    harvest_range,
     ndvi,
     one_per_day,
     past_season_starts,
@@ -354,3 +356,74 @@ def test_rain_percent_with_no_normal_rain_is_unknown():
 def test_missing_threshold_is_refused():
     with pytest.raises(ValueError, match="watch_rain_pct"):
         StatusLimits.from_thresholds({"watch_rain_pct": None})
+
+
+FORECAST_LIMITS = ForecastLimits(min_dap=42, min_bins=3)
+FORECAST_BANDS = [BaselineBin(dap, 0.4, 0.5, 0.8) for dap in range(0, 100, 10)]
+FORECAST_DAY = PLANTED + timedelta(days=45)
+
+
+def forecast_of(readings, bins=FORECAST_BANDS, as_of=FORECAST_DAY, limits=FORECAST_LIMITS):
+    """readings are (days after planting, NDVI)."""
+    observations = [Observation(PLANTED + timedelta(days=dap), value, 100) for dap, value in readings]
+    smoothed = {o.day: o.ndvi for o in observations}
+    return harvest_range(observations, smoothed, bins, PLANTED, as_of, limits)
+
+
+def test_forecast_is_a_range_from_the_band_edges():
+    result = forecast_of([(5, 0.4), (15, 0.4), (25, 0.4)])
+    assert result.low_pct == pytest.approx(50)
+    assert result.high_pct == pytest.approx(100)
+    assert result.reason is None
+
+
+def test_forecast_is_never_a_single_number():
+    result = forecast_of([(5, 0.4), (15, 0.5), (25, 0.6)])
+    assert result.low_pct < result.high_pct
+
+
+def test_a_wider_band_gives_a_wider_range():
+    narrow = forecast_of([(5, 0.4), (15, 0.4), (25, 0.4)], bins=[BaselineBin(d, 0.45, 0.5, 0.55) for d in range(0, 100, 10)])
+    wide = forecast_of([(5, 0.4), (15, 0.4), (25, 0.4)])
+    assert wide.high_pct - wide.low_pct > narrow.high_pct - narrow.low_pct
+
+
+def test_forecast_before_the_minimum_stage_is_too_early():
+    result = forecast_of([(5, 0.4), (15, 0.4), (25, 0.4)], as_of=PLANTED + timedelta(days=41))
+    assert result.reason == "TOO_EARLY"
+    assert result.low_pct is None
+
+
+def test_forecast_starts_exactly_at_the_minimum_stage():
+    result = forecast_of([(5, 0.4), (15, 0.4), (25, 0.4)], as_of=PLANTED + timedelta(days=42))
+    assert result.reason is None
+
+
+def test_forecast_with_too_few_periods_is_not_enough_data():
+    result = forecast_of([(5, 0.4), (15, 0.4)])
+    assert result.reason == "NOT_ENOUGH_DATA"
+    assert result.low_pct is None
+
+
+def test_forecast_only_compares_periods_that_have_a_band():
+    bins = [BaselineBin(0, 0.4, 0.5, 0.8), BaselineBin(10, 0.4, 0.5, 0.8)]
+    assert forecast_of([(5, 0.4), (15, 0.4), (25, 0.4)], bins=bins).reason == "NOT_ENOUGH_DATA"
+
+
+def test_several_readings_in_a_period_count_once():
+    once = forecast_of([(5, 0.4), (15, 0.4), (25, 0.4)])
+    twice = forecast_of([(1, 0.4), (5, 0.4), (15, 0.4), (25, 0.4)])
+    assert twice.low_pct == pytest.approx(once.low_pct)
+
+
+def test_readings_after_the_forecast_date_are_ignored():
+    with_future = forecast_of([(5, 0.4), (15, 0.4), (25, 0.4), (35, 0.9)], as_of=PLANTED + timedelta(days=42))
+    with_later = forecast_of([(5, 0.4), (15, 0.4), (25, 0.4), (35, 0.9), (60, 0.1)], as_of=PLANTED + timedelta(days=42))
+    assert with_future.low_pct == pytest.approx(with_later.low_pct)
+
+
+def test_forecast_confidence_stays_low_and_says_it_is_not_a_yield():
+    result = forecast_of([(5, 0.4), (15, 0.4), (25, 0.4)])
+    assert result.confidence == "LOW"
+    assert "isn't a measured yield" in result.data_quality_note
+    assert "3 of 5 10-day periods" in result.data_quality_note

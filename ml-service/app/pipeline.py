@@ -7,6 +7,8 @@ from typing import Protocol
 from app import params
 from app.processing import (
     Observation,
+    ForecastLimits,
+    HarvestForecast,
     PlotStatus,
     RainComparison,
     RainDay,
@@ -14,6 +16,7 @@ from app.processing import (
     apply_pixel_limit,
     build_baseline,
     complete_total,
+    harvest_range,
     one_per_day,
     past_season_starts,
     plot_status,
@@ -95,10 +98,23 @@ def _status_block(status: PlotStatus, as_of: date, rain: RainComparison | None, 
     }
 
 
+def _forecast_block(forecast: HarvestForecast, as_of: date, used: dict) -> dict:
+    return {
+        "forecastDate": as_of.isoformat(),
+        "lowPct": _round(forecast.low_pct, 2),
+        "highPct": _round(forecast.high_pct, 2),
+        "confidence": forecast.confidence,
+        "reason": forecast.reason,
+        "dataQualityNote": forecast.data_quality_note,
+        "thresholdsUsed": used,
+    }
+
+
 def run(job: PlotJob, source: DataSource, thresholds: dict[str, float | None]) -> dict:
     if job.as_of < job.planting_date:
         raise ValueError("as_of is before the planting date")
     limits = StatusLimits.from_thresholds(thresholds)
+    forecast_limits = ForecastLimits.from_thresholds(thresholds)
 
     def valid(start: date, end: date) -> list[Observation]:
         return apply_pixel_limit(one_per_day(source.observations(start, end)), limits.min_clear_pixels)
@@ -114,6 +130,7 @@ def run(job: PlotJob, source: DataSource, thresholds: dict[str, float | None]) -
     bins = build_baseline(seasons)
     rain_comparison = compare_rain(job, source)
     status = plot_status(observations, smoothed, bins, job.planting_date, job.as_of, rain_comparison, limits)
+    forecast = harvest_range(observations, smoothed, bins, job.planting_date, job.as_of, forecast_limits)
 
     return {
         "plotId": job.plot_id,
@@ -144,4 +161,5 @@ def run(job: PlotJob, source: DataSource, thresholds: dict[str, float | None]) -
             ],
         },
         "status": _status_block(status, job.as_of, rain_comparison, limits.used(thresholds)),
+        "forecast": _forecast_block(forecast, job.as_of, forecast_limits.used(thresholds)),
     }

@@ -5,7 +5,7 @@ import pytest
 
 from app import params, pipeline
 from app.gee_source import parse_rain, parse_s2
-from app.processing import Observation, RainDay
+from app.processing import Observation, RainDay, StatusLimits
 from app.sample_source import ORIGIN, SAMPLE_FILE, SampleSource
 
 
@@ -28,7 +28,7 @@ class FakeSource:
 THRESHOLDS = {
     "min_clear_pixels": 20, "not_enough_data_window_days": 20, "not_enough_data_min_obs": 1,
     "watch_rain_pct": 60, "watch_anomaly": -1, "at_risk_anomaly": -1.5, "at_risk_consecutive_obs": 2,
-    "at_risk_min_days": 10,
+    "at_risk_min_days": 10, "forecast_min_dap": 42, "forecast_min_bins": 3,
 }
 JOB = pipeline.PlotJob(plot_id=7, planting_date=date(2021, 9, 20), season_type="A", as_of=date(2021, 10, 20))
 
@@ -207,4 +207,24 @@ def test_the_pixel_limit_comes_from_the_thresholds():
 
 def test_status_stores_the_thresholds_it_used():
     used = pipeline.run(JOB, FakeSource(), THRESHOLDS)["status"]["thresholdsUsed"]
-    assert used == THRESHOLDS
+    assert set(used) == set(StatusLimits.KEYS.values())
+    assert used["at_risk_anomaly"] == -1.5
+
+
+def test_forecast_too_early_is_stored_with_a_reason_and_no_range():
+    forecast = pipeline.run(JOB, FakeSource(), THRESHOLDS)["forecast"]
+    assert forecast["reason"] == "TOO_EARLY"
+    assert forecast["lowPct"] is None
+    assert forecast["highPct"] is None
+    assert forecast["confidence"] == "LOW"
+    assert forecast["dataQualityNote"]
+    assert forecast["thresholdsUsed"] == {"forecast_min_dap": 42, "forecast_min_bins": 3}
+
+
+def test_stressed_sample_forecasts_a_range_below_normal():
+    source = SampleSource()
+    job = pipeline.PlotJob(9001, source.planting_date, source.season_type, source.as_of)
+    forecast = pipeline.run(job, source, THRESHOLDS)["forecast"]
+    assert forecast["reason"] is None
+    assert forecast["lowPct"] < forecast["highPct"]
+    assert forecast["confidence"] == "LOW"

@@ -2,6 +2,8 @@ package com.rinda.backend.plot;
 
 import com.rinda.backend.auth.AuthPrincipal;
 import com.rinda.backend.plot.PlotDataDtos.BaselineResponse;
+import com.rinda.backend.plot.PlotDataDtos.EnrollmentResponse;
+import com.rinda.backend.plot.PlotDataDtos.ForecastResponse;
 import com.rinda.backend.plot.PlotDataDtos.ObservationResponse;
 import com.rinda.backend.plot.PlotDataDtos.StatusResponse;
 import com.rinda.backend.plot.PlotDataDtos.WeatherResponse;
@@ -51,6 +53,19 @@ public class PlotDataController {
     @GetMapping("/status")
     public StatusResponse status(@AuthenticationPrincipal AuthPrincipal principal, @PathVariable long id) {
         return service.status(principal, id);
+    }
+
+    @Operation(summary = "Latest harvest forecast, as a range against this plot's normal",
+            description = "A prototype estimate of greenness, not a measured yield. Show the range, never one number.")
+    @GetMapping("/forecast")
+    public ForecastResponse forecast(@AuthenticationPrincipal AuthPrincipal principal, @PathVariable long id) {
+        return service.forecast(principal, id);
+    }
+
+    @Operation(summary = "The plot's newest enrollment, or NOT_ENROLLED")
+    @GetMapping("/enrollment")
+    public EnrollmentResponse enrollment(@AuthenticationPrincipal AuthPrincipal principal, @PathVariable long id) {
+        return service.enrollment(principal, id);
     }
 
     @Operation(summary = "The normal band for the crop health chart, by days after planting")

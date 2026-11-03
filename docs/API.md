@@ -405,6 +405,58 @@ Each item in `signals` has a `code`, so map codes to `strings.xml`:
 | `NO_RECENT_READINGS` | Too few clear readings recently | |
 | `NO_NORMAL_CURVE` | No normal band for this growth stage | |
 
+### `GET /plots/{id}/forecast`
+
+Returns **200** with the newest forecast:
+
+```json
+{
+  "available": true,
+  "date": "2025-12-10",
+  "lowPct": 62.4,
+  "highPct": 81.9,
+  "confidence": "LOW",
+  "reason": null,
+  "dataQualityNote": "Based on 7 of 9 10-day periods since planting. This compares crop greenness with this plot's past seasons. It isn't a measured yield, and it hasn't been checked against real harvests.",
+  "modelVersion": "0.5.0",
+  "dataOrigin": "GEE",
+  "thresholdsUsed": { "forecast_min_dap": 42.0, "forecast_min_bins": 3.0 }
+}
+```
+
+- **Show the range, labelled "Prototype estimate", as a percent of normal.** Never show one number, a midpoint or a tonnage.
+- Always show `dataQualityNote`. `confidence` stays `LOW`, because this hasn't been compared with real harvests.
+- When `available` is false, `lowPct` and `highPct` are null, and `reason` says why:
+
+| `reason` | Meaning |
+|---|---|
+| `NOT_ANALYSED` | The plot hasn't been analysed yet |
+| `TOO_EARLY` | It's too soon after planting. Don't hardcode the number of days, because it can change. |
+| `NOT_ENOUGH_DATA` | Too few clear readings could be compared |
+
+A forecast is about the crop, and isn't a claim or a payout.
+
+### `GET /plots/{id}/enrollment`
+
+Returns **200** with the plot's newest enrollment:
+
+```json
+{
+  "status": "COVERED",
+  "seasonCode": "DEMO",
+  "startDate": null,
+  "endDate": null,
+  "sumInsured": null,
+  "premium": null,
+  "isDemo": true
+}
+```
+
+- `status` is `NOT_ENROLLED`, `PENDING`, `COVERED` or `CANCELLED`. `NOT_ENROLLED` has null in the other fields.
+- **`sumInsured` and `premium` are null until the insurer confirms them.** Show "Not confirmed yet", never 0.
+- The dates can be null too, because season dates aren't confirmed.
+- Farmers can't request enrollment in the MVP (§10.1).
+
 ### `GET /plots/{id}/baseline`
 
 Returns **200** with the newest normal band saved for the plot:
@@ -461,19 +513,16 @@ Every model result will include `modelVersion`, a confidence and a data quality 
 
 | Endpoint | Draft fields |
 |---|---|
-| `GET /plots/{id}/forecast` | `date`, `lowPct`, `highPct`, `confidence`, `modelVersion` |
 
 Display rules for these:
 
 - The chart title is "Crop health (NDVI)", plotted against the normal band at the same days after planting (§2.2 #8).
-- The forecast is a range compared with the plot's normal, labelled "Prototype estimate". Never show one number or a tonnage.
 
 ### Enrollment, alerts, claims and reports
 
 | Endpoint | Draft |
 |---|---|
 | `POST /plots/{id}/enrollment-request` | Not in the MVP (§10.1) |
-| `GET /plots/{id}/enrollment` | `status` (`PENDING`, `COVERED`, `CANCELLED`), `startDate`, `endDate` |
 | `GET /notifications` | Page of `id`, `type`, `title`, `body`, `link`, `isRead`, `createdAt` |
 | `POST /notifications/{id}/read` | Marks one as read |
 | `GET /claims` | Page of claims. Farmers see their own. |

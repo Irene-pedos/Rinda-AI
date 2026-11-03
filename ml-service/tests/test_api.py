@@ -15,7 +15,7 @@ GEE_BODY = {"plotId": 1, "source": "gee", "boundary": BOUNDARY, "plantingDate": 
 THRESHOLDS = {
     "min_clear_pixels": 20, "not_enough_data_window_days": 20, "not_enough_data_min_obs": 1,
     "watch_rain_pct": 60, "watch_anomaly": -1, "at_risk_anomaly": -1.5, "at_risk_consecutive_obs": 2,
-    "at_risk_min_days": 10,
+    "at_risk_min_days": 10, "forecast_min_dap": 42, "forecast_min_bins": 3,
 }
 
 

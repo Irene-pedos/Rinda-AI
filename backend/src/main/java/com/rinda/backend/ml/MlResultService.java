@@ -4,6 +4,7 @@ import com.rinda.backend.common.ApiException;
 import com.rinda.backend.ml.MlDtos.BaselineBin;
 import com.rinda.backend.ml.MlDtos.BaselineResult;
 import com.rinda.backend.ml.MlDtos.DataOrigin;
+import com.rinda.backend.ml.MlDtos.ForecastResult;
 import com.rinda.backend.ml.MlDtos.MlResultRequest;
 import com.rinda.backend.ml.MlDtos.MlResultResponse;
 import com.rinda.backend.ml.MlDtos.ObservationRow;
@@ -47,6 +48,7 @@ public class MlResultService {
         saveWeather(result);
         int bins = saveBaseline(result);
         saveStatus(result, runId);
+        saveForecast(result, runId);
         return new MlResultResponse(runId, result.observations().size(), result.weather().size(), bins);
     }
 
@@ -89,10 +91,28 @@ public class MlResultService {
         }
     }
 
+    private void saveForecast(MlResultRequest result, long runId) {
+        ForecastResult forecast = result.forecast();
+        if (forecast == null) {
+            return;
+        }
+        jdbc.update("""
+                INSERT INTO harvest_forecasts (plot_id, forecast_date, low_pct, high_pct, model_version, confidence,
+                                               data_origin, run_id, reason, data_quality_note, thresholds_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) AS new
+                ON DUPLICATE KEY UPDATE low_pct = new.low_pct, high_pct = new.high_pct, confidence = new.confidence,
+                    data_origin = new.data_origin, run_id = new.run_id, reason = new.reason,
+                    data_quality_note = new.data_quality_note, thresholds_json = new.thresholds_json
+                """, result.plotId(), Date.valueOf(forecast.forecastDate()), forecast.lowPct(), forecast.highPct(),
+                result.modelVersion(), forecast.confidence(), result.dataOrigin().name(), runId, forecast.reason(),
+                forecast.dataQualityNote(), forecast.thresholdsUsed().toString());
+    }
+
     private static void checkContent(MlResultRequest result) {
         if (result.inputFrom().isAfter(result.inputTo())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "INPUT_DATES_INVALID", "inputFrom is after inputTo.");
         }
+        checkForecast(result.forecast());
         if (result.baseline() != null) {
             for (BaselineBin bin : result.baseline().bins()) {
                 if (bin.p10().compareTo(bin.p50()) > 0 || bin.p50().compareTo(bin.p90()) > 0) {
@@ -100,6 +120,22 @@ public class MlResultService {
                             "Baseline percentiles must rise from p10 to p90.");
                 }
             }
+        }
+    }
+
+    /** A forecast is a real range or a reason, never one number and never both. */
+    private static void checkForecast(ForecastResult forecast) {
+        if (forecast == null) {
+            return;
+        }
+        boolean hasRange = forecast.lowPct() != null && forecast.highPct() != null;
+        boolean noRange = forecast.lowPct() == null && forecast.highPct() == null;
+        boolean valid = forecast.reason() == null
+                ? hasRange && forecast.lowPct().compareTo(forecast.highPct()) < 0
+                : noRange;
+        if (!valid) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "FORECAST_INVALID",
+                    "A forecast needs a low and a higher high, or a reason and no range.");
         }
     }
 

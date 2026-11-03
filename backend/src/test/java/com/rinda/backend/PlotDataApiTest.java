@@ -228,6 +228,115 @@ class PlotDataApiTest extends ApiTestBase {
                 .andExpect(jsonPath("$.dataOrigin").value("GEE"));
     }
 
+    private Map<String, Object> forecastBody(String date, Double low, Double high, String reason) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("forecastDate", date);
+        body.put("lowPct", low);
+        body.put("highPct", high);
+        body.put("confidence", "LOW");
+        body.put("reason", reason);
+        body.put("dataQualityNote", "Based on 5 of 8 10-day periods since planting.");
+        body.put("thresholdsUsed", Map.of("forecast_min_dap", 42));
+        return body;
+    }
+
+    private ResultActions saveForecast(Map<String, Object> forecast) throws Exception {
+        Map<String, Object> result = new HashMap<>();
+        result.put("plotId", plotId);
+        result.put("dataOrigin", "GEE");
+        result.put("modelVersion", "0.5.0");
+        result.put("plantingDate", PLANTED);
+        result.put("inputFrom", PLANTED);
+        result.put("inputTo", "2026-10-20");
+        result.put("params", Map.of());
+        result.put("observations", List.of());
+        result.put("weather", List.of());
+        result.put("forecast", forecast);
+        return mvc.perform(post("/api/v1/internal/ml/results").header("X-Internal-Api-Key", KEY)
+                .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(result)));
+    }
+
+    @Test
+    void forecastIsARangeWithItsNoteAndVersion() throws Exception {
+        saveForecast(forecastBody("2026-10-20", 70.5, 88.25, null)).andExpect(status().isOk());
+
+        read(farmer, "/forecast")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.available").value(true))
+                .andExpect(jsonPath("$.date").value("2026-10-20"))
+                .andExpect(jsonPath("$.lowPct").value(70.5))
+                .andExpect(jsonPath("$.highPct").value(88.25))
+                .andExpect(jsonPath("$.confidence").value("LOW"))
+                .andExpect(jsonPath("$.reason").value(nullValue()))
+                .andExpect(jsonPath("$.dataQualityNote").value("Based on 5 of 8 10-day periods since planting."))
+                .andExpect(jsonPath("$.modelVersion").value("0.5.0"))
+                .andExpect(jsonPath("$.dataOrigin").value("GEE"))
+                .andExpect(jsonPath("$.thresholdsUsed.forecast_min_dap").value(42));
+    }
+
+    @Test
+    void plotWithNoAnalysisHasNoForecastAndSaysWhy() throws Exception {
+        read(farmer, "/forecast")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.available").value(false))
+                .andExpect(jsonPath("$.reason").value("NOT_ANALYSED"))
+                .andExpect(jsonPath("$.lowPct").value(nullValue()));
+    }
+
+    @Test
+    void forecastTooEarlyIsAReasonNotARange() throws Exception {
+        saveForecast(forecastBody("2026-10-20", null, null, "TOO_EARLY")).andExpect(status().isOk());
+
+        read(farmer, "/forecast")
+                .andExpect(jsonPath("$.available").value(false))
+                .andExpect(jsonPath("$.reason").value("TOO_EARLY"))
+                .andExpect(jsonPath("$.highPct").value(nullValue()));
+    }
+
+    @Test
+    void newestForecastWinsEvenIfItHasNoRange() throws Exception {
+        saveForecast(forecastBody("2026-10-10", 70.0, 90.0, null)).andExpect(status().isOk());
+        saveForecast(forecastBody("2026-10-20", null, null, "NOT_ENOUGH_DATA")).andExpect(status().isOk());
+
+        read(farmer, "/forecast").andExpect(jsonPath("$.available").value(false));
+    }
+
+    @Test
+    void aForecastOfOneNumberIsRefused() throws Exception {
+        saveForecast(forecastBody("2026-10-20", 80.0, 80.0, null)).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("FORECAST_INVALID"));
+        saveForecast(forecastBody("2026-10-20", 90.0, 70.0, null)).andExpect(status().isBadRequest());
+        saveForecast(forecastBody("2026-10-20", 70.0, null, null)).andExpect(status().isBadRequest());
+        saveForecast(forecastBody("2026-10-20", 70.0, 90.0, "TOO_EARLY")).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void plotWithNoEnrollmentSaysSo() throws Exception {
+        read(farmer, "/enrollment")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("NOT_ENROLLED"))
+                .andExpect(jsonPath("$.seasonCode").value(nullValue()))
+                .andExpect(jsonPath("$.sumInsured").value(nullValue()));
+    }
+
+    @Test
+    void coveredPlotShowsItsSeasonAndUnconfirmedMoneyStaysNull() throws Exception {
+        jdbc.update("INSERT INTO seasons (code, type) VALUES ('2026A', 'A')");
+        Long season = jdbc.queryForObject("SELECT id FROM seasons WHERE code = '2026A'", Long.class);
+        jdbc.update("INSERT INTO enrollments (plot_id, season_id, status, start_date, is_demo) VALUES (?, ?, 'COVERED', '2026-09-15', TRUE)",
+                plotId, season);
+
+        read(farmer, "/enrollment")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("COVERED"))
+                .andExpect(jsonPath("$.seasonCode").value("2026A"))
+                .andExpect(jsonPath("$.startDate").value("2026-09-15"))
+                .andExpect(jsonPath("$.endDate").value(nullValue()))
+                .andExpect(jsonPath("$.sumInsured").value(nullValue()))
+                .andExpect(jsonPath("$.premium").value(nullValue()))
+                .andExpect(jsonPath("$.isDemo").value(true));
+    }
+
     @Test
     void statusStoresAndReturnsTheThresholdsItUsed() throws Exception {
         saveStatus(statusBody("2026-10-20", "AT_RISK", "UNEXPLAINED")).andExpect(status().isOk());
@@ -355,7 +464,7 @@ class PlotDataApiTest extends ApiTestBase {
     void anotherFarmerGetsTheSame404AsAMissingPlot() throws Exception {
         String other = farmerToken("+250785555552");
 
-        for (String path : List.of("/observations", "/weather", "/baseline", "/status")) {
+        for (String path : List.of("/observations", "/weather", "/baseline", "/status", "/forecast", "/enrollment")) {
             read(other, path).andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.code").value("PLOT_NOT_FOUND"));
         }

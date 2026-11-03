@@ -5,7 +5,7 @@ here: each run reads them from the backend's thresholds table and stores what it
 Change MODEL_VERSION whenever a value here changes.
 """
 
-MODEL_VERSION = "0.4.0"
+MODEL_VERSION = "0.5.0"
 BASELINE_VERSION = "plot-history-v2"
 
 # Spec section 3.2

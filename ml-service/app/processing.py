@@ -308,3 +308,63 @@ def plot_status(observations: list[Observation], smoothed: dict[date, float], bi
 
     return PlotStatus(status, confidence, score, rain_pct, cause, cause == "UNEXPLAINED", signals,
                       _quality_note(recent, limits, as_of))
+
+
+@dataclass(frozen=True)
+class ForecastLimits:
+    """Decision values from the backend's thresholds table."""
+
+    min_dap: int
+    min_bins: int
+
+    KEYS = {"min_dap": "forecast_min_dap", "min_bins": "forecast_min_bins"}
+
+    @classmethod
+    def from_thresholds(cls, thresholds: Mapping[str, float | None]) -> "ForecastLimits":
+        missing = [key for key in cls.KEYS.values() if thresholds.get(key) is None]
+        if missing:
+            raise ValueError(f"These thresholds have no value yet: {', '.join(missing)}")
+        return cls(int(thresholds[cls.KEYS["min_dap"]]), int(thresholds[cls.KEYS["min_bins"]]))
+
+    def used(self, thresholds: Mapping[str, float | None]) -> dict[str, float]:
+        return {key: thresholds[key] for key in self.KEYS.values()}
+
+
+@dataclass(frozen=True)
+class HarvestForecast:
+    low_pct: float | None
+    high_pct: float | None
+    reason: str | None
+    data_quality_note: str
+    confidence: str = "LOW"  # It stays LOW until it has been compared with real harvests.
+
+
+def harvest_range(observations: list[Observation], smoothed: dict[date, float], bins: list[BaselineBin],
+                  planting: date, as_of: date, limits: ForecastLimits) -> HarvestForecast:
+    """The MVP forecast (10.1): greenness so far against the plot's normal band, as a range.
+
+    The range is this plot's total divided by the band's high and low edges, so its width comes
+    from how much past seasons varied. It is a percent of normal greenness, not a tonnage.
+    """
+    note = ("This compares crop greenness with this plot's past seasons. It isn't a measured yield,"
+            " and it hasn't been checked against real harvests.")
+    dap = days_after_planting(as_of, planting)
+    if dap < limits.min_dap:
+        return HarvestForecast(None, None, "TOO_EARLY", note)
+
+    bands = {band.dap_bin: band for band in bins}
+    by_bin: dict[int, list[float]] = {}
+    for obs in observations:
+        key = dap_bin(days_after_planting(obs.day, planting))
+        if obs.day in smoothed and obs.day <= as_of and key in bands:
+            by_bin.setdefault(key, []).append(smoothed[obs.day])
+
+    periods = dap_bin(dap) // params.DAP_BIN_DAYS + 1
+    note = f"Based on {len(by_bin)} of {periods} 10-day periods since planting. {note}"
+    low_total = sum(bands[key].p10 for key in by_bin)
+    high_total = sum(bands[key].p90 for key in by_bin)
+    if len(by_bin) < limits.min_bins or low_total <= 0 or high_total <= 0:
+        return HarvestForecast(None, None, "NOT_ENOUGH_DATA", note)
+
+    total = sum(mean(values) for values in by_bin.values())
+    return HarvestForecast(total / high_total * 100, total / low_total * 100, None, note)

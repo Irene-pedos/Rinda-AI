@@ -56,6 +56,33 @@ public final class PlotDataDtos {
             JsonNode thresholdsUsed) {
     }
 
+    /** A range against the plot's normal. When unavailable, reason says why and the range is null. */
+    public record ForecastResponse(
+            boolean available,
+            @Schema(types = {"string", "null"}) LocalDate date,
+            @Schema(types = {"number", "null"}, description = "Low end, as a percent of normal") BigDecimal lowPct,
+            @Schema(types = {"number", "null"}, description = "High end, as a percent of normal") BigDecimal highPct,
+            @Schema(allowableValues = {"HIGH", "MEDIUM", "LOW"}) String confidence,
+            @Schema(types = {"string", "null"}, allowableValues = {"NOT_ANALYSED", "TOO_EARLY", "NOT_ENOUGH_DATA"})
+            String reason,
+            String dataQualityNote,
+            @Schema(types = {"string", "null"}) String modelVersion,
+            @Schema(types = {"string", "null"}, description = "GEE, or SAMPLE_FILE for simulated data") DataOrigin dataOrigin,
+            @Schema(types = {"object", "null"}, description = "The threshold values this result used")
+            JsonNode thresholdsUsed) {
+    }
+
+    /** The newest enrollment. Money stays null until the insurer confirms it, which isn't the same as 0. */
+    public record EnrollmentResponse(
+            @Schema(allowableValues = {"NOT_ENROLLED", "PENDING", "COVERED", "CANCELLED"}) String status,
+            @Schema(types = {"string", "null"}) String seasonCode,
+            @Schema(types = {"string", "null"}) LocalDate startDate,
+            @Schema(types = {"string", "null"}) LocalDate endDate,
+            @Schema(types = {"number", "null"}, description = "Null until the insurer confirms it") BigDecimal sumInsured,
+            @Schema(types = {"number", "null"}, description = "Null until the insurer confirms it") BigDecimal premium,
+            boolean isDemo) {
+    }
+
     public record BaselineBinResponse(
             @Schema(description = "First day of the bin, in days after planting") int dapBin,
             BigDecimal p10, BigDecimal p50, BigDecimal p90,

@@ -33,7 +33,19 @@ public final class MlDtos {
             @NotNull @Size(max = 2000) List<@Valid ObservationRow> observations,
             @NotNull @Size(max = 2000) List<@Valid WeatherRow> weather,
             @Valid BaselineResult baseline,
-            @Valid StatusResult status) {
+            @Valid StatusResult status,
+            @Valid ForecastResult forecast) {
+    }
+
+    /** A percent of normal, so it can never be a tonnage. With a reason there is no range. */
+    public record ForecastResult(
+            @NotNull LocalDate forecastDate,
+            @DecimalMin("0") @DecimalMax("9999") BigDecimal lowPct,
+            @DecimalMin("0") @DecimalMax("9999") BigDecimal highPct,
+            @NotNull @Pattern(regexp = "HIGH|MEDIUM|LOW") String confidence,
+            @Pattern(regexp = "TOO_EARLY|NOT_ENOUGH_DATA") String reason,
+            @NotBlank String dataQualityNote,
+            @NotNull JsonNode thresholdsUsed) {
     }
 
     /** The cause list is closed on purpose: a satellite can't identify a pest or disease. */

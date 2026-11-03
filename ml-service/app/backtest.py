@@ -14,12 +14,15 @@ from datetime import date, timedelta
 from app import backend_client, gee_source, params, pipeline
 from app.config import get_settings
 from app.processing import (
+    ForecastLimits,
+    HarvestForecast,
     Observation,
     PlotStatus,
     RainDay,
     StatusLimits,
     apply_pixel_limit,
     build_baseline,
+    harvest_range,
     one_per_day,
     past_season_starts,
     plot_status,
@@ -86,11 +89,13 @@ class Result:
     as_of: date
     dap: int
     status: PlotStatus
+    forecast: HarvestForecast | None = None
 
 
 def replay(plot: str, source, planting: date, last_day: date, thresholds: dict) -> list[Result]:
     """The status on each date, using only what was known on that date."""
     limits = StatusLimits.from_thresholds(thresholds)
+    forecast_limits = ForecastLimits.from_thresholds(thresholds)
 
     def valid(start: date, end: date) -> list[Observation]:
         return apply_pixel_limit(one_per_day(source.observations(start, end)), limits.min_clear_pixels)
@@ -105,8 +110,10 @@ def replay(plot: str, source, planting: date, last_day: date, thresholds: dict) 
     while as_of <= last_day:
         known = [obs for obs in season if obs.day <= as_of]
         rain = pipeline.compare_rain(pipeline.PlotJob(0, planting, "A", as_of), source)
-        status = plot_status(known, smooth(known), bins, planting, as_of, rain, limits)
-        results.append(Result(plot, planting.year, as_of, (as_of - planting).days, status))
+        smoothed = smooth(known)
+        status = plot_status(known, smoothed, bins, planting, as_of, rain, limits)
+        forecast = harvest_range(known, smoothed, bins, planting, as_of, forecast_limits)
+        results.append(Result(plot, planting.year, as_of, (as_of - planting).days, status, forecast))
         as_of += timedelta(days=STEP_DAYS)
     return results
 
@@ -210,6 +217,21 @@ def first_detection_table(results: list[Result]) -> list[str]:
     return lines
 
 
+def forecast_table(results: list[Result], at_dap: int) -> list[str]:
+    """Each season's forecast at one growth stage, to compare seasons and see the width of the range."""
+    lines = ["| Plot | Season | Range (% of normal) | Width (points) |", "|---|---|---|---|"]
+    for result in results:
+        if result.dap == at_dap and result.forecast:
+            forecast = result.forecast
+            if forecast.reason:
+                lines.append(f"| {result.plot} | {result.season} | {forecast.reason} | n/a |")
+            else:
+                width = forecast.high_pct - forecast.low_pct
+                lines.append(f"| {result.plot} | {result.season} | {forecast.low_pct:.0f} to {forecast.high_pct:.0f} "
+                             f"| {width:.0f} |")
+    return lines
+
+
 def _simulated(thresholds: dict) -> list[Result]:
     source = SampleSource()
     results = []
@@ -248,6 +270,8 @@ def main() -> int:
         ("Simulated sample", by_season_table(simulated)),
         ("Simulated sample, how soon stress shows", first_detection_table(simulated)),
         ("Simulated sample, AT_RISK results", at_risk_table(simulated)),
+        ("Simulated sample, forecast at 80 DAP", forecast_table(simulated, 80)),
+        ("Real data, forecast at 80 DAP", forecast_table(real, 80)),
         ("Real data, by plot and season", by_season_table(real)),
         ("Real data, likely causes", causes_table(real)),
         ("Real data, confidence", confidence_table(real)),
