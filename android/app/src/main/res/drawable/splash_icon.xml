@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android 12+ launch screen icon: the white Rinda symbol (Rinda Logo Icon Light.png), no tile behind it.
+    The 288dp transparent box is the size Android expects; the symbol is 88dp wide in its centre.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/transparent" />
+            <size
+                android:width="288dp"
+                android:height="288dp" />
+        </shape>
+    </item>
+    <item
+        android:width="88dp"
+        android:height="63dp"
+        android:drawable="@drawable/rinda_logo_icon_white"
+        android:gravity="center" />
+</layer-list>

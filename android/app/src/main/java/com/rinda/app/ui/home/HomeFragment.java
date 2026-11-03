@@ -65,6 +65,8 @@ public class HomeFragment extends Fragment {
 
         binding.cardPlotsSummary.setOnClickListener(v -> selectTab(R.id.nav_plots));
         binding.btnSeeAlerts.setOnClickListener(v -> selectTab(R.id.nav_alerts));
+        binding.cardReportProblem.setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), com.rinda.app.ui.plots.ReportProblemActivity.class)));
         binding.btnHowItWorks.setOnClickListener(v ->
                 InfoSheet.show(requireContext(), R.drawable.ic_help, R.string.help_how_it_works_title, R.string.help_how_it_works_body));
 

@@ -21,6 +21,9 @@ public class TokenManager {
     private static final String KEY_TOKEN_EXPIRES_AT = "token_expires_at";
     private static final String KEY_USER_JSON = "user_json";
     private static final String KEY_CUSTOM_BASE_URL = "custom_base_url";
+    private static final String KEY_PAYOUT_PROVIDER = "payout_provider";
+    private static final String KEY_PAYOUT_MSISDN = "payout_msisdn";
+    private static final String KEY_PAYOUT_VERIFIED = "payout_verified";
 
     private static volatile TokenManager INSTANCE;
     private final SharedPreferences prefs;
@@ -110,6 +113,37 @@ public class TokenManager {
                 .remove(KEY_REFRESH_TOKEN)
                 .remove(KEY_TOKEN_EXPIRES_AT)
                 .remove(KEY_USER_JSON)
+                .remove(KEY_PAYOUT_PROVIDER)
+                .remove(KEY_PAYOUT_MSISDN)
+                .remove(KEY_PAYOUT_VERIFIED)
+                .apply();
+    }
+
+    public synchronized void savePayoutAccount(String provider, String msisdn, boolean verified) {
+        prefs.edit()
+                .putString(KEY_PAYOUT_PROVIDER, provider)
+                .putString(KEY_PAYOUT_MSISDN, msisdn)
+                .putBoolean(KEY_PAYOUT_VERIFIED, verified)
+                .apply();
+    }
+
+    public synchronized String getPayoutProvider() {
+        return prefs.getString(KEY_PAYOUT_PROVIDER, null);
+    }
+
+    public synchronized String getPayoutMsisdn() {
+        return prefs.getString(KEY_PAYOUT_MSISDN, null);
+    }
+
+    public synchronized boolean isPayoutVerified() {
+        return prefs.getBoolean(KEY_PAYOUT_VERIFIED, false);
+    }
+
+    public synchronized void clearPayoutAccount() {
+        prefs.edit()
+                .remove(KEY_PAYOUT_PROVIDER)
+                .remove(KEY_PAYOUT_MSISDN)
+                .remove(KEY_PAYOUT_VERIFIED)
                 .apply();
     }
 

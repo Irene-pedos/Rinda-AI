@@ -458,6 +458,15 @@
                     android:textAppearance="@style/TextAppearance.Rinda.Section" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnReportProblem"
+                    style="@style/Widget.Rinda.Button.Tonal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_sm"
+                    android:text="@string/btn_report_problem"
+                    app:icon="@drawable/ic_camera" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnEditPlot"
                     style="@style/Widget.Rinda.Button.Outlined"
                     android:layout_width="match_parent"

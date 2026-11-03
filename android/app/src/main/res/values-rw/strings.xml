@@ -28,6 +28,9 @@
     <string name="btn_verify">Emeza</string>
     <string name="btn_request_review">Saba isubiramo</string>
     <string name="btn_report_problem">Tanga raporo y\'ikibazo</string>
+    <string name="cd_help">Sobanura ibi</string>
+    <string name="cd_back">Subira inyuma</string>
+    <string name="cd_close">Funga</string>
     <string name="btn_logout">Sohoka</string>
     <string name="loading">Birimo gutunganywa…</string>
     <string name="last_updated">Ibiheruka kuvugururwa: %s</string>
@@ -132,11 +135,49 @@
 
     <!-- Problem Reports -->
     <string name="report_problem_title">Tanga Raporo y\'Ikibazo</string>
+    <string name="report_card_desc">Ohereza ibyo witegereje mu murima n\'ifoto by\'igihamya kuri koperative.</string>
     <string name="report_disclaimer">Iyi raporo ikoreshwa nk\'igihamya. Ntihita itanga ubwishyu mu buryo bwikora.</string>
     <string name="report_reason_label">Ni iki wabonye mu murima?</string>
     <string name="report_note_label">Ibisobanuro birambuye</string>
     <string name="report_agent_visit">Saba ko umukozi wa koperative asura umurima</string>
     <string name="report_add_photo">Shyiraho Ifoto (Iyo ihari)</string>
+    <string name="report_step_choose_plot">Hitamo umurima</string>
+    <string name="report_choose_plot_title">Ni uwuhe murima ufite ikibazo?</string>
+    <string name="report_choose_plot_empty">Nta murima uraboneka wo gutangaho raporo.</string>
+    <string name="report_step_symptom">Icyo ubona</string>
+    <string name="report_symptom_title">Ni iki ubona mu murima?</string>
+    <string name="report_symptom_caption">Hitamo ibisobanuro bijyanye n\'uko ibihingwa byawe bimeze.</string>
+    <string name="report_symptom_dry_leaves">Amababi yumye cyangwa yanitse</string>
+    <string name="report_symptom_dry_leaves_sub">Amababi yipfunyika cyangwa yumishwa n\'amapfa n\'izuba ryinshi</string>
+    <string name="report_symptom_yellow_leaves">Amababi y\'umuhondo cyangwa atagwingiye</string>
+    <string name="report_symptom_yellow_leaves_sub">Ibihingwa bifite ibara ry\'umuhondo cyangwa bidakura neza</string>
+    <string name="report_symptom_flooding">Amazi menshi cyangwa kurengerwa</string>
+    <string name="report_symptom_flooding_sub">Amazi adatemba ari mu murima yangiza imizi</string>
+    <string name="report_symptom_other">Ikindi kibazo cyo mu murima</string>
+    <string name="report_symptom_other_sub">Umuyaga, urubura, isuri, cyangwa ibindi byangiza</string>
+    <string name="report_step_details">Ibisobanuro n\'ifoto</string>
+    <string name="report_details_title">Ongera ibisobanuro n\'ibimenyetso</string>
+    <string name="report_note_hint">Sobanura ibyabaye n\'igihe byatangiriye…</string>
+    <string name="report_photo_attached">Ifoto yashyizweho</string>
+    <string name="report_remove_photo">Kura ifoto</string>
+    <string name="report_agent_visit_sub">Umukozi wa koperative azaherwa amakuru yo gusura umurima wawe.</string>
+    <string name="report_step_review">Suzuma wohereze</string>
+    <string name="report_review_title">Suzuma raporo yawe</string>
+    <string name="report_review_plot">Umurima</string>
+    <string name="report_review_symptom">Icyagaragaye</string>
+    <string name="report_review_note">Ibisobanuro</string>
+    <string name="report_review_visit">Gusura umurima</string>
+    <string name="report_review_visit_yes">Byasabwe</string>
+    <string name="report_review_visit_no">Ntibyasabwe</string>
+    <string name="report_review_photo">Ifoto y\'igihamya</string>
+    <string name="report_review_photo_yes">Yashyizweho</string>
+    <string name="report_review_photo_no">Nta yiriho</string>
+    <string name="report_next_title">Ibizakurikira</string>
+    <string name="report_next_body">Umukozi wa koperative azabona iyi raporo y\'igihamya. Niba wasabye ko asura umurima, azapanga gahunda. Ibuka ko iyi raporo ari igihamya kidahita gitanga amafaranga mu buryo bwikora.</string>
+    <string name="btn_send_report">Ohereza raporo</string>
+    <string name="report_success_title">Raporo yakiriwe</string>
+    <string name="report_success_body">Ibyo witegereje byabitswe nk\'igihamya cy\'umurima.</string>
+    <string name="report_offline_queued">Byabitswe kuri telefone. Bizoherezwa nihaboneka internet.</string>
 
     <!-- Payout Account -->
     <string name="payout_account_title">Konti yo Kwishyurirwaho</string>
@@ -145,6 +186,28 @@
     <string name="payout_verified">Yemejwe</string>
     <string name="payout_unverified">Ntiraremezwa</string>
     <string name="payout_simulated_notice">Kwishyura bikorwa mu buryo bwo kwimenyereza gusa.</string>
+    <string name="payout_step_provider">Hitamo uburyo bwo kwishyura</string>
+    <string name="payout_provider_title">Amafaranga yakoherezwa hehe?</string>
+    <string name="payout_provider_caption">Hitamo ikigo ukoresha wandike na numero yawe ya telefone.</string>
+    <string name="payout_name_match_notice">Amazina ari kuri konti ya telefone agomba guhura n\'ari kuri Rinda.</string>
+    <string name="payout_phone_label">Numero ya telefone yo kwishyurirwaho</string>
+    <string name="payout_phone_hint">078 000 0001</string>
+    <string name="payout_step_otp">Emeza konti</string>
+    <string name="payout_otp_title">Emeza ukoresheje SMS</string>
+    <string name="payout_otp_subtitle">Andika imibare 6 yoherejwe kuri %s</string>
+    <string name="btn_send_payout_otp">Ohereza umubare wo kwemeza</string>
+    <string name="btn_confirm_payout">Emeza konti</string>
+    <string name="payout_success_title">Konti yemejwe</string>
+    <string name="payout_success_body">Konti yawe ya telefone yemejwe ku bw\'ikitegererezo cyo kwishyurirwaho.</string>
+    <string name="payout_current_account">Konti ikoreshwa: %1$s (%2$s)</string>
+    <string name="payout_not_set">Ntirashyirwaho</string>
+    <string name="profile_edit_name">Hindura izina</string>
+    <string name="profile_edit_name_hint">Amazina yose</string>
+    <string name="profile_name_updated">Amazina yavuguruwe</string>
+    <string name="profile_sms_alerts">Ubutumwa bugufi (SMS)</string>
+    <string name="profile_sms_alerts_on">Bikora</string>
+    <string name="profile_sms_alerts_off">Ntibikora</string>
+    <string name="profile_sms_alerts_updated">Ibyo wahisemo byavuguruwe</string>
 
     <!-- Agent Screens -->
     <string name="agent_farmers_title">Abahinzi bo muri Koperative</string>

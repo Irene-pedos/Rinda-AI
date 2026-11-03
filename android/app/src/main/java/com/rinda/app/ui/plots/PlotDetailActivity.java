@@ -1,5 +1,6 @@
 package com.rinda.app.ui.plots;
 
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -94,6 +95,11 @@ public class PlotDetailActivity extends AppCompatActivity {
         binding.swipeRefresh.setColorSchemeResources(R.color.rinda_primary);
         binding.swipeRefresh.setOnRefreshListener(this::fetchAllData);
 
+        binding.btnReportProblem.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ReportProblemActivity.class);
+            intent.putExtra(ReportProblemActivity.EXTRA_PRESELECTED_PLOT_ID, plotId);
+            startActivity(intent);
+        });
         binding.btnEditPlot.setOnClickListener(v -> showEditNameDialog());
         binding.btnDeletePlot.setOnClickListener(v -> showDeleteConfirmDialog());
 

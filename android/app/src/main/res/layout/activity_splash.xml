@@ -17,7 +17,7 @@
         <!-- Full white logo (symbol + "Rinda") on the green hero, in light and dark mode -->
         <ImageView
             android:id="@+id/ivLogo"
-            android:layout_width="240dp"
+            android:layout_width="180dp"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
             android:contentDescription="@string/app_name"

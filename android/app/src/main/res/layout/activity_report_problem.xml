@@ -1,0 +1,674 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 4-step wizard for reporting a problem per ANDROID_UI_GUIDELINES.md §7.2 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/rinda_bg"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:navigationContentDescription="@string/cd_close"
+        app:navigationIcon="@drawable/ic_close"
+        app:title="@string/report_problem_title" />
+
+    <!-- Step Progress Header -->
+    <LinearLayout
+        android:id="@+id/stepHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/stepProgress"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:max="4"
+            android:progress="1"
+            app:indicatorColor="@color/rinda_primary"
+            app:trackColor="@color/rinda_outline" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="@dimen/screen_padding"
+            android:paddingTop="@dimen/spacing_sm"
+            android:paddingEnd="@dimen/screen_padding"
+            android:paddingBottom="@dimen/spacing_xs">
+
+            <TextView
+                android:id="@+id/tvStepLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Rinda.Caption"
+                tools:text="Step 1 of 4" />
+
+            <TextView
+                android:id="@+id/tvStepTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xxs"
+                android:accessibilityHeading="true"
+                android:textAppearance="@style/TextAppearance.Rinda.Headline"
+                tools:text="Choose a plot" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Wizard Steps Frame -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- Step 1: Choose Plot -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/stepPlot"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/screen_padding"
+                android:paddingEnd="@dimen/screen_padding"
+                android:paddingBottom="@dimen/spacing_base">
+
+                <!-- Evidence Disclaimer Card -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Rinda.Card.Tinted"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/card_padding">
+
+                        <ImageView
+                            style="@style/Widget.Rinda.IconBadge"
+                            android:backgroundTint="@color/rinda_primary_container"
+                            android:src="@drawable/ic_info"
+                            app:tint="@color/rinda_primary" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_md"
+                            android:layout_weight="1"
+                            android:text="@string/report_disclaimer"
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                            android:textColor="@color/rinda_on_primary_container" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/section_gap"
+                    android:layout_marginBottom="@dimen/spacing_sm"
+                    android:text="@string/report_choose_plot_title"
+                    android:textAppearance="@style/TextAppearance.Rinda.Section" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvPlots"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false" />
+
+                <TextView
+                    android:id="@+id/tvPlotsEmpty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_base"
+                    android:gravity="center"
+                    android:text="@string/report_choose_plot_empty"
+                    android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- Step 2: What you see (Symptom cards) -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/stepSymptom"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/screen_padding"
+                android:paddingEnd="@dimen/screen_padding"
+                android:paddingBottom="@dimen/spacing_base">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:text="@string/report_symptom_caption"
+                    android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
+
+                <!-- Card 1: Dry / Wilting -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardSymptomDry"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/card_gap"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/card_padding">
+
+                        <ImageView
+                            style="@style/Widget.Rinda.IconBadge"
+                            android:backgroundTint="@color/status_watch_bg"
+                            android:src="@drawable/ic_status_watch"
+                            app:tint="@color/status_watch" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_md"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/report_symptom_dry_leaves"
+                                android:textAppearance="@style/TextAppearance.Rinda.Title" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_xxs"
+                                android:text="@string/report_symptom_dry_leaves_sub"
+                                android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Card 2: Yellow / Stunted -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardSymptomYellow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/card_gap"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/card_padding">
+
+                        <ImageView
+                            style="@style/Widget.Rinda.IconBadge"
+                            android:backgroundTint="@color/rinda_secondary_container"
+                            android:src="@drawable/ic_leaf"
+                            app:tint="@color/rinda_secondary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_md"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/report_symptom_yellow_leaves"
+                                android:textAppearance="@style/TextAppearance.Rinda.Title" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_xxs"
+                                android:text="@string/report_symptom_yellow_leaves_sub"
+                                android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Card 3: Flooding -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardSymptomFlooding"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/card_gap"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/card_padding">
+
+                        <ImageView
+                            style="@style/Widget.Rinda.IconBadge"
+                            android:backgroundTint="@color/rinda_tertiary_container"
+                            android:src="@drawable/ic_weather_rain"
+                            app:tint="@color/rinda_tertiary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_md"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/report_symptom_flooding"
+                                android:textAppearance="@style/TextAppearance.Rinda.Title" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_xxs"
+                                android:text="@string/report_symptom_flooding_sub"
+                                android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Card 4: Other Condition -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardSymptomOther"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/card_gap"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/card_padding">
+
+                        <ImageView
+                            style="@style/Widget.Rinda.IconBadge"
+                            android:backgroundTint="@color/rinda_surface_variant"
+                            android:src="@drawable/ic_info"
+                            app:tint="@color/rinda_text_secondary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_md"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/report_symptom_other"
+                                android:textAppearance="@style/TextAppearance.Rinda.Title" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_xxs"
+                                android:text="@string/report_symptom_other_sub"
+                                android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- Step 3: Notes & Photo & Agent Visit -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/stepDetails"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/screen_padding"
+                android:paddingEnd="@dimen/screen_padding"
+                android:paddingBottom="@dimen/spacing_base">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:text="@string/report_note_label"
+                    android:textAppearance="@style/TextAppearance.Rinda.Section" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilNotes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:hint="@string/report_note_label"
+                    app:placeholderText="@string/report_note_hint">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etNotes"
+                        style="@style/Rinda.InputText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="top|start"
+                        android:lines="4"
+                        android:minLines="3" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Agent Visit Switch Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/section_gap">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/card_padding">
+
+                        <ImageView
+                            style="@style/Widget.Rinda.IconBadge"
+                            android:backgroundTint="@color/rinda_primary_container"
+                            android:src="@drawable/ic_visit"
+                            app:tint="@color/rinda_primary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_md"
+                            android:layout_marginEnd="@dimen/spacing_sm"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/report_agent_visit"
+                                android:textAppearance="@style/TextAppearance.Rinda.Subtitle" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_xxs"
+                                android:text="@string/report_agent_visit_sub"
+                                android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switchAgentVisit"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Optional Photo Card -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/section_gap"
+                    android:text="@string/report_add_photo"
+                    android:textAppearance="@style/TextAppearance.Rinda.Section" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardAttachPhoto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/card_padding">
+
+                        <ImageView
+                            android:id="@+id/ivPhotoPreview"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@drawable/bg_rounded"
+                            android:backgroundTint="@color/rinda_surface_variant"
+                            android:padding="@dimen/spacing_sm"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_camera"
+                            app:tint="@color/rinda_text_secondary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_md"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvPhotoTitle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/report_add_photo"
+                                android:textAppearance="@style/TextAppearance.Rinda.Subtitle" />
+
+                            <TextView
+                                android:id="@+id/tvPhotoStatus"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_xxs"
+                                android:text="Tap to capture or select a photo of your field"
+                                android:textAppearance="@style/TextAppearance.Rinda.Caption" />
+                        </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnRemovePhoto"
+                            style="@style/Widget.Rinda.Button.Text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/report_remove_photo"
+                            android:textColor="@color/rinda_error"
+                            android:visibility="gone" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- Step 4: Review ("Check and send") -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/stepReview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/screen_padding"
+                android:paddingEnd="@dimen/screen_padding"
+                android:paddingBottom="@dimen/spacing_base">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:text="@string/report_review_title"
+                    android:textAppearance="@style/TextAppearance.Rinda.Section" />
+
+                <!-- Details Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/card_padding">
+
+                        <include
+                            android:id="@+id/rowReviewPlot"
+                            layout="@layout/view_detail_row" />
+
+                        <include
+                            android:id="@+id/rowReviewSymptom"
+                            layout="@layout/view_detail_row" />
+
+                        <include
+                            android:id="@+id/rowReviewNotes"
+                            layout="@layout/view_detail_row" />
+
+                        <include
+                            android:id="@+id/rowReviewVisit"
+                            layout="@layout/view_detail_row" />
+
+                        <include
+                            android:id="@+id/rowReviewPhoto"
+                            layout="@layout/view_detail_row" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- What happens next tinted card -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Rinda.Card.Tinted"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/section_gap">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/card_padding">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/report_next_title"
+                            android:textAppearance="@style/TextAppearance.Rinda.Title"
+                            android:textColor="@color/rinda_on_primary_container" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:text="@string/report_next_body"
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                            android:textColor="@color/rinda_on_primary_container" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- Step 5: Success Screen -->
+        <LinearLayout
+            android:id="@+id/stepSuccess"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="@dimen/screen_padding"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/ivSuccessBadge"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:background="@drawable/bg_circle"
+                android:backgroundTint="@color/rinda_primary"
+                android:padding="20dp"
+                android:src="@drawable/ic_check"
+                app:tint="@color/rinda_on_primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xl"
+                android:text="@string/report_success_title"
+                android:textAppearance="@style/TextAppearance.Rinda.Headline" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:gravity="center"
+                android:text="@string/report_success_body"
+                android:textAppearance="@style/TextAppearance.Rinda.Body"
+                android:textColor="@color/rinda_text_secondary" />
+
+            <TextView
+                android:id="@+id/tvOfflineNotice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:gravity="center"
+                android:text="@string/report_offline_queued"
+                android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                android:textColor="@color/rinda_secondary"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- Bottom Bar (Progress + Back + Next) -->
+    <LinearLayout
+        style="@style/Rinda.BottomBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBack"
+            style="@style/Widget.Rinda.Button.Outlined"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_sm"
+            android:layout_weight="1"
+            android:text="@string/btn_back"
+            android:visibility="gone" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNext"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="@string/btn_next"
+            app:icon="@drawable/ic_arrow_forward"
+            app:iconGravity="textEnd" />
+    </LinearLayout>
+
+</LinearLayout>

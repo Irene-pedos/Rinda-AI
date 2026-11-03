@@ -45,6 +45,7 @@
     <string name="sync_pending">%d pending updates to sync</string>
     <string name="cd_help">Explain this</string>
     <string name="cd_back">Go back</string>
+    <string name="cd_close">Close</string>
     <string name="step_of">Step %1$d of %2$d</string>
     <string name="pull_to_refresh_hint">Pull down to refresh</string>
     <string name="value_not_available">Not available yet</string>
@@ -351,6 +352,13 @@
 
     <!-- Profile -->
     <string name="profile_settings">Settings</string>
+    <string name="profile_edit_name">Edit name</string>
+    <string name="profile_edit_name_hint">Full name</string>
+    <string name="profile_name_updated">Profile name updated</string>
+    <string name="profile_sms_alerts">SMS alerts</string>
+    <string name="profile_sms_alerts_on">On</string>
+    <string name="profile_sms_alerts_off">Off</string>
+    <string name="profile_sms_alerts_updated">SMS alert preferences updated</string>
     <string name="profile_language">Language</string>
     <string name="profile_server">Server address (testing)</string>
     <string name="profile_help">How Rinda works</string>
@@ -382,11 +390,49 @@
 
     <!-- Problem Reports -->
     <string name="report_problem_title">Report a problem</string>
+    <string name="report_card_desc">Send crop observations and photo evidence to your cooperative.</string>
     <string name="report_disclaimer">Your report is saved as evidence. It does not start a claim or a payout by itself.</string>
     <string name="report_reason_label">What do you see?</string>
     <string name="report_note_label">Describe the problem</string>
     <string name="report_agent_visit">Ask an agent to visit</string>
     <string name="report_add_photo">Add a photo (optional)</string>
+    <string name="report_step_choose_plot">Choose a plot</string>
+    <string name="report_choose_plot_title">Which plot has a problem?</string>
+    <string name="report_choose_plot_empty">No plots available to report on.</string>
+    <string name="report_step_symptom">What you see</string>
+    <string name="report_symptom_title">What do you observe in the field?</string>
+    <string name="report_symptom_caption">Choose the description that best matches your crop condition.</string>
+    <string name="report_symptom_dry_leaves">Dry or wilting leaves</string>
+    <string name="report_symptom_dry_leaves_sub">Leaves rolling, curling, or drying from drought or heat stress</string>
+    <string name="report_symptom_yellow_leaves">Yellow or stunted leaves</string>
+    <string name="report_symptom_yellow_leaves_sub">Pale, yellowing plants or visibly slowed growth</string>
+    <string name="report_symptom_flooding">Flooding or waterlogging</string>
+    <string name="report_symptom_flooding_sub">Standing water or pooling affecting roots</string>
+    <string name="report_symptom_other">Other field condition</string>
+    <string name="report_symptom_other_sub">Wind damage, hail, soil erosion, or unusual crop stress</string>
+    <string name="report_step_details">Notes &amp; photo</string>
+    <string name="report_details_title">Add details and evidence</string>
+    <string name="report_note_hint">Describe what happened and when it started…</string>
+    <string name="report_photo_attached">Photo attached</string>
+    <string name="report_remove_photo">Remove</string>
+    <string name="report_agent_visit_sub">Your cooperative agent will be notified to inspect your field.</string>
+    <string name="report_step_review">Check and send</string>
+    <string name="report_review_title">Check your report</string>
+    <string name="report_review_plot">Plot</string>
+    <string name="report_review_symptom">Observation</string>
+    <string name="report_review_note">Notes</string>
+    <string name="report_review_visit">Agent visit</string>
+    <string name="report_review_visit_yes">Requested</string>
+    <string name="report_review_visit_no">Not requested</string>
+    <string name="report_review_photo">Photo evidence</string>
+    <string name="report_review_photo_yes">Attached</string>
+    <string name="report_review_photo_no">None</string>
+    <string name="report_next_title">What happens next</string>
+    <string name="report_next_body">Your cooperative agent receives this ground evidence. If you asked for a visit, they will schedule an inspection. Remember, ground reports serve as evidence and do not start an automatic payout.</string>
+    <string name="btn_send_report">Send report</string>
+    <string name="report_success_title">Report recorded</string>
+    <string name="report_success_body">Your observation was saved as ground evidence.</string>
+    <string name="report_offline_queued">Saved to your offline outbox. It will be sent automatically when you connect to internet.</string>
 
     <!-- Payout Account -->
     <string name="payout_account_title">Payout account</string>
@@ -395,6 +441,21 @@
     <string name="payout_verified">Verified</string>
     <string name="payout_unverified">Not verified</string>
     <string name="payout_simulated_notice">Practice project: payments are simulated. No real money is sent.</string>
+    <string name="payout_step_provider">Choose provider</string>
+    <string name="payout_provider_title">Where should payouts be sent?</string>
+    <string name="payout_provider_caption">Choose your mobile money provider and enter your phone number.</string>
+    <string name="payout_name_match_notice">The registered name on your mobile money account must match your Rinda profile name.</string>
+    <string name="payout_phone_label">Mobile money phone number</string>
+    <string name="payout_phone_hint">078 000 0001</string>
+    <string name="payout_step_otp">Verify account</string>
+    <string name="payout_otp_title">Verify with SMS code</string>
+    <string name="payout_otp_subtitle">Enter the 6-digit verification code sent to %s</string>
+    <string name="btn_send_payout_otp">Send verification code</string>
+    <string name="btn_confirm_payout">Confirm account</string>
+    <string name="payout_success_title">Account verified</string>
+    <string name="payout_success_body">Your mobile money account has been verified for simulated payouts.</string>
+    <string name="payout_current_account">Current account: %1$s (%2$s)</string>
+    <string name="payout_not_set">Not set up</string>
 
     <!-- Agent Screens -->
     <string name="agent_farmers_title">My cooperative farmers</string>

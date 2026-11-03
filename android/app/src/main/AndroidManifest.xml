@@ -80,6 +80,18 @@
             android:name=".ui.claims.ClaimDetailActivity"
             android:exported="false" />
 
+        <!-- Problem Report Activity -->
+        <activity
+            android:name=".ui.plots.ReportProblemActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Payout Account Activity -->
+        <activity
+            android:name=".ui.profile.PayoutAccountActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
     </application>
 
 </manifest>

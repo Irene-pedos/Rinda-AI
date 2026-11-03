@@ -81,10 +81,10 @@
 
     <!-- Splash: the hero green fills the window from the first frame -->
     <style name="Theme.Rinda.Splash" parent="Theme.Rinda">
-        <item name="android:windowBackground">@drawable/bg_hero</item>
+        <item name="android:windowBackground">@color/rinda_hero_start</item>
         <item name="android:statusBarColor">@color/rinda_hero_start</item>
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:navigationBarColor">@color/rinda_hero_end</item>
+        <item name="android:navigationBarColor">@color/rinda_hero_start</item>
     </style>
 
     <!-- Activity transitions: a short slide + fade, the same everywhere -->

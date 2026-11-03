@@ -40,6 +40,22 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        binding.btnEditName.setOnClickListener(v -> showEditNameDialog());
+        binding.cardProfileUser.setOnClickListener(v -> showEditNameDialog());
+
+        row(binding.rowPayout, R.drawable.ic_wallet, R.string.payout_account_title, v -> {
+            Intent intent = new Intent(requireContext(), PayoutAccountActivity.class);
+            startActivity(intent);
+        });
+
+        row(binding.rowSmsAlerts, R.drawable.ic_phone, R.string.profile_sms_alerts, v -> {
+            android.content.SharedPreferences sp = requireContext().getSharedPreferences("rinda_settings", android.content.Context.MODE_PRIVATE);
+            boolean current = sp.getBoolean("sms_alerts_enabled", true);
+            sp.edit().putBoolean("sms_alerts_enabled", !current).apply();
+            displayUserProfile();
+            Ui.toast(binding.getRoot(), R.string.profile_sms_alerts_updated);
+        });
+
         row(binding.rowLanguage, R.drawable.ic_language, R.string.profile_language, v -> {
             Intent intent = new Intent(requireContext(), LanguageActivity.class);
             intent.putExtra("is_from_settings", true);
@@ -84,7 +100,8 @@ public class ProfileFragment extends Fragment {
 
     private void displayUserProfile() {
         if (binding == null) return;
-        UserResponse user = TokenManager.getInstance(requireContext()).getUser();
+        TokenManager tokenManager = TokenManager.getInstance(requireContext());
+        UserResponse user = tokenManager.getUser();
 
         if (user != null) {
             binding.tvProfileName.setText(user.getFullName());
@@ -94,9 +111,49 @@ public class ProfileFragment extends Fragment {
             binding.tvAvatarInitials.setText(initials(user.getFullName()));
         }
 
+        // Payout account value
+        if (tokenManager.isPayoutVerified() && tokenManager.getPayoutMsisdn() != null) {
+            String prov = "MTN_MOMO".equalsIgnoreCase(tokenManager.getPayoutProvider()) ? "MTN MoMo" : "Airtel Money";
+            value(binding.rowPayout, prov + " (" + tokenManager.getPayoutMsisdn() + ")");
+        } else {
+            value(binding.rowPayout, getString(R.string.payout_not_set));
+        }
+
+        // SMS Alerts value
+        boolean smsEnabled = requireContext().getSharedPreferences("rinda_settings", android.content.Context.MODE_PRIVATE)
+                .getBoolean("sms_alerts_enabled", true);
+        value(binding.rowSmsAlerts, getString(smsEnabled ? R.string.profile_sms_alerts_on : R.string.profile_sms_alerts_off));
+
         value(binding.rowLanguage, getString(LocaleHelper.isKinyarwanda(requireContext())
                 ? R.string.lang_kinyarwanda_native : R.string.lang_english_native));
         value(binding.rowServer, ApiClient.getInstance(requireContext()).getActiveBaseUrl());
+    }
+
+    private void showEditNameDialog() {
+        TokenManager tokenManager = TokenManager.getInstance(requireContext());
+        UserResponse user = tokenManager.getUser();
+        String currentName = user != null ? user.getFullName() : "";
+
+        DialogTextInputBinding input = DialogTextInputBinding.inflate(getLayoutInflater());
+        input.tilInput.setHint(getString(R.string.profile_edit_name_hint));
+        input.etInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+        input.etInput.setText(currentName);
+        input.etInput.setSelection(currentName.length());
+
+        Ui.dialog(requireContext())
+                .setTitle(R.string.profile_edit_name)
+                .setView(input.getRoot())
+                .setPositiveButton(R.string.btn_save, (dialog, which) -> {
+                    String newName = input.etInput.getText() != null ? input.etInput.getText().toString().trim() : "";
+                    if (!newName.isEmpty() && user != null) {
+                        UserResponse updated = new UserResponse(user.getId(), user.getPhone(), newName, user.getRole(), user.getLanguage(), user.isDemo());
+                        tokenManager.saveUser(updated);
+                        displayUserProfile();
+                        Ui.toast(binding.getRoot(), R.string.profile_name_updated);
+                    }
+                })
+                .setNegativeButton(R.string.btn_cancel, null)
+                .show();
     }
 
     private static int roleLabel(Role role) {

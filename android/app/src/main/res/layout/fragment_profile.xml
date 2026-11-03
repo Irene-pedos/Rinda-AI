@@ -16,6 +16,7 @@
 
         <!-- Who you are -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardProfileUser"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -44,13 +45,30 @@
                     android:layout_weight="1"
                     android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/tvProfileName"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:maxLines="2"
-                        android:textAppearance="@style/TextAppearance.Rinda.Title" />
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tvProfileName"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:ellipsize="end"
+                            android:maxLines="2"
+                            android:textAppearance="@style/TextAppearance.Rinda.Title" />
+
+                        <ImageButton
+                            android:id="@+id/btnEditName"
+                            style="@style/Widget.Rinda.IconButton"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:contentDescription="@string/profile_edit_name"
+                            android:src="@drawable/ic_edit"
+                            app:tint="@color/rinda_primary" />
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/tvProfilePhone"
@@ -104,6 +122,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
+
+                <include
+                    android:id="@+id/rowPayout"
+                    layout="@layout/view_settings_row" />
+
+                <View
+                    style="@style/Rinda.Divider"
+                    android:layout_marginStart="68dp" />
+
+                <include
+                    android:id="@+id/rowSmsAlerts"
+                    layout="@layout/view_settings_row" />
+
+                <View
+                    style="@style/Rinda.Divider"
+                    android:layout_marginStart="68dp" />
 
                 <include
                     android:id="@+id/rowLanguage"
