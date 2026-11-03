@@ -6,7 +6,7 @@ What has been tested, what the results show, and what they can't show. For how t
 
 ## Back-test of the demo settings
 
-Run on 2026-11-02 with model version 0.4.0, using the `CONFIRMED_FOR_DEMO` values in the `thresholds` table. To repeat it, run this from `ml-service` with the backend running:
+Run on 2026-11-03 with model version 0.5.0, using the `CONFIRMED_FOR_DEMO` values in the `thresholds` table. To repeat it, run this from `ml-service` with the backend running:
 
 ```powershell
 .venv\Scripts\python -m app.backtest
@@ -54,6 +54,16 @@ The simulated results didn't change, because the sample has no gaps of this kind
 10. **Most results are low confidence.** 63% of real results were `LOW`, and none were `HIGH`, because `HIGH` isn't used before back-testing against field results.
 11. **Most low NDVI has no explained cause.** Of the 50 real results with low NDVI, 45 were `UNEXPLAINED` and 5 were `WATER_DEFICIT`, so `needsFieldVisit` would come up often. Another 27 `WATCH` results came from low rain alone, with NDVI inside the band.
 
+## Harvest forecast
+
+The forecast is the plot's greenness total so far, divided by the normal band's high and low totals (§10.1). It's a percent of normal greenness, not a yield.
+
+1. **It reacts weakly to stress late in the season.** At 80 DAP, the stressed simulated season gave 88% to 100%, and the two normal seasons gave 96% to 111% and 97% to 111%, so the ranges overlap. The stressed plot was well below normal for its last 3 periods, but its early periods were slightly above normal, and every period counts the same.
+2. **Bare soil keeps every total high.** NDVI is around 0.2 even before the crop grows, and that part is counted in both the plot and its normal, which pulls every result towards 100%. A plot that failed completely after 55 DAP would still score well above 0%. Question 21 asks whether to change this.
+3. **Real ranges are wide, as the spec expects (§3.6).** At 80 DAP they were 16 to 57 points wide. They're wide because past seasons varied a lot, and they weren't narrowed.
+4. **Plot 9004 had the lowest ranges,** 74% to 93% in 2024. It also had the most `WATCH` results, so the forecast and the status agree there.
+5. **Real seasons often score above 100%,** for example 132% to 187% for plot 9001 in 2023. Its baseline had only 4 past seasons, and these aren't known maize fields, so read this as rule behaviour only.
+
 ## Results
 
 ### Simulated sample
@@ -78,6 +88,31 @@ The simulated results didn't change, because the sample has no gaps of this kind
 |---|---|---|---|---|---|
 | Simulated (stressed) | 2025 | 2025-12-04 | 75 | -4.43 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL, RAIN_BELOW_NORMAL |
 | Simulated (stressed) | 2025 | 2025-12-09 | 80 | -8.53 | NDVI_BELOW_NORMAL, NDVI_WELL_BELOW_NORMAL, RAIN_BELOW_NORMAL |
+
+### Simulated sample, forecast at 80 DAP
+
+| Plot | Season | Range (% of normal) | Width (points) |
+|---|---|---|---|
+| Simulated (normal) | 2023 | 97 to 111 | 13 |
+| Simulated (normal) | 2024 | 96 to 109 | 13 |
+| Simulated (stressed) | 2025 | 88 to 100 | 12 |
+
+### Real data, forecast at 80 DAP
+
+| Plot | Season | Range (% of normal) | Width (points) |
+|---|---|---|---|
+| 9001 | 2023 | 132 to 187 | 55 |
+| 9001 | 2024 | 94 to 150 | 57 |
+| 9001 | 2025 | 92 to 140 | 48 |
+| 9002 | 2023 | 98 to 143 | 45 |
+| 9002 | 2024 | 94 to 138 | 44 |
+| 9002 | 2025 | 100 to 133 | 33 |
+| 9003 | 2023 | 102 to 138 | 36 |
+| 9003 | 2024 | 95 to 124 | 29 |
+| 9003 | 2025 | 98 to 140 | 41 |
+| 9004 | 2023 | 92 to 107 | 16 |
+| 9004 | 2024 | 74 to 93 | 18 |
+| 9004 | 2025 | 81 to 101 | 21 |
 
 ### Real data, by plot and season
 
