@@ -61,6 +61,15 @@
             android:name=".ui.home.HomeActivity"
             android:exported="false" />
 
+        <!-- Plots Activities -->
+        <activity
+            android:name=".ui.plots.RegisterPlotActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ui.plots.PlotDetailActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

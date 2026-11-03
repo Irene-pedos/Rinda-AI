@@ -1,5 +1,6 @@
 package com.rinda.app.ui.home;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,7 @@ import com.rinda.app.data.model.PlotResponse;
 import com.rinda.app.data.model.UserResponse;
 import com.rinda.app.data.model.WeatherResponse;
 import com.rinda.app.databinding.FragmentHomeBinding;
+import com.rinda.app.ui.plots.RegisterPlotActivity;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,9 +61,7 @@ public class HomeFragment extends Fragment {
         });
 
         binding.btnQuickRegister.setOnClickListener(v -> {
-            if (getActivity() instanceof HomeActivity) {
-                ((HomeActivity) getActivity()).selectTab(R.id.nav_plots);
-            }
+            startActivity(new Intent(requireContext(), RegisterPlotActivity.class));
         });
 
         binding.btnQuickReport.setOnClickListener(v -> {

@@ -17,8 +17,10 @@ public class PlotStatusEntity {
     public BigDecimal rainPct;
     public String cause;
     public String confidence;
-    public String explanation;
+    public boolean needsFieldVisit;
+    public String dataQualityNote;
     public String modelVersion;
+    public String dataOrigin;
     public long cachedAt;
 
     public PlotStatusEntity() {

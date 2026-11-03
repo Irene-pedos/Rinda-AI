@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_light">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/surface_light"
+        app:elevation="@dimen/elevation_low">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:navigationIcon="@drawable/ic_chevron_right"
+            app:title="@string/btn_register_plot"
+            app:titleTextColor="@color/text_primary_light" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <!-- osmdroid Map Section -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="280dp">
+
+            <org.osmdroid.views.MapView
+                android:id="@+id/mapView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <!-- Map Controls Overlay -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:background="#99000000"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/spacing_md"
+                android:paddingTop="@dimen/spacing_xs"
+                android:paddingEnd="@dimen/spacing_md"
+                android:paddingBottom="@dimen/spacing_xs">
+
+                <TextView
+                    android:id="@+id/tvPointCount"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Tap map to add points (0/3 min)"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnUndoPoint"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Undo"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnClearPoints"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Clear"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Area preview badge -->
+            <TextView
+                android:id="@+id/tvEstimatedArea"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|start"
+                android:layout_margin="@dimen/spacing_sm"
+                android:background="@drawable/ic_status_healthy_bg"
+                android:paddingStart="@dimen/spacing_sm"
+                android:paddingTop="3dp"
+                android:paddingEnd="@dimen/spacing_sm"
+                android:paddingBottom="3dp"
+                android:text="Area: 0.00 ha"
+                android:textColor="@color/rinda_green"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <!-- Form Section -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_base">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilPlotName"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/plot_name_label"
+                    app:boxCornerRadiusBottomEnd="@dimen/radius_md"
+                    app:boxCornerRadiusBottomStart="@dimen/radius_md"
+                    app:boxCornerRadiusTopEnd="@dimen/radius_md"
+                    app:boxCornerRadiusTopStart="@dimen/radius_md"
+                    app:boxStrokeColor="@color/rinda_green">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPlotName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/plot_name_hint"
+                        android:inputType="textCapWords"
+                        android:maxLength="80"
+                        android:textSize="16sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilPlantingDate"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_md"
+                    android:hint="@string/planting_date_label"
+                    app:boxCornerRadiusBottomEnd="@dimen/radius_md"
+                    app:boxCornerRadiusBottomStart="@dimen/radius_md"
+                    app:boxCornerRadiusTopEnd="@dimen/radius_md"
+                    app:boxCornerRadiusTopStart="@dimen/radius_md"
+                    app:boxStrokeColor="@color/rinda_green">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPlantingDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clickable="true"
+                        android:focusable="false"
+                        android:hint="YYYY-MM-DD"
+                        android:textSize="16sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Fixed Crop label -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_md"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Crop: "
+                        android:textColor="@color/text_secondary_light"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.chip.Chip
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="false"
+                        android:text="@string/crop_maize"
+                        android:textColor="@color/rinda_green_dark"
+                        app:chipBackgroundColor="@color/rinda_green_container" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:lineSpacingExtra="3dp"
+                    android:text="Newly registered plots start as PENDING_VERIFICATION until confirmed by your cooperative agent."
+                    android:textColor="@color/text_tertiary_light"
+                    android:textSize="12sp" />
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="@dimen/spacing_md"
+                    android:indeterminateTint="@color/rinda_green"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSubmitPlot"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_height"
+                    android:layout_marginTop="@dimen/spacing_lg"
+                    android:layout_marginBottom="@dimen/spacing_md"
+                    android:backgroundTint="@color/rinda_green"
+                    android:text="@string/btn_register_plot"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    app:cornerRadius="@dimen/radius_md" />
+
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

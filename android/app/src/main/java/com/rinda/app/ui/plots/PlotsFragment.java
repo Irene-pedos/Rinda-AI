@@ -1,5 +1,6 @@
 package com.rinda.app.ui.plots;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,8 +40,10 @@ public class PlotsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         adapter = new PlotsAdapter(plot -> {
-            Toast.makeText(requireContext(), "Plot: " + plot.name + " (" + plot.status + ")", Toast.LENGTH_SHORT).show();
-            // Step 3 will wire this to PlotDetailActivity
+            Intent intent = new Intent(requireContext(), PlotDetailActivity.class);
+            intent.putExtra(PlotDetailActivity.EXTRA_PLOT_ID, plot.id);
+            intent.putExtra(PlotDetailActivity.EXTRA_PLOT_NAME, plot.name);
+            startActivity(intent);
         });
 
         binding.rvPlots.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -50,8 +53,8 @@ public class PlotsFragment extends Fragment {
         binding.swipeRefresh.setOnRefreshListener(this::fetchPlots);
 
         binding.fabAddPlot.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Register Plot opens in Step 3", Toast.LENGTH_SHORT).show();
-            // Step 3 will open RegisterPlotActivity with osmdroid map
+            Intent intent = new Intent(requireContext(), RegisterPlotActivity.class);
+            startActivity(intent);
         });
 
         observeCachedPlots();
