@@ -26,6 +26,8 @@ import com.rinda.app.data.local.RindaDatabase;
 import com.rinda.app.data.model.ApiProblem;
 import com.rinda.app.data.model.BaselineBinResponse;
 import com.rinda.app.data.model.BaselineResponse;
+import com.rinda.app.data.model.EnrollmentResponse;
+import com.rinda.app.data.model.HarvestForecastResponse;
 import com.rinda.app.data.model.ObservationResponse;
 import com.rinda.app.data.model.PlotHealthStatusResponse;
 import com.rinda.app.data.model.PlotRequest;
@@ -97,6 +99,8 @@ public class PlotDetailActivity extends AppCompatActivity {
         binding.swipeRefresh.setRefreshing(true);
         fetchPlotMetadata();
         fetchCropHealthStatus();
+        fetchEnrollment();
+        fetchHarvestForecast();
         fetchBaseline();
         fetchObservations();
         fetchWeather();
@@ -384,6 +388,84 @@ public class PlotDetailActivity extends AppCompatActivity {
             chart.getAxisRight().setEnabled(false);
 
             chart.invalidate();
+        }
+    }
+
+    private void fetchHarvestForecast() {
+        ApiClient.getInstance(this).getService().getHarvestForecast(plotId)
+                .enqueue(new Callback<HarvestForecastResponse>() {
+                    @Override
+                    public void onResponse(Call<HarvestForecastResponse> call, Response<HarvestForecastResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            updateForecastUi(response.body());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<HarvestForecastResponse> call, Throwable t) {
+                    }
+                });
+    }
+
+    private void updateForecastUi(HarvestForecastResponse forecast) {
+        if (forecast.isAvailable() && forecast.getLowPct() != null && forecast.getHighPct() != null) {
+            binding.tvHarvestForecastRange.setText(String.format(java.util.Locale.US, "%.0f%% – %.0f%% of normal",
+                    forecast.getLowPct().doubleValue(), forecast.getHighPct().doubleValue()));
+        } else {
+            String reason = forecast.getReason();
+            if ("TOO_EARLY".equalsIgnoreCase(reason)) {
+                binding.tvHarvestForecastRange.setText("Too early in season");
+            } else if ("NOT_ENOUGH_DATA".equalsIgnoreCase(reason)) {
+                binding.tvHarvestForecastRange.setText("Not enough satellite data yet");
+            } else if ("NOT_ANALYSED".equalsIgnoreCase(reason)) {
+                binding.tvHarvestForecastRange.setText("Awaiting initial satellite pass");
+            } else {
+                binding.tvHarvestForecastRange.setText("Estimate pending");
+            }
+        }
+        if (forecast.getDataQualityNote() != null && !forecast.getDataQualityNote().isEmpty()) {
+            binding.tvForecastDisclaimer.setText(forecast.getDataQualityNote());
+        }
+    }
+
+    private void fetchEnrollment() {
+        ApiClient.getInstance(this).getService().getEnrollment(plotId)
+                .enqueue(new Callback<EnrollmentResponse>() {
+                    @Override
+                    public void onResponse(Call<EnrollmentResponse> call, Response<EnrollmentResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            updateEnrollmentUi(response.body());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<EnrollmentResponse> call, Throwable t) {
+                    }
+                });
+    }
+
+    private void updateEnrollmentUi(EnrollmentResponse enrollment) {
+        String status = enrollment.getStatus();
+        if ("COVERED".equalsIgnoreCase(status)) {
+            String season = enrollment.getSeasonCode() != null ? enrollment.getSeasonCode() : "2026A";
+            binding.tvEnrollmentStatus.setText("Covered (Season " + season + ")");
+            binding.tvEnrollmentStatus.setTextColor(ContextCompat.getColor(this, R.color.rinda_green));
+        } else if ("PENDING".equalsIgnoreCase(status)) {
+            binding.tvEnrollmentStatus.setText("Coverage Pending");
+            binding.tvEnrollmentStatus.setTextColor(ContextCompat.getColor(this, R.color.status_watch));
+        } else if ("CANCELLED".equalsIgnoreCase(status)) {
+            binding.tvEnrollmentStatus.setText("Coverage Cancelled");
+            binding.tvEnrollmentStatus.setTextColor(ContextCompat.getColor(this, R.color.status_at_risk));
+        } else {
+            binding.tvEnrollmentStatus.setText("Not Enrolled");
+            binding.tvEnrollmentStatus.setTextColor(ContextCompat.getColor(this, R.color.text_secondary_light));
+        }
+
+        if (enrollment.getSumInsured() != null) {
+            java.text.NumberFormat nf = java.text.NumberFormat.getNumberInstance(java.util.Locale.US);
+            binding.tvSumInsured.setText(nf.format(enrollment.getSumInsured()) + " RWF");
+        } else {
+            binding.tvSumInsured.setText("Not confirmed yet");
         }
     }
 

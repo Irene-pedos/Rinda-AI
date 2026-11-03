@@ -153,6 +153,33 @@
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
+
+                        <!-- Coverage / Insurance Enrollment Status -->
+                        <LinearLayout
+                            android:id="@+id/layoutEnrollment"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_sm"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/tvEnrollmentStatus"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Coverage: Checking…"
+                                android:textColor="@color/text_secondary_light"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/tvSumInsured"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/text_secondary_light"
+                                android:textSize="12sp"
+                                android:text="Not confirmed yet" />
+                        </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
