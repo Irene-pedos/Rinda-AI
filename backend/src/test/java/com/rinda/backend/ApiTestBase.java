@@ -29,7 +29,7 @@ import org.springframework.test.web.servlet.ResultActions;
 @Import(ApiTestBase.TestOtp.class)
 abstract class ApiTestBase {
 
-    private static final List<String> TABLES = List.of("notifications", "plot_status", "harvest_forecasts", "ml_runs", "baselines", "weather_daily", "observations",
+    private static final List<String> TABLES = List.of("notifications", "audit_log", "model_versions", "plot_status", "harvest_forecasts", "ml_runs", "baselines", "weather_daily", "observations",
             "claims", "enrollments", "seasons", "plots",
             "refresh_tokens", "otp_codes", "agents", "farmers", "users", "cooperatives");
 
@@ -56,7 +56,9 @@ abstract class ApiTestBase {
 
     @BeforeEach
     void cleanDatabase() {
+        jdbc.execute("SET FOREIGN_KEY_CHECKS = 0");
         TABLES.forEach(table -> jdbc.update("DELETE FROM " + table));
+        jdbc.execute("SET FOREIGN_KEY_CHECKS = 1");
         otp.sent.clear();
         cooperativeId = newCooperative("Test Cooperative");
     }
