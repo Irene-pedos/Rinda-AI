@@ -10,11 +10,13 @@ import com.rinda.backend.ml.MlDtos.MlResultResponse;
 import com.rinda.backend.ml.MlDtos.ObservationRow;
 import com.rinda.backend.ml.MlDtos.StatusResult;
 import com.rinda.backend.ml.MlDtos.WeatherRow;
+import com.rinda.backend.notification.NotificationService;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -28,9 +30,11 @@ public class MlResultService {
     private static final String MODEL_NAME = "rinda-extract";
 
     private final JdbcTemplate jdbc;
+    private final NotificationService notifications;
 
-    public MlResultService(JdbcTemplate jdbc) {
+    public MlResultService(JdbcTemplate jdbc, NotificationService notifications) {
         this.jdbc = jdbc;
+        this.notifications = notifications;
     }
 
     private record PlotInfo(String status, String dataStatus, boolean demo) {
@@ -41,8 +45,7 @@ public class MlResultService {
         checkOriginAllowed(result);
         checkContent(result);
 
-        jdbc.update("INSERT IGNORE INTO model_versions (name, version) VALUES (?, ?)",
-                MODEL_NAME, result.modelVersion());
+        recordModelVersion(result.modelVersion());
         long runId = insertRun(result);
         saveObservations(result);
         saveWeather(result);
@@ -52,12 +55,24 @@ public class MlResultService {
         return new MlResultResponse(runId, result.observations().size(), result.weather().size(), bins);
     }
 
+    /** The first result from a new model version is audited, so every change of model can be traced. */
+    private void recordModelVersion(String version) {
+        int added = jdbc.update("INSERT IGNORE INTO model_versions (name, version) VALUES (?, ?)", MODEL_NAME, version);
+        if (added == 1) {
+            jdbc.update("""
+                    INSERT INTO audit_log (action, entity, after_json)
+                    VALUES ('MODEL_VERSION_ADDED', 'model_versions', JSON_OBJECT('name', ?, 'version', ?))
+                    """, MODEL_NAME, version);
+        }
+    }
+
     /** A re-run for the same date and model replaces the row, which now points at the newer run. */
     private void saveStatus(MlResultRequest result, long runId) {
         StatusResult status = result.status();
         if (status == null) {
             return;
         }
+        Optional<NotificationService.LastStatus> before = notifications.lastKnownStatus(result.plotId());
         jdbc.update("""
                 INSERT INTO plot_status (plot_id, status_date, status, anomaly, rain_pct, cause, confidence,
                                          explanation_json, thresholds_json, model_version, data_origin, run_id)
@@ -68,6 +83,8 @@ public class MlResultService {
                 """, result.plotId(), Date.valueOf(status.statusDate()), status.status(), status.anomaly(),
                 status.rainPct(), status.cause(), status.confidence(), status.explanation().toString(),
                 status.thresholdsUsed().toString(), result.modelVersion(), result.dataOrigin().name(), runId);
+        notifications.healthChanged(result.plotId(), status.status(), status.cause(), status.statusDate(), before,
+                result.dataOrigin() == DataOrigin.SAMPLE_FILE);
     }
 
     /** Sample data can only reach demo plots, and real data only verified plots with confirmed details. */

@@ -479,6 +479,55 @@ Returns **200** with the newest normal band saved for the plot:
 - Longer gaps and the ends of the curve aren't estimated, so the list can still have gaps. Don't draw the band across a gap.
 - With no baseline yet, `bins` is empty and the other fields are null.
 
+### Alerts
+
+### `GET /notifications`
+
+Any role. Takes `page` and `size`. Returns **200** with a page of your own notifications, newest first:
+
+```json
+{
+  "items": [
+    {
+      "id": 12,
+      "type": "HEALTH",
+      "code": "HEALTH_AT_RISK",
+      "title": "Your plot needs attention",
+      "body": "Demo plot 1 has been growing well below its normal range. This is a crop health alert, not a claim.",
+      "plotId": 9001,
+      "plotName": "Demo plot 1",
+      "link": "/plots/9001",
+      "isRead": false,
+      "isDemo": true,
+      "createdAt": "2026-11-03T08:15:02.114Z"
+    }
+  ],
+  "page": 0,
+  "size": 20,
+  "totalItems": 1,
+  "totalPages": 1
+}
+```
+
+- **`HEALTH` opens plot detail, using `plotId`. `CLAIM` will open claim detail** (§2.2 #7). A health alert is never a claim.
+- `title` and `body` are English. Show your own `strings.xml` text for each `code`, with `plotName` filled in.
+- Show a Demo label when `isDemo` is true.
+
+| `code` | When |
+|---|---|
+| `HEALTH_WATCH` | Crop health became `WATCH` |
+| `HEALTH_AT_RISK` | Crop health became `AT_RISK` |
+
+A health alert is only sent when a plot gets worse than its last known status. Recovering, moving into or out of `NOT_ENOUGH_DATA`, and re-checking the same date don't send one. The status can change often, and this keeps alerts to the changes that matter (`ML_VALIDATION.md`). `CLAIM` and `SYSTEM` codes will come with claims.
+
+### `POST /notifications/{id}/read`
+
+Any role, your own notifications only. Returns **204**. Marking one twice is fine.
+
+| Status | Code | When |
+|---|---|---|
+| 404 | `NOTIFICATION_NOT_FOUND` | It doesn't exist, or it isn't yours |
+
 ## 4. Demo accounts
 
 Available with the `dev` profile. Log in with the code from the backend log.
@@ -523,8 +572,6 @@ Display rules for these:
 | Endpoint | Draft |
 |---|---|
 | `POST /plots/{id}/enrollment-request` | Not in the MVP (§10.1) |
-| `GET /notifications` | Page of `id`, `type`, `title`, `body`, `link`, `isRead`, `createdAt` |
-| `POST /notifications/{id}/read` | Marks one as read |
 | `GET /claims` | Page of claims. Farmers see their own. |
 | `GET /claims/{id}` | `status`, `triggerDate`, `plotId`, the evidence snapshot, `modelVersion`, `isDemo` |
 | `POST /claims/{id}/review-request` | `message` from the farmer |
@@ -533,7 +580,6 @@ Display rules for these:
 | `POST /payout-account` | Sets the account, which then needs OTP verification |
 | `POST /payout-account/verify` | Confirms it with the OTP |
 
-- Notification `type` is `HEALTH`, `CLAIM` or `SYSTEM`. `HEALTH` opens plot detail and `CLAIM` opens claim detail (§2.2 #7).
 - Claim `status` is `UNDER_REVIEW`, `FIELD_VISIT_REQUESTED`, `APPROVED`, `DECLINED`, `PAID`, `REVIEW_REQUESTED` or `FINAL`. Always take it from the server, never from local data.
 - Claims have no create endpoint, and never will. The parametric trigger creates them. A problem report is evidence only and never creates a claim or payout.
 - Amounts and payout rates can be null until the insurer confirms them. Show that they aren't confirmed, not zero. Payouts are simulated.

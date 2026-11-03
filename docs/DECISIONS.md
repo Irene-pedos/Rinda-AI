@@ -37,6 +37,9 @@ Where the build departs from `RINDA_PROJECT.md`, or settles something it leaves 
 | 2026-11-02 | Forecast confidence stays `LOW`. | It has never been compared with a real harvest, and it measures greenness, not yield. |
 | 2026-11-02 | `harvest_forecasts` can hold a row with no range, plus the reason. | The newest row is then always current, so an old range can't be shown after the data runs out. |
 | 2026-11-02 | `GET /plots/{id}/enrollment` returns `NOT_ENROLLED` when there is no row. | §2.2 #5 lists it as a status the farmer must see. |
+| 2026-11-03 | A health alert is sent only when a plot gets worse than its last known status. | The back-test shows the status changing 5 to 12 times a season, and an alert for each would bury the ones that matter. |
+| 2026-11-03 | Notifications carry a `code`, the plot id and `is_demo`, with English text as a fallback. | The app can show translated text and open the right screen, and demo alerts are labelled. |
+| 2026-11-03 | The first result from a new model version is written to `audit_log`. | Model version changes must be audited (§0). |
 | 2026-11-02 | Status confidence stops at `MEDIUM`, and `UNEXPLAINED` is always `LOW`. | The spec gives no confidence rule. Nothing is back-tested, so `HIGH` would claim more than is known (§3). |
 | 2026-11-02 | The rain comparison ends on the latest day with CHIRPS data, and needs 30 complete days and 3 past seasons. Otherwise `rainPct` is null. | CHIRPS lags behind real time, and a missing day must not count as a dry day. |
 | 2026-11-02 | Low rain means below `watch_rain_pct` for the water deficit cause (§3.5 says "below normal"). | §10.1 says "low rain", and using the same threshold avoids inventing a second number. |

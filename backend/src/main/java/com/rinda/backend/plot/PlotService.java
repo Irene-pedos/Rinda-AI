@@ -25,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class PlotService {
 
-    private static final int MAX_PAGE_SIZE = 100;
     private static final ZoneId RWANDA = ZoneId.of("Africa/Kigali");
 
     private final PlotRepository plots;
@@ -47,10 +46,7 @@ public class PlotService {
 
     @Transactional(readOnly = true)
     public PageResponse<PlotResponse> list(AuthPrincipal principal, int page, int size) {
-        if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "PAGE_INVALID",
-                    "page must be 0 or more, and size between 1 and " + MAX_PAGE_SIZE + ".");
-        }
+        PageResponse.check(page, size);
         PageRequest request = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Plot> result = switch (principal.role()) {
             case FARMER -> plots.findByFarmerIdAndStatusNot(principal.userId(), PlotStatus.ARCHIVED, request);
