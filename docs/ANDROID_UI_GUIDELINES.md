@@ -31,7 +31,7 @@ Use the token for its *role*, never because of its hue. Both files have the same
 
 | Token | Role |
 |---|---|
-| `rinda_primary` / `rinda_on_primary` | Main buttons, selected states, links, the plot line on charts |
+| `rinda_primary` / `rinda_on_primary` | Main buttons, selected states, links, the plot line on charts. Light mode is the exact logo green **#038C48**; dark mode uses a lighter tint of it so text stays readable. |
 | `rinda_primary_container` / `rinda_on_primary_container` | Tinted cards ("Getting started", "Ask for a review"), icon badges, selected cards |
 | `rinda_secondary` / `rinda_secondary_container` | Harvest gold: plot area, harvest forecast, tips (lightbulb) |
 | `rinda_tertiary` / `rinda_tertiary_container` | Rain blue: rainfall, weather, satellite evidence |
@@ -77,7 +77,16 @@ Mark screen and section titles with `android:accessibilityHeading="true"`.
 
 - All icons are 24dp white vectors in `res/drawable/ic_*.xml`, tinted where they are used (`app:tint`, `app:drawableTint`, `app:iconTint`). By default they take the secondary text colour.
 - To add one, copy the template of any `ic_*.xml` file and paste a [Material Symbols](https://fonts.google.com/icons) path. Keep the white fill and `android:tint="?attr/colorControlNormal"`.
-- `ic_rinda_sprout` (brand colours) and `ic_rinda_mark_light` (white, for green backgrounds) are the logo. Never tint them.
+- **Logo.** The source files are in `RInda Logos/` at the repo root (brand green `#038C48`). The app uses cropped, scaled copies. Never tint, stretch or recolour them, and always set `android:adjustViewBounds="true"` with only one fixed side (height for a full logo).
+
+  | Drawable | Light mode | Dark mode | Use |
+  |---|---|---|---|
+  | `rinda_logo_icon` | green symbol | white symbol | Small places: Home toolbar, headers |
+  | `rinda_logo_full` | green symbol + "Rinda" | white | Login, onboarding, About |
+  | `rinda_logo_icon_white` | white | white | On green backgrounds only (launcher icon) |
+  | `rinda_logo_full_white` | white | white | On green backgrounds only (splash) |
+
+  Light and dark versions have the same name: the white one lives in `drawable-night-nodpi`, so Android switches automatically. To update the logo, replace the files in `RInda Logos/` and re-export them at the same names and sizes (symbol 384 px wide, full logo 720 px wide, transparent background, cropped to the logo).
 - Icon meanings are fixed, so learn them once and use them the same way everywhere: `ic_leaf` maize or plot, `ic_satellite` satellite data, `ic_weather_rain` rain, `ic_shield` insurance cover or claims, `ic_wallet` money, `ic_visit` field visit or agent, `ic_lightbulb` tip or what to do, `ic_help` "?" help, `ic_info` note, `ic_lock` fixed or private, `ic_calendar` dates, `ic_area` hectares, `ic_map_pin` location, `ic_offline` no internet.
 
 ---

@@ -15,11 +15,13 @@
         android:paddingStart="@dimen/screen_padding"
         android:paddingEnd="@dimen/spacing_base">
 
+        <!-- Rinda symbol: green in light mode, white in dark mode (drawable-night-nodpi) -->
         <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="wrap_content"
+            android:layout_height="26dp"
+            android:adjustViewBounds="true"
             android:importantForAccessibility="no"
-            android:src="@drawable/ic_rinda_sprout" />
+            android:src="@drawable/rinda_logo_icon" />
 
         <TextView
             android:id="@+id/tvToolbarTitle"

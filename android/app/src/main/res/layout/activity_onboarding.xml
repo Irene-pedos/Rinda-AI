@@ -14,12 +14,13 @@
         android:paddingEnd="@dimen/spacing_sm">
 
         <ImageView
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
             android:layout_gravity="start|center_vertical"
             android:layout_marginStart="@dimen/spacing_md"
-            android:importantForAccessibility="no"
-            android:src="@drawable/ic_rinda_sprout" />
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/rinda_logo_full" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSkip"

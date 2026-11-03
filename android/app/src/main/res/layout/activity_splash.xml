@@ -14,36 +14,20 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <FrameLayout
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:background="@drawable/bg_circle"
-            android:backgroundTint="@color/rinda_hero_overlay">
-
-            <ImageView
-                android:id="@+id/ivLogo"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_gravity="center"
-                android:contentDescription="@string/app_name"
-                android:src="@drawable/ic_rinda_mark_light" />
-        </FrameLayout>
-
-        <TextView
-            android:id="@+id/tvAppName"
-            android:layout_width="wrap_content"
+        <!-- Full white logo (symbol + "Rinda") on the green hero, in light and dark mode -->
+        <ImageView
+            android:id="@+id/ivLogo"
+            android:layout_width="240dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_xl"
-            android:text="@string/app_name"
-            android:textAppearance="@style/TextAppearance.Rinda.Display"
-            android:textColor="@color/rinda_on_hero"
-            android:textSize="40sp" />
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/rinda_logo_full_white" />
 
         <TextView
             android:id="@+id/tvTagline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
+            android:layout_marginTop="@dimen/spacing_xl"
             android:gravity="center"
             android:text="@string/app_tagline"
             android:textAppearance="@style/TextAppearance.Rinda.Body"

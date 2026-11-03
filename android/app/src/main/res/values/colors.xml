@@ -7,10 +7,10 @@
 -->
 <resources>
     <!-- Brand: maize-leaf green (primary actions, selected states) -->
-    <color name="rinda_primary">#1E6B3C</color>
+    <color name="rinda_primary">#038C48</color><!-- exact logo green (RInda Logos) -->
     <color name="rinda_on_primary">#FFFFFF</color>
-    <color name="rinda_primary_container">#CDEBD4</color>
-    <color name="rinda_on_primary_container">#06311A</color>
+    <color name="rinda_primary_container">#CFEEDB</color>
+    <color name="rinda_on_primary_container">#00341A</color>
 
     <!-- Brand: harvest gold (highlights, area numbers, the forecast) -->
     <color name="rinda_secondary">#8A5A00</color>
@@ -43,10 +43,10 @@
     <color name="rinda_outline">#DCDED3</color>
     <color name="rinda_outline_strong">#A9AEA2</color>
     <color name="rinda_scrim">#99000000</color>
-    <color name="rinda_hero_start">#1E6B3C</color>
-    <color name="rinda_hero_end">#2F8A4F</color>
+    <color name="rinda_hero_start">#038C48</color>
+    <color name="rinda_hero_end">#027A3E</color>
     <color name="rinda_on_hero">#FFFFFF</color>
-    <color name="rinda_on_hero_muted">#D9F0DF</color>
+    <color name="rinda_on_hero_muted">#DDF3E6</color>
     <color name="rinda_hero_overlay">#26FFFFFF</color>
 
     <!-- Status colours: always paired with an icon AND a word (spec §5.3) -->
@@ -64,9 +64,9 @@
     <color name="status_demo_bg">#F0E4FA</color>
 
     <!-- Charts -->
-    <color name="chart_plot_line">#1E6B3C</color>
-    <color name="chart_normal_median">#6FAE7F</color>
-    <color name="chart_normal_band">#A9D3B3</color>
+    <color name="chart_plot_line">#038C48</color>
+    <color name="chart_normal_median">#5DB884</color>
+    <color name="chart_normal_band">#B5E3C7</color>
     <color name="chart_rain_bar">#1F669C</color>
     <color name="chart_axis_text">#666E63</color>
     <color name="chart_grid">#E4E6DC</color>

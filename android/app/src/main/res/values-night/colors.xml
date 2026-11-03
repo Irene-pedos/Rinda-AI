@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Rinda design tokens (dark). Same names as values/colors.xml. -->
 <resources>
-    <color name="rinda_primary">#8FD6A2</color>
-    <color name="rinda_on_primary">#00391B</color>
-    <color name="rinda_primary_container">#14522C</color>
-    <color name="rinda_on_primary_container">#CDEBD4</color>
+    <color name="rinda_primary">#6EDB9E</color><!-- logo green, lightened for dark backgrounds -->
+    <color name="rinda_on_primary">#00391D</color>
+    <color name="rinda_primary_container">#038C48</color>
+    <color name="rinda_on_primary_container">#FFFFFF</color>
 
     <color name="rinda_secondary">#F5C065</color>
     <color name="rinda_on_secondary">#3F2A00</color>
@@ -33,10 +33,10 @@
     <color name="rinda_outline">#323A31</color>
     <color name="rinda_outline_strong">#5A6357</color>
     <color name="rinda_scrim">#CC000000</color>
-    <color name="rinda_hero_start">#14522C</color>
-    <color name="rinda_hero_end">#1C6A3A</color>
+    <color name="rinda_hero_start">#038C48</color>
+    <color name="rinda_hero_end">#025A2F</color>
     <color name="rinda_on_hero">#FFFFFF</color>
-    <color name="rinda_on_hero_muted">#CDEBD4</color>
+    <color name="rinda_on_hero_muted">#DDF3E6</color>
 
     <color name="status_healthy">#8FD6A2</color>
     <color name="status_healthy_bg">#173322</color>
@@ -51,9 +51,9 @@
     <color name="status_demo">#D7B8F2</color>
     <color name="status_demo_bg">#2E1F3D</color>
 
-    <color name="chart_plot_line">#8FD6A2</color>
-    <color name="chart_normal_median">#5E9C6E</color>
-    <color name="chart_normal_band">#2E5A3A</color>
+    <color name="chart_plot_line">#6EDB9E</color>
+    <color name="chart_normal_median">#4FA673</color>
+    <color name="chart_normal_band">#1F4D33</color>
     <color name="chart_rain_bar">#9CCBF0</color>
     <color name="chart_axis_text">#959D91</color>
     <color name="chart_grid">#2A3229</color>

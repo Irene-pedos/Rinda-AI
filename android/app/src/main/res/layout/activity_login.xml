@@ -18,12 +18,14 @@
             android:orientation="vertical"
             android:padding="@dimen/screen_padding">
 
+            <!-- Full logo: green in light mode, white in dark mode (drawable-night-nodpi) -->
             <ImageView
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
                 android:layout_marginTop="@dimen/spacing_xl"
-                android:importantForAccessibility="no"
-                android:src="@drawable/ic_rinda_sprout" />
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/rinda_logo_full" />
 
             <TextView
                 android:layout_width="match_parent"
