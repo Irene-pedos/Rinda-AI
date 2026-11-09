@@ -12,3 +12,8 @@ springdoc:
 rinda:
   otp:
     log-to-console: true
+
+# The log also goes to a file, so scripts\demo-check.ps1 can read the login codes. Ignored by git.
+logging:
+  file:
+    name: ../logs/backend-dev.log

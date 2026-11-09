@@ -6,9 +6,9 @@ The full design is in [docs/RINDA_PROJECT.md](docs/RINDA_PROJECT.md), which is t
 
 | Folder | Contents | Status |
 |---|---|---|
-| `backend/` | Spring Boot 3 REST API (Java 17) | Auth and plots working |
+| `backend/` | Spring Boot 3 REST API (Java 17) | Working: login, plots, satellite results, claim trigger, decisions, simulated payouts, field evidence, "Run analysis", officer and admin API |
 | `ml-service/` | Python FastAPI service and Earth Engine extraction | Working with real Earth Engine data and the simulated sample |
-| `android/` | Android app (Java + XML) | Android Studio template, for Agy |
+| `android/` | Android app (Java + XML) | Farmer and agent app, built by Agy ([UI guidelines](docs/ANDROID_UI_GUIDELINES.md)) |
 | `dashboard/` | Next.js insurer dashboard | Placeholder, for Agy |
 | `database/` | Local MySQL script | Working |
 | `docs/` | Design, decisions, open questions | Working |
@@ -101,6 +101,10 @@ Demo accounts (log in with the code from the log):
 
 Demo plots are placeholders until the team supplies real locations and planting dates.
 
+**Shortcut:** once steps 1–8 are done, `scripts\start-dev.ps1` starts MySQL, the backend and the ML service (each in its own window) and connects a USB phone. See [docs/DEMO.md](docs/DEMO.md).
+
+**Phone says "No connection to Rinda" while it has internet?** The phone can't reach the backend on this computer. Check that the backend is running, then connect the phone over USB with `& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" reverse tcp:8080 tcp:8080`. Run it again each time you unplug or restart the phone.
+
 ### 6. Run the backend tests
 
 MySQL must be running, because the tests use its spatial functions. They use a separate `rinda_test` database and never touch the demo data.
@@ -145,12 +149,13 @@ The backend must be running. From `ml-service`:
 
 The first command runs the service on http://localhost:8000. The second runs the tests, which need neither Earth Engine nor the backend.
 
-To load the simulated sample onto demo plot 9001 (in a second PowerShell window, from the repo root):
+**Run analysis.** The backend asks the ML service to analyse plots: `POST /api/v1/admin/analysis-runs` as an admin (`docs/API.md`). With no body it analyses every verified, confirmed, real plot with Earth Engine data. To load the simulated sample onto demo plot 9001 instead (in a second PowerShell window; log in as the demo admin `+250780000005` first and put the token in `$token`):
 
 ```powershell
-$key = (Select-String -Path .env -Pattern '^ML_INTERNAL_API_KEY=(.*)$').Matches[0].Groups[1].Value
-Invoke-RestMethod -Method Post -Uri http://localhost:8000/process/plot -ContentType 'application/json' -Headers @{ 'X-Internal-Api-Key' = $key } -Body '{"plotId": 9001, "source": "sample"}'
+Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/v1/admin/analysis-runs -ContentType 'application/json' -Headers @{ Authorization = "Bearer $token" } -Body '{"source": "SAMPLE", "plotIds": [9001]}'
 ```
+
+It returns at once; `GET /api/v1/admin/analysis-runs/{id}` shows each plot's result. Analysis is manual for the MVP. To run it every 5 days, set `RINDA_ANALYSIS_CRON` in `.env` (for example `0 0 4 */5 * *`) and restart the backend.
 
 To see how the status rules behave across past seasons, run this from `ml-service` with the backend running. It saves nothing, and the results are in [docs/ML_VALIDATION.md](docs/ML_VALIDATION.md).
 
@@ -158,6 +163,24 @@ To see how the status rules behave across past seasons, run this from `ml-servic
 .venv\Scripts\python -m app.backtest
 ```
 
+### 10. Check the whole system and run the demo
+
+With the backend (dev profile) and the ML service running:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\demo-check.ps1
+```
+
+It logs in as every demo role, loads each main screen's data, checks the security rules, and runs the simulated analysis on demo plot 9001. Every line should say `PASS`. The demo itself (accounts, story, what is simulated, and the values the team must enter first) is in [docs/DEMO.md](docs/DEMO.md).
+
+Optional settings in `.env`:
+
+| Setting | Default | What |
+|---|---|---|
+| `ML_SERVICE_URL` | `http://localhost:8000` | Where the backend finds the ML service |
+| `RINDA_UPLOADS_DIR` | `../uploads` (repo root) | Private folder for evidence photos. Ignored by git. |
+| `RINDA_ANALYSIS_CRON` | off | Automatic "Run analysis", e.g. `0 0 4 */5 * *` (04:00 every 5th day). The MVP runs it by hand. |
+
 ### Before returning a borrowed computer
 
-Everything that matters must be pushed to GitHub. Then sign out of GitHub in Windows Credential Manager, and delete `.env` and `%LOCALAPPDATA%\Rinda`.
+Everything that matters must be pushed to GitHub. Then sign out of GitHub in Windows Credential Manager, and delete `.env`, `uploads\`, `logs\` and `%LOCALAPPDATA%\Rinda`.

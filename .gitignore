@@ -28,3 +28,8 @@ Thumbs.db
 /.idea/
 /.gradle/
 .vscode/
+
+# Evidence photos (private, never committed)
+/uploads/
+backend/uploads/
+/logs/

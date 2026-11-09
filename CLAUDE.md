@@ -32,6 +32,11 @@ powershell -ExecutionPolicy Bypass -File scripts\mvn.ps1 spring-boot:run "-Dspri
 - **Plot polygons** are stored as GeoJSON through a `@ColumnTransformer` using `ST_GeomFromGeoJSON`. SRID 4326 in MySQL is lat/lon order, so don't write WKT by hand.
 - **Decision values** come from the `thresholds` table through `ThresholdService`. An empty result means "not supplied yet", never zero.
 - **Errors** are `ProblemDetail` JSON with a stable `code`. Throw `ApiException`.
+- **Every endpoint must be written up in `docs/API.md`.** `ApiContractTest` fails on any endpoint missing from it.
+- **Claims are created only by `ClaimTriggerService`**, which runs after every saved ML result. It does nothing while the trigger thresholds are empty. Claim actions (decide, review, pay) are in `ClaimActionService`; every change goes to `audit_log` and notifies the farmer.
+- **"Run analysis"** is `AnalysisService`: the backend calls the ML service through `MlClient`, and the ML service posts results back to `/internal/ml/results`. Tests replace `MlClient` with a fake and run analysis inline.
+- **Evidence photos** go through `PhotoStorage` into a private folder (`RINDA_UPLOADS_DIR`), never a web folder.
+- **Run the whole stack** with `scripts\start-dev.ps1`, and check it with `scripts\demo-check.ps1` (`docs/DEMO.md`). The `dev` profile also writes the log to `logs\backend-dev.log`.
 - In Windows PowerShell 5.1, quote native arguments that contain dots and start with a dash (for example `'--host=127.0.0.1'`), or they get split.
 
 ## ML service
