@@ -65,6 +65,9 @@ public interface RindaApiService {
     @PUT("me")
     Call<UserResponse> updateMe(@Body UserResponse user);
 
+    @DELETE("me")
+    Call<Void> deleteAccount();
+
     // === Plots Management ===
 
     @GET("plots")

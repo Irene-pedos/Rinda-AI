@@ -18,6 +18,7 @@ import com.rinda.app.data.model.PageResponse;
 import com.rinda.app.databinding.FragmentClaimsBinding;
 import com.rinda.app.ui.common.EmptyState;
 import com.rinda.app.ui.common.InfoSheet;
+import com.rinda.app.ui.common.Ui;
 import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
@@ -75,6 +76,11 @@ public class ClaimsFragment extends Fragment {
     }
 
     private void fetchClaims() {
+        if (!Ui.isOnline(requireContext())) {
+            binding.swipeRefresh.setRefreshing(false);
+            Ui.toast(binding.getRoot(), R.string.error_network);
+            return;
+        }
         binding.swipeRefresh.setRefreshing(true);
         ApiClient.getInstance(requireContext()).getService().getClaims(0, 50)
                 .enqueue(new Callback<PageResponse<ClaimResponse>>() {
@@ -91,6 +97,7 @@ public class ClaimsFragment extends Fragment {
                     public void onFailure(Call<PageResponse<ClaimResponse>> call, Throwable t) {
                         if (binding == null) return;
                         binding.swipeRefresh.setRefreshing(false);
+                        Ui.error(binding.getRoot(), getString(R.string.error_network_action), ClaimsFragment.this::fetchClaims);
                     }
                 });
     }

@@ -544,4 +544,16 @@
     <string name="error_network">No connection to Rinda. Showing saved information.</string>
     <string name="error_network_action">No connection to Rinda. Check your internet and try again.</string>
     <string name="error_generic">Something went wrong. Please try again.</string>
+    <!-- States: Empty, Offline & Account Lifecycle -->
+    <string name="empty_farmers_title">No cooperative farmers yet</string>
+    <string name="empty_farmers_body">Farmers registered in your cooperative will appear here for verification and monitoring.</string>
+    <string name="filter_empty_title">No matching farmers</string>
+    <string name="filter_empty_body">No farmers match the selected filter.</string>
+    <string name="empty_rain_data">No rainfall recorded yet for this location.</string>
+    <string name="offline_cached_at">Offline • %s</string>
+    <string name="offline_banner_with_time">No internet. Showing saved data from %s.</string>
+    <string name="btn_delete_account">Delete account</string>
+    <string name="delete_account_title">Delete your account?</string>
+    <string name="delete_account_body">Deleting your account will remove your login credentials and personal details. Any verified plots with active cover will remain protected until the end of the season.</string>
+    <string name="delete_account_blocked">Your account cannot be deleted because you have active insurance cover or an open claim this season. Please contact your cooperative agent.</string>
 </resources>

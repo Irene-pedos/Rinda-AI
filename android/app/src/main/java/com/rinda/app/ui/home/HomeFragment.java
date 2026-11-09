@@ -194,6 +194,11 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadPlotsData() {
+        if (!Ui.isOnline(requireContext())) {
+            binding.swipeRefresh.setRefreshing(false);
+            Ui.toast(binding.getRoot(), R.string.error_network);
+            return;
+        }
         binding.swipeRefresh.setRefreshing(true);
         ApiClient.getInstance(requireContext()).getService().getPlots(0, 50)
                 .enqueue(new Callback<PageResponse<PlotResponse>>() {
@@ -281,6 +286,24 @@ public class HomeFragment extends Fragment {
         binding.tvPlotsCount.setText(String.format(Locale.getDefault(), "%d", plots.size()));
         binding.tvTotalArea.setText(String.format(Locale.getDefault(), "%.1f", totalArea.doubleValue()));
         binding.tvVerifiedCount.setText(String.format(Locale.getDefault(), "%d", verified));
+
+        long newestCachedAt = 0;
+        for (PlotEntity p : plots) {
+            if (p.cachedAt > newestCachedAt) {
+                newestCachedAt = p.cachedAt;
+            }
+        }
+        if (newestCachedAt > 0) {
+            String updated = DateTimeUtils.formatLastUpdated(requireContext(), newestCachedAt);
+            if (!Ui.isOnline(requireContext())) {
+                binding.tvHomeLastUpdated.setText(getString(R.string.offline_cached_at, updated));
+            } else {
+                binding.tvHomeLastUpdated.setText(updated);
+            }
+            binding.tvHomeLastUpdated.setVisibility(View.VISIBLE);
+        } else {
+            binding.tvHomeLastUpdated.setVisibility(View.GONE);
+        }
 
         // New farmers see the 3 steps; once they have a plot, the guide goes away.
         if (plots.isEmpty()) {

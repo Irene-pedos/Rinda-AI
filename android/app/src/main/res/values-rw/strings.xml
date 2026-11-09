@@ -295,4 +295,16 @@
     <string name="error_forbidden">Ntabwo wemerewe gukora iki gikorwa.</string>
     <string name="error_network">Ntabwo byabashije guhura na seriveri ya Rinda. Hagaragajwe amakuru abitswe kuri telefone.</string>
     <string name="error_generic">Habaye ikibazo kitunguranye. Ongera ugerageze mukanya.</string>
+    <!-- States: Empty, Offline & Account Lifecycle (DRAFT) -->
+    <string name="empty_farmers_title">Nta bahinzi bo muri koperative baraboneka</string>
+    <string name="empty_farmers_body">Abahinzi biyandikishije muri koperative bazagaragara hano kugira ngo basuzumwe.</string>
+    <string name="filter_empty_title">Nta muhinzi uhuye n\'ibyo ushakishije</string>
+    <string name="filter_empty_body">Nta muhinzi ubashije kuboneka muri ibi byiciro wahisemo.</string>
+    <string name="empty_rain_data">Nta mvura irandikwa kuri iyi mirima.</string>
+    <string name="offline_cached_at">Bidakoresha interineti • %s</string>
+    <string name="offline_banner_with_time">Nta interineti ihari. Hagaragajwe amakuru yo kuri %s.</string>
+    <string name="btn_delete_account">Gusiba konti</string>
+    <string name="delete_account_title">Gusiba konti yawe?</string>
+    <string name="delete_account_body">Gusiba konti yawe bizasiba amakuru yawe bwite. Imirima yose ifite ubwishingizi buringaniye izakomeza gucungwa kugeza igihembwe kirangiye.</string>
+    <string name="delete_account_blocked">Konti yawe ntishobora gusibwa kuko ufite ubwishingizi bukora cyangwa ikirego kigisuzumwa muri iki gihembwe. Vugana n\'umukozi wa koperative.</string>
 </resources>

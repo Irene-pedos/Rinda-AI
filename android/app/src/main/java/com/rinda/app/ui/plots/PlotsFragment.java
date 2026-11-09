@@ -18,6 +18,7 @@ import com.rinda.app.data.model.PageResponse;
 import com.rinda.app.data.model.PlotResponse;
 import com.rinda.app.databinding.FragmentPlotsBinding;
 import com.rinda.app.ui.common.EmptyState;
+import com.rinda.app.ui.common.Ui;
 import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
@@ -94,6 +95,11 @@ public class PlotsFragment extends Fragment {
     }
 
     private void fetchPlots() {
+        if (!Ui.isOnline(requireContext())) {
+            binding.swipeRefresh.setRefreshing(false);
+            Ui.toast(binding.getRoot(), R.string.error_network);
+            return;
+        }
         binding.swipeRefresh.setRefreshing(true);
         ApiClient.getInstance(requireContext()).getService().getPlots(0, 50)
                 .enqueue(new Callback<PageResponse<PlotResponse>>() {
@@ -109,8 +115,8 @@ public class PlotsFragment extends Fragment {
                     @Override
                     public void onFailure(Call<PageResponse<PlotResponse>> call, Throwable t) {
                         if (binding == null) return;
-                        // Offline: cached plots stay on screen and the shell shows the offline banner.
                         binding.swipeRefresh.setRefreshing(false);
+                        Ui.error(binding.getRoot(), getString(R.string.error_network_action), PlotsFragment.this::fetchPlots);
                     }
                 });
     }

@@ -237,6 +237,7 @@ public class VerifyPlotActivity extends AppCompatActivity {
     private void submitDecision(String decision, String reason) {
         binding.btnVerify.setEnabled(false);
         binding.btnReject.setEnabled(false);
+        binding.progressVerify.setVisibility(View.VISIBLE);
 
         PlotVerifyRequest request = new PlotVerifyRequest(decision, selectedPlantingDate, reason);
 

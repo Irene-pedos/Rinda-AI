@@ -90,6 +90,13 @@ public class AgentFarmersFragment extends Fragment {
     }
 
     private void fetchFarmers() {
+        if (!Ui.isOnline(requireContext())) {
+            binding.swipeRefresh.setRefreshing(false);
+            Ui.toast(binding.getRoot(), R.string.error_network);
+            loadFromLocalCache();
+            return;
+        }
+
         binding.swipeRefresh.setRefreshing(true);
 
         apiService.getAgentFarmers().enqueue(new Callback<List<FarmerSummaryResponse>>() {
@@ -220,8 +227,13 @@ public class AgentFarmersFragment extends Fragment {
         if (filtered.isEmpty()) {
             binding.rvFarmers.setVisibility(View.GONE);
             binding.layoutEmpty.getRoot().setVisibility(View.VISIBLE);
-            EmptyState.bind(binding.layoutEmpty, R.drawable.ic_group,
-                    R.string.agent_farmers_title, R.string.agent_farmers_empty, 0, null);
+            if (allFarmers.isEmpty()) {
+                EmptyState.bind(binding.layoutEmpty, R.drawable.ic_group,
+                        R.string.empty_farmers_title, R.string.empty_farmers_body, 0, null);
+            } else {
+                EmptyState.bind(binding.layoutEmpty, R.drawable.ic_check,
+                        R.string.filter_empty_title, R.string.filter_empty_body, 0, null);
+            }
         } else {
             binding.rvFarmers.setVisibility(View.VISIBLE);
             binding.layoutEmpty.getRoot().setVisibility(View.GONE);

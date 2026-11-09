@@ -51,6 +51,19 @@
                 android:text="@string/home_subtitle"
                 android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
 
+            <TextView
+                android:id="@+id/tvHomeLastUpdated"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xxs"
+                android:drawablePadding="@dimen/spacing_xs"
+                android:gravity="center_vertical"
+                android:textAppearance="@style/TextAppearance.Rinda.Caption"
+                android:textColor="@color/rinda_text_tertiary"
+                android:visibility="gone"
+                app:drawableStartCompat="@drawable/ic_sync"
+                app:drawableTint="@color/rinda_text_tertiary" />
+
             <!-- Demo notice -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardDemoNotice"

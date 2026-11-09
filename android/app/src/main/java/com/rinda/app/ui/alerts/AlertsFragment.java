@@ -16,6 +16,7 @@ import com.rinda.app.data.model.NotificationResponse;
 import com.rinda.app.data.model.PageResponse;
 import com.rinda.app.databinding.FragmentAlertsBinding;
 import com.rinda.app.ui.common.EmptyState;
+import com.rinda.app.ui.common.Ui;
 import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
@@ -69,6 +70,11 @@ public class AlertsFragment extends Fragment {
     }
 
     private void fetchNotifications() {
+        if (!Ui.isOnline(requireContext())) {
+            binding.swipeRefresh.setRefreshing(false);
+            Ui.toast(binding.getRoot(), R.string.error_network);
+            return;
+        }
         binding.swipeRefresh.setRefreshing(true);
         ApiClient.getInstance(requireContext()).getService().getNotifications(0, 50)
                 .enqueue(new Callback<PageResponse<NotificationResponse>>() {
@@ -85,6 +91,7 @@ public class AlertsFragment extends Fragment {
                     public void onFailure(Call<PageResponse<NotificationResponse>> call, Throwable t) {
                         if (binding == null) return;
                         binding.swipeRefresh.setRefreshing(false);
+                        Ui.error(binding.getRoot(), getString(R.string.error_network_action), AlertsFragment.this::fetchNotifications);
                     }
                 });
     }

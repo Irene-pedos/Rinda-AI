@@ -31,6 +31,32 @@ public final class DateTimeUtils {
         }
     }
 
+    public static String formatRelativeTime(long timeMillis) {
+        if (timeMillis <= 0) {
+            return "";
+        }
+        try {
+            long now = System.currentTimeMillis();
+            CharSequence relative = DateUtils.getRelativeTimeSpanString(
+                    timeMillis,
+                    now,
+                    DateUtils.MINUTE_IN_MILLIS,
+                    DateUtils.FORMAT_ABBREV_RELATIVE
+            );
+            return relative.toString();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    public static String formatLastUpdated(android.content.Context context, long timeMillis) {
+        if (timeMillis <= 0) {
+            return context.getString(com.rinda.app.R.string.value_not_available);
+        }
+        String relative = formatRelativeTime(timeMillis);
+        return context.getString(com.rinda.app.R.string.last_updated, relative);
+    }
+
     public static String formatDate(String isoDateTime) {
         if (isoDateTime == null || isoDateTime.isEmpty()) {
             return "";

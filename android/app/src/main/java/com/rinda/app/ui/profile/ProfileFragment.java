@@ -24,6 +24,9 @@ import com.rinda.app.ui.auth.LoginActivity;
 import com.rinda.app.ui.common.InfoSheet;
 import com.rinda.app.ui.common.Ui;
 import com.rinda.app.util.LocaleHelper;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ProfileFragment extends Fragment {
 
@@ -76,6 +79,7 @@ public class ProfileFragment extends Fragment {
         }
 
         binding.btnLogout.setOnClickListener(v -> confirmLogout());
+        binding.btnDeleteAccount.setOnClickListener(v -> confirmDeleteAccount());
         binding.tvVersion.setText(getString(R.string.app_version, BuildConfig.VERSION_NAME));
 
         displayUserProfile();
@@ -210,25 +214,69 @@ public class ProfileFragment extends Fragment {
                 .setIcon(R.drawable.ic_logout)
                 .setTitle(R.string.logout_title)
                 .setMessage(R.string.logout_body)
-                .setPositiveButton(R.string.btn_logout, (dialog, which) -> {
-                    TokenManager.getInstance(requireContext()).clear();
-                    final android.content.Context app = requireContext().getApplicationContext();
-                    new Thread(() -> {
-                        RindaDatabase db = RindaDatabase.getInstance(app);
-                        db.plotDao().deleteAll();
-                        db.notificationDao().deleteAll();
-                        db.claimDao().deleteAll();
-                    }).start();
+                .setPositiveButton(R.string.btn_logout, (dialog, which) -> performLocalLogout())
+                .setNegativeButton(R.string.btn_cancel, null)
+                .show();
+    }
 
-                    Intent intent = new Intent(requireContext(), LoginActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    if (getActivity() != null) {
-                        getActivity().finish();
+    private void confirmDeleteAccount() {
+        Ui.dialog(requireContext())
+                .setIcon(R.drawable.ic_delete)
+                .setTitle(R.string.delete_account_title)
+                .setMessage(R.string.delete_account_body)
+                .setPositiveButton(R.string.btn_delete_account, (dialog, which) -> {
+                    if (!Ui.isOnline(requireContext())) {
+                        Ui.toast(binding.getRoot(), R.string.error_network);
+                        return;
                     }
+                    deleteAccount();
                 })
                 .setNegativeButton(R.string.btn_cancel, null)
                 .show();
+    }
+
+    private void deleteAccount() {
+        ApiClient.getInstance(requireContext()).getService().deleteAccount()
+                .enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful() || response.code() == 204) {
+                            performLocalLogout();
+                        } else if (response.code() == 409) {
+                            Ui.dialog(requireContext())
+                                    .setIcon(R.drawable.ic_lock)
+                                    .setTitle(R.string.delete_deferred_title)
+                                    .setMessage(R.string.delete_account_blocked)
+                                    .setPositiveButton(R.string.btn_got_it, null)
+                                    .show();
+                        } else {
+                            Ui.toast(binding.getRoot(), R.string.error_generic);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Ui.error(binding.getRoot(), getString(R.string.error_network_action), ProfileFragment.this::deleteAccount);
+                    }
+                });
+    }
+
+    private void performLocalLogout() {
+        TokenManager.getInstance(requireContext()).clear();
+        final android.content.Context app = requireContext().getApplicationContext();
+        new Thread(() -> {
+            RindaDatabase db = RindaDatabase.getInstance(app);
+            db.plotDao().deleteAll();
+            db.notificationDao().deleteAll();
+            db.claimDao().deleteAll();
+        }).start();
+
+        Intent intent = new Intent(requireContext(), LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        if (getActivity() != null) {
+            getActivity().finish();
+        }
     }
 
     @Override

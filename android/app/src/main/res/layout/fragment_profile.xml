@@ -178,6 +178,15 @@
             android:text="@string/btn_logout"
             app:icon="@drawable/ic_logout" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeleteAccount"
+            style="@style/Widget.Rinda.Button.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:text="@string/btn_delete_account"
+            android:textColor="@color/rinda_error" />
+
         <TextView
             android:id="@+id/tvVersion"
             android:layout_width="match_parent"

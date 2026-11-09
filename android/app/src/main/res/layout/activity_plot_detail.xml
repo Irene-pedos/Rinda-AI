@@ -114,6 +114,19 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/spacing_sm"
                             android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
+
+                        <TextView
+                            android:id="@+id/tvLastUpdated"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:drawablePadding="@dimen/spacing_xs"
+                            android:gravity="center_vertical"
+                            android:textAppearance="@style/TextAppearance.Rinda.Caption"
+                            android:textColor="@color/rinda_text_tertiary"
+                            android:visibility="gone"
+                            app:drawableStartCompat="@drawable/ic_sync"
+                            app:drawableTint="@color/rinda_text_tertiary" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -410,6 +423,51 @@
                             android:layout_height="@dimen/chart_height_lg"
                             android:layout_marginTop="@dimen/spacing_md"
                             android:contentDescription="@string/chart_ndvi_title" />
+
+                        <LinearLayout
+                            android:id="@+id/layoutNotEnoughSatelliteData"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_md"
+                            android:background="@drawable/bg_pill"
+                            android:backgroundTint="@color/status_not_enough_data_bg"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="@dimen/spacing_lg"
+                            android:visibility="gone">
+
+                            <ImageView
+                                style="@style/Widget.Rinda.IconBadge"
+                                android:backgroundTint="@color/status_not_enough_data"
+                                android:src="@drawable/ic_satellite"
+                                app:tint="@color/rinda_surface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_sm"
+                                android:gravity="center"
+                                android:text="@string/health_not_enough_data"
+                                android:textAppearance="@style/TextAppearance.Rinda.Title"
+                                android:textColor="@color/status_not_enough_data" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_xs"
+                                android:gravity="center"
+                                android:text="@string/health_no_data_meaning"
+                                android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_xs"
+                                android:gravity="center"
+                                android:text="@string/health_no_data_todo"
+                                android:textAppearance="@style/TextAppearance.Rinda.Caption"
+                                android:textColor="@color/rinda_text_secondary" />
+                        </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -444,6 +502,18 @@
                             android:layout_height="@dimen/chart_height_md"
                             android:layout_marginTop="@dimen/spacing_md"
                             android:contentDescription="@string/chart_rain_title" />
+
+                        <TextView
+                            android:id="@+id/tvEmptyRain"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_md"
+                            android:gravity="center"
+                            android:padding="@dimen/spacing_lg"
+                            android:text="@string/empty_rain_data"
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                            android:textColor="@color/rinda_text_tertiary"
+                            android:visibility="gone" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 

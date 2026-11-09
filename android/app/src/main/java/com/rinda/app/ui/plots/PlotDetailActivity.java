@@ -127,6 +127,11 @@ public class PlotDetailActivity extends AppCompatActivity {
     }
 
     private void fetchAllData() {
+        if (!Ui.isOnline(this)) {
+            binding.swipeRefresh.setRefreshing(false);
+            Ui.toast(binding.getRoot(), R.string.error_network);
+            return;
+        }
         binding.swipeRefresh.setRefreshing(true);
         fetchPlotMetadata();
         fetchCropHealthStatus();
@@ -172,6 +177,18 @@ public class PlotDetailActivity extends AppCompatActivity {
         StatusUi.Spec spec = StatusUi.forPlot(plot.status);
         StatusUi.applyPill(binding.tvVerificationText, spec);
         binding.tvVerificationMeaning.setText(spec.meaningRes);
+
+        if (plot.cachedAt > 0) {
+            String updated = DateTimeUtils.formatLastUpdated(this, plot.cachedAt);
+            if (!Ui.isOnline(this)) {
+                binding.tvLastUpdated.setText(getString(R.string.offline_cached_at, updated));
+            } else {
+                binding.tvLastUpdated.setText(updated);
+            }
+            binding.tvLastUpdated.setVisibility(View.VISIBLE);
+        } else {
+            binding.tvLastUpdated.setVisibility(View.GONE);
+        }
     }
 
     // ===== Crop health =====
@@ -385,6 +402,15 @@ public class PlotDetailActivity extends AppCompatActivity {
             binding.tvDap.setVisibility(View.VISIBLE);
         }
 
+        if (plotEntries.isEmpty()) {
+            binding.chartNdvi.setVisibility(View.GONE);
+            binding.layoutNotEnoughSatelliteData.setVisibility(View.VISIBLE);
+            return;
+        } else {
+            binding.chartNdvi.setVisibility(View.VISIBLE);
+            binding.layoutNotEnoughSatelliteData.setVisibility(View.GONE);
+        }
+
         if (dataSets.isEmpty()) {
             chart.clear();
             return;
@@ -448,7 +474,12 @@ public class PlotDetailActivity extends AppCompatActivity {
         }
         if (entries.isEmpty()) {
             chart.clear();
+            binding.chartRain.setVisibility(View.GONE);
+            binding.tvEmptyRain.setVisibility(View.VISIBLE);
             return;
+        } else {
+            binding.chartRain.setVisibility(View.VISIBLE);
+            binding.tvEmptyRain.setVisibility(View.GONE);
         }
 
         BarDataSet set = new BarDataSet(entries, getString(R.string.chart_legend_rain));

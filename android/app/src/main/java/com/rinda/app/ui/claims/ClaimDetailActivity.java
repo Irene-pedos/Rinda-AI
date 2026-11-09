@@ -107,6 +107,11 @@ public class ClaimDetailActivity extends AppCompatActivity {
     }
 
     private void fetchClaimFromServer() {
+        if (!Ui.isOnline(this)) {
+            binding.swipeRefresh.setRefreshing(false);
+            Ui.toast(binding.getRoot(), R.string.error_network);
+            return;
+        }
         binding.swipeRefresh.setRefreshing(true);
         ApiClient.getInstance(this).getService().getClaim(claimId)
                 .enqueue(new Callback<ClaimResponse>() {
@@ -121,6 +126,7 @@ public class ClaimDetailActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ClaimResponse> call, Throwable t) {
                         binding.swipeRefresh.setRefreshing(false);
+                        Ui.error(binding.getRoot(), getString(R.string.error_network_action), ClaimDetailActivity.this::fetchClaimFromServer);
                     }
                 });
     }

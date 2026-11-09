@@ -182,6 +182,13 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/progressVerify"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="invisible" />
+
     <!-- Bottom Actions: Reject Boundary & Verify Plot -->
     <LinearLayout
         style="@style/Rinda.BottomBar"

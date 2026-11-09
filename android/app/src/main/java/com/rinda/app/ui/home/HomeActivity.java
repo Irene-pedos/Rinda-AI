@@ -95,7 +95,27 @@ public class HomeActivity extends AppCompatActivity {
     private void updateOfflineBanner() {
         boolean offline = !Ui.isOnline(this);
         if (offline) {
-            Ui.reveal(binding.tvOfflineBanner);
+            new Thread(() -> {
+                java.util.List<com.rinda.app.data.local.PlotEntity> plots =
+                        com.rinda.app.data.local.RindaDatabase.getInstance(this).plotDao().getAllPlots();
+                long newestCachedAt = 0;
+                if (plots != null) {
+                    for (com.rinda.app.data.local.PlotEntity p : plots) {
+                        if (p.cachedAt > newestCachedAt) newestCachedAt = p.cachedAt;
+                    }
+                }
+                final long lastCached = newestCachedAt;
+                runOnUiThread(() -> {
+                    if (binding == null) return;
+                    if (lastCached > 0) {
+                        String relTime = com.rinda.app.util.DateTimeUtils.formatRelativeTime(lastCached);
+                        binding.tvOfflineBanner.setText(getString(R.string.offline_banner_with_time, relTime));
+                    } else {
+                        binding.tvOfflineBanner.setText(R.string.offline_banner);
+                    }
+                    Ui.reveal(binding.tvOfflineBanner);
+                });
+            }).start();
         } else {
             binding.tvOfflineBanner.setVisibility(View.GONE);
         }
