@@ -90,6 +90,16 @@
                     app:drawableStartCompat="@drawable/ic_calendar"
                     app:drawableTint="@color/rinda_text_tertiary" />
             </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAgentVerify"
+                style="@style/Widget.Rinda.Button.Tonal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:text="@string/btn_verify_plot_boundary"
+                android:visibility="gone"
+                app:icon="@drawable/ic_check" />
         </LinearLayout>
 
         <ImageView

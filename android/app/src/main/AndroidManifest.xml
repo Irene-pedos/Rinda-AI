@@ -92,6 +92,15 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- Agent Activities -->
+        <activity
+            android:name=".ui.agent.VerifyPlotActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.agent.FieldVisitActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
     </application>
 
 </manifest>

@@ -211,14 +211,73 @@
 
     <!-- Agent Screens -->
     <string name="agent_farmers_title">Abahinzi bo muri Koperative</string>
+    <string name="agent_filter_all">Abahinzi bose</string>
+    <string name="agent_filter_pending">Bakeneye gusuzumwa</string>
+    <string name="agent_filter_at_risk">Bari mu kaga</string>
+    <string name="agent_farmers_empty">Nta muhinzi uraboneka muri iyi koperative.</string>
+    <string name="agent_farmer_plots_fmt">Imirima %d</string>
+    <string name="agent_farmer_pending_tag">%d bategereje gusuzumwa</string>
+    <string name="agent_farmer_at_risk_tag">%d bari mu kaga</string>
+    <string name="btn_record_visit">Andika ibyo gusura umurima</string>
+    <string name="btn_verify_plot_boundary">Suzuma imbibi</string>
+
     <string name="verify_plot_title">Emeza Imbibi z\'Umurima</string>
+    <string name="verify_plot_subtitle">Suzuma imbibi umuhinzi yashushanyije unemeze itariki y\'itera.</string>
     <string name="confirm_planting_date">Emeza Itariki yo Gutera</string>
     <string name="btn_approve_plot">Emeza Umurima (Ugire Agaciro)</string>
     <string name="btn_reject_plot">Anga Imbibi z\'Umurima</string>
+    <string name="verify_plot_dialog_title">Emeza uyu murima?</string>
+    <string name="verify_plot_dialog_msg">Imbibi n\'itariki yo gutera bizahita byemezwa. Icyogajuru kizajya gikurikirana umurima buri minsi 5.</string>
+    <string name="reject_plot_dialog_title">Anga izi mbibi?</string>
+    <string name="reject_plot_dialog_msg">Sobanura impamvu imbibi zanze kugira ngo umuhinzi abikosore.</string>
+    <string name="reject_plot_reason_hint">Impamvu yo kwanga (urugero: imbibi zambukiranya umuhanda)</string>
+    <string name="plot_verified_success">Imbibi z\'umurima zemejwe.</string>
+    <string name="plot_rejected_success">Imbibi z\'umurima zanzwe.</string>
+    <string name="planting_date_updated">Itariki yateweho yavuguruwe</string>
+
     <string name="field_visit_title">Andika Ibyavuye mu Gusura Umurima</string>
     <string name="field_condition_label">Imiterere y\'Igihingwa</string>
     <string name="field_cause_label">Icyateye Ikibazo</string>
     <string name="field_stage_label">Icyiciro cy\'Imikurire</string>
+    <string name="field_visit_step_plot">Hitamo umurima</string>
+    <string name="field_visit_step_condition">Imiterere y\'igihingwa</string>
+    <string name="field_visit_step_cause">Icyateye ikibazo</string>
+    <string name="field_visit_step_stage">Imikurire n\'isuzuma</string>
+    <string name="field_visit_step_photo">Ifoto na GPS</string>
+    <string name="field_visit_step_review">Suzuma ibyanditswe</string>
+
+    <string name="field_condition_good">Bimeze neza / Bikomeye</string>
+    <string name="field_condition_good_sub">Ibihingwa bitoshye, amababi y\'icyatsi cyijimye</string>
+    <string name="field_condition_stressed">Bifite ikibazo gito</string>
+    <string name="field_condition_stressed_sub">Amababi yipfunyika gato cyangwa abuze amazi make</string>
+    <string name="field_condition_severe">Ikibazo gikomeye / Kuma</string>
+    <string name="field_condition_severe_sub">Amababi yanitse hose, ibihingwa byagwingiye</string>
+    <string name="field_condition_failed">Byarangiritse burundu</string>
+    <string name="field_condition_failed_sub">Ibihingwa byapfuye cyangwa byararitswe hose</string>
+
+    <string name="field_cause_water_deficit">Kubura amazi / Izuba ryinshi</string>
+    <string name="field_cause_water_deficit_sub">Ubutaka bwarasandaye, imvura imaze igihe itagwa</string>
+    <string name="field_cause_excess_water">Amazi menshi / Kurengerwa</string>
+    <string name="field_cause_excess_water_sub">Amazi yaretse mu murima, imizi yatangiye kubora</string>
+    <string name="field_cause_nutrient">Kubura ifumbire / Ubutaka bunaniwe</string>
+    <string name="field_cause_nutrient_sub">Amababi yose yabaye umuhondo, ifumbire ntiyari ihagije</string>
+    <string name="field_cause_other">Ibindi bibazo mu murima</string>
+    <string name="field_cause_other_sub">Umuyaga mwinshi, urubura, cyangwa isuri</string>
+
+    <string name="field_stage_emergence">Kumera (VE–V2)</string>
+    <string name="field_stage_vegetative">Gukura kw\'amababi (V3–V12)</string>
+    <string name="field_stage_flowering">Kurabya no Kuzana ubwanwa (VT–R1)</string>
+    <string name="field_stage_grain">Kuzuza impeke (R2–R4)</string>
+    <string name="field_stage_maturity">Guhisha / Isarura (R5–R6)</string>
+
+    <string name="field_check_moisture">Ububobere bw\'ubutaka bwasuzumwe</string>
+    <string name="field_check_stand">Ubunini n\'ubucucike by\'ibihingwa byagenzuwe</string>
+    <string name="field_check_farmer">Umuhinzi yari ahari igihe hasurwaga</string>
+
+    <string name="field_gps_btn">Fata aho uherereye (GPS)</string>
+    <string name="field_gps_acquired">Aho uherereye (GPS): %1$.5f, %2$.5f</string>
+    <string name="field_visit_success_title">Gusura umurima byanditswe</string>
+    <string name="field_visit_success_body">Ibyo wabonye byabitswe byongerwa ku makuru y\'uyu murima.</string>
 
     <!-- Error Messages (Mapped from API codes) -->
     <string name="error_phone_invalid">Shyiramo numero nyayo yo mu Rwanda (MTN cyangwa Airtel).</string>

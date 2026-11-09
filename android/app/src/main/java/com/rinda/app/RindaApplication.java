@@ -4,6 +4,7 @@ import android.app.Application;
 import com.rinda.app.data.api.ApiClient;
 import com.rinda.app.data.api.TokenManager;
 import com.rinda.app.data.local.RindaDatabase;
+import com.rinda.app.data.sync.OutboxSyncWorker;
 import org.osmdroid.config.Configuration;
 
 public class RindaApplication extends Application {
@@ -22,6 +23,9 @@ public class RindaApplication extends Application {
         RindaDatabase.getInstance(this);
         TokenManager.getInstance(this);
         ApiClient.getInstance(this);
+
+        // Schedule offline SQLite outbox sync via WorkManager
+        OutboxSyncWorker.schedulePeriodicSync(this);
     }
 
     public static RindaApplication getInstance() {

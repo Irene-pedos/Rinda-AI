@@ -25,6 +25,15 @@ public class BackendApiIntegrationTest {
 
     @Before
     public void setUp() {
+        // Skip integration tests if the backend is not running on localhost:8080
+        boolean backendReachable = false;
+        try (java.net.Socket socket = new java.net.Socket()) {
+            socket.connect(new java.net.InetSocketAddress("127.0.0.1", 8080), 500);
+            backendReachable = true;
+        } catch (Exception ignored) {
+        }
+        org.junit.Assume.assumeTrue("Backend is not running on 127.0.0.1:8080 - skipping live integration test", backendReachable);
+
         OkHttpClient client = new OkHttpClient.Builder().build();
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://127.0.0.1:8080/api/v1/")

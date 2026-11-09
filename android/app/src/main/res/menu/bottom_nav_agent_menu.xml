@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_agent_farmers"
+        android:icon="@drawable/ic_group"
+        android:title="@string/agent_farmers_title" />
+    <item
+        android:id="@+id/nav_plots"
+        android:icon="@drawable/ic_nav_plots"
+        android:title="@string/nav_plots" />
+    <item
+        android:id="@+id/nav_agent_visits"
+        android:icon="@drawable/ic_visit"
+        android:title="@string/field_visit_title" />
+    <item
+        android:id="@+id/nav_alerts"
+        android:icon="@drawable/ic_nav_alerts"
+        android:title="@string/nav_alerts" />
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/ic_nav_profile"
+        android:title="@string/nav_profile" />
+</menu>

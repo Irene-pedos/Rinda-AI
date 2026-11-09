@@ -459,14 +459,73 @@
 
     <!-- Agent Screens -->
     <string name="agent_farmers_title">My cooperative farmers</string>
+    <string name="agent_filter_all">All farmers</string>
+    <string name="agent_filter_pending">Needs check</string>
+    <string name="agent_filter_at_risk">At risk</string>
+    <string name="agent_farmers_empty">No farmers found in your cooperative.</string>
+    <string name="agent_farmer_plots_fmt">%d plots</string>
+    <string name="agent_farmer_pending_tag">%d pending check</string>
+    <string name="agent_farmer_at_risk_tag">%d at risk</string>
+    <string name="btn_record_visit">Record field visit</string>
+    <string name="btn_verify_plot_boundary">Check boundary</string>
+
     <string name="verify_plot_title">Check plot boundary</string>
+    <string name="verify_plot_subtitle">Review the boundary drawn by the farmer and confirm the planting date.</string>
     <string name="confirm_planting_date">Confirm planting date</string>
     <string name="btn_approve_plot">Verify plot</string>
     <string name="btn_reject_plot">Reject boundary</string>
+    <string name="verify_plot_dialog_title">Verify this plot?</string>
+    <string name="verify_plot_dialog_msg">The boundary shape and planting date will be confirmed. Satellite monitoring will begin every 5 days.</string>
+    <string name="reject_plot_dialog_title">Reject this boundary?</string>
+    <string name="reject_plot_dialog_msg">Please state why this boundary cannot be accepted so the farmer can correct it.</string>
+    <string name="reject_plot_reason_hint">Reason for rejection (e.g. boundary crosses road or river)</string>
+    <string name="plot_verified_success">Plot boundary verified and activated.</string>
+    <string name="plot_rejected_success">Plot boundary marked as rejected.</string>
+    <string name="planting_date_updated">Planting date updated</string>
+
     <string name="field_visit_title">Record a field visit</string>
     <string name="field_condition_label">Crop condition</string>
     <string name="field_cause_label">What you saw</string>
     <string name="field_stage_label">Growth stage</string>
+    <string name="field_visit_step_plot">Choose plot</string>
+    <string name="field_visit_step_condition">Crop condition</string>
+    <string name="field_visit_step_cause">Observed cause</string>
+    <string name="field_visit_step_stage">Stage &amp; checks</string>
+    <string name="field_visit_step_photo">Photo &amp; GPS</string>
+    <string name="field_visit_step_review">Review visit</string>
+    
+    <string name="field_condition_good">Good / Vigorous</string>
+    <string name="field_condition_good_sub">Healthy canopy, dark green leaves, no visible stress</string>
+    <string name="field_condition_stressed">Moderate stress</string>
+    <string name="field_condition_stressed_sub">Mild leaf rolling, slight yellowing, or slight water deficit</string>
+    <string name="field_condition_severe">Severe stress / Wilting</string>
+    <string name="field_condition_severe_sub">Widespread wilting, scorched tips, stunted growth</string>
+    <string name="field_condition_failed">Crop failure / Dying</string>
+    <string name="field_condition_failed_sub">Permanent wilting point reached or major loss</string>
+    
+    <string name="field_cause_water_deficit">Water deficit / Drought</string>
+    <string name="field_cause_water_deficit_sub">Dry cracked soil, prolonged dry spell observed</string>
+    <string name="field_cause_excess_water">Excess water / Flooding</string>
+    <string name="field_cause_excess_water_sub">Standing water, root rot from saturation</string>
+    <string name="field_cause_nutrient">Nutrient stress / Soil issue</string>
+    <string name="field_cause_nutrient_sub">Uniform pale yellowing, poor soil fertility</string>
+    <string name="field_cause_other">Other field condition</string>
+    <string name="field_cause_other_sub">Severe wind, hail damage, or soil erosion</string>
+
+    <string name="field_stage_emergence">Emergence (VE–V2)</string>
+    <string name="field_stage_vegetative">Vegetative (V3–V12)</string>
+    <string name="field_stage_flowering">Tasseling / Flowering (VT–R1)</string>
+    <string name="field_stage_grain">Grain filling (R2–R4)</string>
+    <string name="field_stage_maturity">Maturity / Harvest (R5–R6)</string>
+
+    <string name="field_check_moisture">Soil moisture inspected</string>
+    <string name="field_check_stand">Crop stand density evaluated</string>
+    <string name="field_check_farmer">Farmer was present during visit</string>
+
+    <string name="field_gps_btn">Capture field GPS location</string>
+    <string name="field_gps_acquired">GPS Location: %1$.5f, %2$.5f</string>
+    <string name="field_visit_success_title">Field visit recorded</string>
+    <string name="field_visit_success_body">Your ground observation was saved and attached to this plot\'s record.</string>
 
     <!-- Error Messages (Mapped from API codes) -->
     <string name="error_phone_invalid">Please enter a valid MTN or Airtel number, e.g. 078 000 0001.</string>

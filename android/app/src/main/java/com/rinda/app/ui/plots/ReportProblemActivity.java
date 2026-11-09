@@ -366,6 +366,7 @@ public class ReportProblemActivity extends AppCompatActivity {
         new Thread(() -> {
             OutboxEntity entity = new OutboxEntity("PROBLEM_REPORT", payload.toString(), attachedPhotoPath);
             RindaDatabase.getInstance(ReportProblemActivity.this).outboxDao().insert(entity);
+            com.rinda.app.data.sync.OutboxSyncWorker.syncNow(ReportProblemActivity.this);
             runOnUiThread(() -> {
                 boolean online = Ui.isOnline(ReportProblemActivity.this);
                 binding.tvOfflineNotice.setVisibility(online ? View.GONE : View.VISIBLE);

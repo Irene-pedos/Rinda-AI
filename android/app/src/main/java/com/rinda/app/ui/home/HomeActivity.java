@@ -1,6 +1,7 @@
 package com.rinda.app.ui.home;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -15,6 +16,8 @@ import com.rinda.app.data.api.TokenManager;
 import com.rinda.app.data.model.Role;
 import com.rinda.app.data.model.UserResponse;
 import com.rinda.app.databinding.ActivityHomeBinding;
+import com.rinda.app.ui.agent.AgentFarmersFragment;
+import com.rinda.app.ui.agent.FieldVisitActivity;
 import com.rinda.app.ui.alerts.AlertsFragment;
 import com.rinda.app.ui.claims.ClaimsFragment;
 import com.rinda.app.ui.common.Ui;
@@ -29,6 +32,7 @@ public class HomeActivity extends AppCompatActivity {
     private final Fragment alertsFragment = new AlertsFragment();
     private final Fragment claimsFragment = new ClaimsFragment();
     private final Fragment profileFragment = new ProfileFragment();
+    private final Fragment agentFarmersFragment = new AgentFarmersFragment();
 
     private ConnectivityManager connectivityManager;
     private final ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback() {
@@ -53,7 +57,12 @@ public class HomeActivity extends AppCompatActivity {
         setupBottomNavigation();
 
         if (savedInstanceState == null) {
-            loadFragment(homeFragment, false);
+            boolean isAgent = TokenManager.getInstance(this).getUserRole() == Role.AGENT;
+            if (isAgent) {
+                show(R.string.agent_farmers_title, agentFarmersFragment);
+            } else {
+                loadFragment(homeFragment, false);
+            }
         }
 
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -101,12 +110,23 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void setupBottomNavigation() {
+        boolean isAgent = TokenManager.getInstance(this).getUserRole() == Role.AGENT;
+        if (isAgent) {
+            binding.bottomNav.getMenu().clear();
+            binding.bottomNav.inflateMenu(R.menu.bottom_nav_agent_menu);
+        }
+
         binding.bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
                 show(R.string.app_name, homeFragment);
+            } else if (itemId == R.id.nav_agent_farmers) {
+                show(R.string.agent_farmers_title, agentFarmersFragment);
             } else if (itemId == R.id.nav_plots) {
                 show(R.string.my_plots_title, plotsFragment);
+            } else if (itemId == R.id.nav_agent_visits) {
+                startActivity(new Intent(this, FieldVisitActivity.class));
+                return false;
             } else if (itemId == R.id.nav_alerts) {
                 show(R.string.nav_alerts, alertsFragment);
             } else if (itemId == R.id.nav_claims) {

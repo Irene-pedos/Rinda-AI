@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Agent: Verify Plot Boundary (Template: Detail 7.1 + osmdroid Map).
+    Allows cooperative agents to inspect polygon geometry, correct planting date,
+    and confirm (ACTIVE) or reject (REJECTED) with dialog confirmations.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/rinda_bg"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:navigationContentDescription="@string/cd_back"
+        app:navigationIcon="@drawable/ic_back"
+        app:title="@string/verify_plot_title" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="@dimen/screen_padding"
+            android:paddingEnd="@dimen/screen_padding"
+            android:paddingBottom="@dimen/spacing_xxl">
+
+            <!-- Map Card showing boundary -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <org.osmdroid.views.MapView
+                        android:id="@+id/mapView"
+                        android:layout_width="match_parent"
+                        android:layout_height="240dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/card_padding">
+
+                        <ImageView
+                            style="@style/Widget.Rinda.IconBadge"
+                            android:backgroundTint="@color/status_pending_bg"
+                            android:src="@drawable/ic_area"
+                            app:tint="@color/status_pending" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_md"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvPlotName"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.Rinda.Title"
+                                tools:text="Hillside Maize Plot" />
+
+                            <TextView
+                                android:id="@+id/tvPlotArea"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_xxs"
+                                android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                                tools:text="Area: 1.45 ha • Maize" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvStatusTag"
+                            style="@style/Widget.Rinda.Tag"
+                            android:backgroundTint="@color/status_pending_bg"
+                            android:text="@string/plot_status_pending"
+                            android:textColor="@color/status_pending" />
+
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Explanation Banner -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_base"
+                android:text="@string/verify_plot_subtitle"
+                android:textAppearance="@style/TextAppearance.Rinda.Body" />
+
+            <!-- Planting Date Confirmation Card -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/section_gap"
+                android:layout_marginBottom="@dimen/spacing_sm"
+                android:accessibilityHeading="true"
+                android:text="@string/confirm_planting_date"
+                android:textAppearance="@style/TextAppearance.Rinda.Section" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            style="@style/Widget.Rinda.IconBadge"
+                            android:backgroundTint="@color/rinda_secondary_container"
+                            android:src="@drawable/ic_calendar"
+                            app:tint="@color/rinda_secondary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_md"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/planting_date_label"
+                                android:textAppearance="@style/TextAppearance.Rinda.Label" />
+
+                            <TextView
+                                android:id="@+id/tvPlantingDate"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_xxs"
+                                android:textAppearance="@style/TextAppearance.Rinda.Title"
+                                tools:text="2026-09-20" />
+                        </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnChangeDate"
+                            style="@style/Widget.Rinda.Button.Text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/btn_edit"
+                            app:icon="@drawable/ic_edit" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_sm"
+                        android:text="@string/help_planting_body"
+                        android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                        android:textColor="@color/rinda_text_secondary" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Bottom Actions: Reject Boundary & Verify Plot -->
+    <LinearLayout
+        style="@style/Rinda.BottomBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnReject"
+            style="@style/Widget.Rinda.Button.Danger"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_sm"
+            android:layout_weight="1"
+            android:text="@string/btn_reject_plot"
+            app:icon="@drawable/ic_close" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnVerify"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/btn_approve_plot"
+            app:icon="@drawable/ic_check" />
+    </LinearLayout>
+
+</LinearLayout>

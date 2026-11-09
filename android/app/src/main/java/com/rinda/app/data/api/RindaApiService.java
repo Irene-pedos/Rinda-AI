@@ -5,6 +5,7 @@ import com.rinda.app.data.model.ClaimResponse;
 import com.rinda.app.data.model.CooperativeResponse;
 import com.rinda.app.data.model.EnrollmentResponse;
 import com.rinda.app.data.model.FarmerSummaryResponse;
+import com.rinda.app.data.model.FieldVisitResponse;
 import com.rinda.app.data.model.HarvestForecastResponse;
 import com.rinda.app.data.model.NotificationResponse;
 import com.rinda.app.data.model.ObservationResponse;
@@ -18,18 +19,25 @@ import com.rinda.app.data.model.PlotHealthStatusResponse;
 import com.rinda.app.data.model.PlotRequest;
 import com.rinda.app.data.model.PlotResponse;
 import com.rinda.app.data.model.PlotVerifyRequest;
+import com.rinda.app.data.model.ProblemReportResponse;
 import com.rinda.app.data.model.RefreshRequest;
 import com.rinda.app.data.model.ReviewRequestDto;
 import com.rinda.app.data.model.TokenResponse;
 import com.rinda.app.data.model.UserResponse;
 import com.rinda.app.data.model.WeatherResponse;
 import java.util.List;
+import java.util.Map;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
+import retrofit2.http.Part;
+import retrofit2.http.PartMap;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -148,4 +156,36 @@ public interface RindaApiService {
 
     @POST("agent/plots/{id}/verify")
     Call<PlotResponse> verifyAgentPlot(@Path("id") long id, @Body PlotVerifyRequest request);
+
+    @Multipart
+    @POST("agent/field-visits")
+    Call<FieldVisitResponse> recordFieldVisit(
+            @PartMap Map<String, RequestBody> partMap,
+            @Part MultipartBody.Part photo
+    );
+
+    @GET("field-visits")
+    Call<PageResponse<FieldVisitResponse>> getFieldVisits(
+            @Query("plotId") Long plotId,
+            @Query("claimId") Long claimId,
+            @Query("page") int page,
+            @Query("size") int size
+    );
+
+    // === Problem Reports ===
+
+    @Multipart
+    @POST("problem-reports")
+    Call<ProblemReportResponse> submitProblemReport(
+            @PartMap Map<String, RequestBody> partMap,
+            @Part MultipartBody.Part photo
+    );
+
+    @GET("problem-reports")
+    Call<PageResponse<ProblemReportResponse>> getProblemReports(
+            @Query("plotId") Long plotId,
+            @Query("claimId") Long claimId,
+            @Query("page") int page,
+            @Query("size") int size
+    );
 }

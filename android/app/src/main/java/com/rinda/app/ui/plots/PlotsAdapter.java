@@ -1,14 +1,19 @@
 package com.rinda.app.ui.plots;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.rinda.app.R;
+import com.rinda.app.data.api.TokenManager;
 import com.rinda.app.data.local.PlotEntity;
+import com.rinda.app.data.model.PlotStatus;
+import com.rinda.app.data.model.Role;
 import com.rinda.app.databinding.ItemPlotCardBinding;
+import com.rinda.app.ui.agent.VerifyPlotActivity;
 import com.rinda.app.ui.common.StatusUi;
 import com.rinda.app.util.DateTimeUtils;
 import java.util.ArrayList;
@@ -82,6 +87,19 @@ public class PlotsAdapter extends RecyclerView.Adapter<PlotsAdapter.PlotViewHold
                     androidx.core.content.ContextCompat.getColor(context, spec.bgColorRes)));
             binding.ivPlotBadge.setImageTintList(android.content.res.ColorStateList.valueOf(
                     androidx.core.content.ContextCompat.getColor(context, spec.fgColorRes)));
+
+            boolean isAgent = TokenManager.getInstance(context).getUserRole() == Role.AGENT;
+            boolean isPending = plot.status == PlotStatus.PENDING_VERIFICATION;
+            if (isAgent && isPending) {
+                binding.btnAgentVerify.setVisibility(View.VISIBLE);
+                binding.btnAgentVerify.setOnClickListener(v -> {
+                    Intent intent = new Intent(context, VerifyPlotActivity.class);
+                    intent.putExtra(VerifyPlotActivity.EXTRA_PLOT_ID, plot.id);
+                    context.startActivity(intent);
+                });
+            } else {
+                binding.btnAgentVerify.setVisibility(View.GONE);
+            }
 
             itemView.setOnClickListener(v -> {
                 if (listener != null) {
