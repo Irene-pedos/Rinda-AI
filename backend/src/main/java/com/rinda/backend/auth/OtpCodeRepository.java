@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface OtpCodeRepository extends JpaRepository<OtpCode, Long> {
 
-    Optional<OtpCode> findFirstByPhoneOrderByCreatedAtDescIdDesc(String phone);
+    Optional<OtpCode> findFirstByPhoneAndPurposeOrderByCreatedAtDescIdDesc(String phone, OtpPurpose purpose);
 
     @Transactional
     @Modifying

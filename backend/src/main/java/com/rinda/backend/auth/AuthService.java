@@ -116,7 +116,7 @@ public class AuthService {
     }
 
     /** Accepts 0781234567 or +250781234567 and stores the second form, so one phone is one account. */
-    static String normalise(String rawPhone) {
+    public static String normalise(String rawPhone) {
         String phone = rawPhone.replaceAll("[\\s-]", "");
         if (phone.startsWith("07")) {
             phone = "+250" + phone.substring(1);

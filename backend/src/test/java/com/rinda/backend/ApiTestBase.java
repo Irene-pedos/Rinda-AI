@@ -30,6 +30,7 @@ import org.springframework.test.web.servlet.ResultActions;
 abstract class ApiTestBase {
 
     private static final List<String> TABLES = List.of("notifications", "audit_log", "model_versions", "plot_status", "harvest_forecasts", "ml_runs", "baselines", "weather_daily", "observations",
+            "analysis_run_items", "analysis_runs", "payouts", "payout_accounts", "claim_decisions", "review_requests", "problem_reports", "field_visits",
             "claims", "enrollments", "seasons", "plots",
             "refresh_tokens", "otp_codes", "agents", "farmers", "users", "cooperatives");
 

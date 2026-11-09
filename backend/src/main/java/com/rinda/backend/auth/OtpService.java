@@ -26,8 +26,13 @@ public class OtpService {
     }
 
     public void request(String phone) {
+        request(phone, OtpPurpose.LOGIN);
+    }
+
+    /** Sends a code for one purpose. Each purpose has its own resend limit and its own latest code. */
+    public void request(String phone, OtpPurpose purpose) {
         Instant now = Instant.now();
-        repository.findFirstByPhoneOrderByCreatedAtDescIdDesc(phone)
+        repository.findFirstByPhoneAndPurposeOrderByCreatedAtDescIdDesc(phone, purpose)
                 .filter(last -> last.getCreatedAt().plus(config.resendInterval()).isAfter(now))
                 .ifPresent(last -> {
                     throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "OTP_RATE_LIMITED",
@@ -35,14 +40,19 @@ public class OtpService {
                 });
 
         String code = "%06d".formatted(random.nextInt(1_000_000));
-        repository.save(new OtpCode(phone, encoder.encode(code), now.plus(config.ttl()), now));
+        repository.save(new OtpCode(phone, encoder.encode(code), now.plus(config.ttl()), now, purpose));
         sender.send(phone, code);
     }
 
     /** Checks the latest code without using it up. Call {@link #consume} once the login can go ahead. */
     public OtpCode check(String phone, String code) {
+        return check(phone, code, OtpPurpose.LOGIN);
+    }
+
+    /** Checks the latest code sent for this purpose, without using it up. */
+    public OtpCode check(String phone, String code, OtpPurpose purpose) {
         Instant now = Instant.now();
-        OtpCode otp = repository.findFirstByPhoneOrderByCreatedAtDescIdDesc(phone)
+        OtpCode otp = repository.findFirstByPhoneAndPurposeOrderByCreatedAtDescIdDesc(phone, purpose)
                 .filter(o -> o.getConsumedAt() == null)
                 .filter(o -> o.getExpiresAt().isAfter(now))
                 .filter(o -> o.getAttempts() < config.maxAttempts())

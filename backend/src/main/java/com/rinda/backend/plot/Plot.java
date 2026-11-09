@@ -56,6 +56,12 @@ public class Plot {
     @Column(name = "is_demo", nullable = false)
     private boolean demo;
 
+    @Column(name = "verified_by")
+    private Long verifiedBy;
+
+    @Column(name = "rejection_reason")
+    private String rejectionReason;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = now();
 
@@ -102,6 +108,23 @@ public class Plot {
 
     public void archive() {
         this.status = PlotStatus.ARCHIVED;
+    }
+
+    /** An agent checked the boundary in the field (spec §2.2 #4). */
+    public void verify(long agentId) {
+        this.status = PlotStatus.ACTIVE;
+        this.verifiedBy = agentId;
+        this.rejectionReason = null;
+    }
+
+    public void reject(long agentId, String reason) {
+        this.status = PlotStatus.REJECTED;
+        this.verifiedBy = agentId;
+        this.rejectionReason = reason;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
     }
 
     public Long getId() {

@@ -8,7 +8,7 @@ Items the team must confirm. Until then, values that depend on them stay `TO_CON
 |---|---|---|---|---|
 | 1 | Which district is the pilot, and what are the 3–5 real maize plot locations (boundaries or GPS points) and planting dates? | Demo plots, satellite extraction | §10.3, §12.3 | Open |
 | 2 | What is the Google Cloud project ID registered for Earth Engine? | Real satellite data | §3.1, §10.3 | Answered: `rinda-ai`. Authorised and tested on the lab computer. |
-| 3 | What trigger thresholds should the demo use (X days, Y% yield, Z% rain)? | Claim trigger | §3.7, §10.3 | Open |
+| 3 | What trigger thresholds should the demo use (X days, Y% yield, Z% rain)? Please also confirm how the trigger reads them: Z is a rain **deficit** (100 − rain % of normal) of at least Z%, because §3.7's "rain deficit < Z%" would trigger on normal rain; and the yield part needs the **whole** forecast range below Y%, not just its low end. | Claim trigger | §3.7, §10.3 | Open. The trigger is built and tested, but creates no claim until X, Y and Z are in the `thresholds` table. |
 
 ## Insurer rules
 

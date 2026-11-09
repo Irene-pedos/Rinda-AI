@@ -7,6 +7,10 @@ springdoc:
     enabled: true
 
 rinda:
+  uploads:
+    dir: target/test-uploads
+  analysis:
+    run-inline: true
   ml:
     internal-api-key: test-only-key-test-only-key-test-only-key
   jwt:

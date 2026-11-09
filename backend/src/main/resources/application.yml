@@ -17,6 +17,11 @@ spring:
           time_zone: UTC
   flyway:
     locations: classpath:db/migration
+  servlet:
+    multipart:
+      # Evidence photos: the app compresses them first (spec §5.3, low bandwidth)
+      max-file-size: 5MB
+      max-request-size: 6MB
 
 springdoc:
   api-docs:
@@ -31,8 +36,20 @@ management:
         include: health
 
 rinda:
+  uploads:
+    # Private folder for evidence photos, outside any web root. Ignored by git.
+    dir: ${RINDA_UPLOADS_DIR:../uploads}
   ml:
     internal-api-key: ${ML_INTERNAL_API_KEY}
+    base-url: ${ML_SERVICE_URL:http://localhost:8000}
+    # One plot can take minutes when Earth Engine is slow
+    timeout: 10m
+  analysis:
+    run-inline: false
+    max-attempts: 2
+    # Automatic "Run analysis" every 5 days (spec §2.1). "-" means off: the MVP runs it by hand (spec §10.1).
+    # Example to turn it on: "0 0 4 */5 * *" (04:00 every 5th day, Kigali time).
+    cron: ${RINDA_ANALYSIS_CRON:-}
   jwt:
     secret: ${JWT_SECRET}
     access-ttl: 15m

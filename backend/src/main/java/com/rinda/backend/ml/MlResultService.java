@@ -1,5 +1,6 @@
 package com.rinda.backend.ml;
 
+import com.rinda.backend.claim.ClaimTriggerService;
 import com.rinda.backend.common.ApiException;
 import com.rinda.backend.ml.MlDtos.BaselineBin;
 import com.rinda.backend.ml.MlDtos.BaselineResult;
@@ -31,10 +32,12 @@ public class MlResultService {
 
     private final JdbcTemplate jdbc;
     private final NotificationService notifications;
+    private final ClaimTriggerService claimTrigger;
 
-    public MlResultService(JdbcTemplate jdbc, NotificationService notifications) {
+    public MlResultService(JdbcTemplate jdbc, NotificationService notifications, ClaimTriggerService claimTrigger) {
         this.jdbc = jdbc;
         this.notifications = notifications;
+        this.claimTrigger = claimTrigger;
     }
 
     private record PlotInfo(String status, String dataStatus, boolean demo) {
@@ -52,6 +55,8 @@ public class MlResultService {
         int bins = saveBaseline(result);
         saveStatus(result, runId);
         saveForecast(result, runId);
+        // The parametric trigger runs on every saved result, in the same transaction (spec §3.7).
+        claimTrigger.evaluate(result.plotId());
         return new MlResultResponse(runId, result.observations().size(), result.weather().size(), bins);
     }
 

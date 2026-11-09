@@ -102,6 +102,61 @@ public class PlotService {
         plot.archive();
     }
 
+    /**
+     * An agent checks a new plot in the field (spec §2.2 #4, #10): verify it, optionally correcting the planting
+     * date, or reject the boundary with a reason. Only the agent of the farmer's cooperative can, and only once.
+     */
+    @Transactional
+    public PlotResponse verify(AuthPrincipal agent, long id, String decision, LocalDate confirmedPlantingDate,
+                               String rejectionReason) {
+        Plot plot = find(id);
+        if (!canView(agent, plot)) {
+            throw notFound();
+        }
+        if (plot.getStatus() != PlotStatus.PENDING_VERIFICATION) {
+            throw new ApiException(HttpStatus.CONFLICT, "PLOT_NOT_PENDING", "This plot was already checked.");
+        }
+        LocalDate before = plot.getPlantingDate();
+        String title;
+        String body;
+        if ("ACTIVE".equals(decision)) {
+            if (confirmedPlantingDate != null) {
+                checkPlantingDate(confirmedPlantingDate);
+                plot.changePlantingDate(confirmedPlantingDate);
+            }
+            if (plot.getPlantingDate() == null) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "PLANTING_DATE_REQUIRED",
+                        "Confirm the planting date before verifying the plot.");
+            }
+            plot.verify(agent.userId());
+            title = "Your plot is verified";
+            body = plot.getName() + " was checked by your agent. Satellites will now watch it every 5 days.";
+        } else {
+            if (rejectionReason == null || rejectionReason.isBlank()) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "REJECTION_REASON_REQUIRED",
+                        "Say why the boundary was not accepted, so the farmer can fix it.");
+            }
+            plot.reject(agent.userId(), rejectionReason.trim());
+            title = "Your plot was not accepted";
+            body = "Your agent could not accept the boundary of " + plot.getName() + ": " + rejectionReason.trim();
+        }
+        Plot saved = plots.saveAndFlush(plot);
+
+        jdbc.update("""
+                INSERT INTO audit_log (actor_id, action, entity, entity_id, before_json, after_json)
+                VALUES (?, ?, 'plots', ?, JSON_OBJECT('status', 'PENDING_VERIFICATION', 'plantingDate', ?),
+                        JSON_OBJECT('status', ?, 'plantingDate', ?, 'rejectionReason', ?))
+                """, agent.userId(), "ACTIVE".equals(decision) ? "PLOT_VERIFIED" : "PLOT_REJECTED", id,
+                before == null ? null : before.toString(), saved.getStatus().name(),
+                saved.getPlantingDate() == null ? null : saved.getPlantingDate().toString(), saved.getRejectionReason());
+        jdbc.update("""
+                INSERT INTO notifications (user_id, type, code, title, body, link, plot_id, is_demo)
+                VALUES (?, 'SYSTEM', ?, ?, ?, ?, ?, ?)
+                """, saved.getFarmerId(), "ACTIVE".equals(decision) ? "PLOT_VERIFIED" : "PLOT_REJECTED", title, body,
+                "/plots/" + id, id, saved.isDemo());
+        return toResponse(saved);
+    }
+
     /** Verified details feed every satellite comparison, so they can't change after verification. */
     private void changeVerifiedFields(Plot plot, PlotRequest request, String geojson,
                                       boolean boundaryChanged, boolean dateChanged) {

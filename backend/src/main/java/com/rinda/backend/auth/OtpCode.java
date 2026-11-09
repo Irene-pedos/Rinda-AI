@@ -2,6 +2,8 @@ package com.rinda.backend.auth;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,14 +36,23 @@ public class OtpCode {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OtpPurpose purpose = OtpPurpose.LOGIN;
+
     protected OtpCode() {
     }
 
     public OtpCode(String phone, String codeHash, Instant expiresAt, Instant createdAt) {
+        this(phone, codeHash, expiresAt, createdAt, OtpPurpose.LOGIN);
+    }
+
+    public OtpCode(String phone, String codeHash, Instant expiresAt, Instant createdAt, OtpPurpose purpose) {
         this.phone = phone;
         this.codeHash = codeHash;
         this.expiresAt = expiresAt;
         this.createdAt = createdAt;
+        this.purpose = purpose;
     }
 
     public Long getId() {
