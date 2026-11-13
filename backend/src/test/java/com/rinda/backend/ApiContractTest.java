@@ -88,8 +88,8 @@ class ApiContractTest extends ApiTestBase {
         mvc.perform(post("/api/v1/plots").header("Authorization", "Bearer " + officer)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"x","plantingDate":"2026-01-01",
-                                 "boundary":{"type":"Polygon","coordinates":[]}}
+                                {"name":"x","plantingDate":"2026-01-01","upi":"0/00/00/00/1",
+                                 "relationshipToPlot":"OWNER","declarationAccepted":true}
                                 """))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value("FORBIDDEN"));

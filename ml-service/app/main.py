@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field, model_validator
 
 from app import backend_client, gee_source, params, pipeline
 from app.config import Settings, get_settings
+from app.processing import Observation
 from app.sample_source import SampleSource
 
 app = FastAPI(title="Rinda ML service", version=params.MODEL_VERSION)
@@ -54,6 +55,53 @@ def _open_gee(settings: Settings, boundary: dict) -> gee_source.GeeSource:
         return gee_source.GeeSource(settings.gee_project_id, boundary)
     except gee_source.GeeNotAuthorised as ex:
         raise HTTPException(status_code=503, detail=f"Earth Engine is not available: {ex}") from ex
+
+
+class HistoryRow(BaseModel):
+    date: date
+    ndviMedian: float | None = None
+    pixelCount: int
+    cloudFraction: float | None = None
+
+
+class MonitorRequest(BaseModel):
+    """A satellite fetch for one plot's walked boundary. The backend stores what comes back."""
+
+    plotId: int
+    source: Literal["gee", "sample"]
+    boundary: dict | None = None
+    plantingDate: date | None = None
+    fetchFrom: date | None = Field(default=None, description="First day to fetch. Defaults to the planting date.")
+    asOf: date | None = Field(default=None, description="Last day to fetch. Defaults to today in Rwanda.")
+    minClearPixels: int | None = Field(default=None, description="From the thresholds table. Empty: no image counts.")
+    history: list[HistoryRow] = Field(default_factory=list, description="Observations already stored")
+
+    @model_validator(mode="after")
+    def gee_needs_plot_details(self):
+        if self.source == "gee" and not (self.boundary and self.plantingDate):
+            raise ValueError("source 'gee' needs boundary and plantingDate")
+        return self
+
+
+@app.post("/monitor/plot", dependencies=[Depends(require_key)])
+def monitor_plot(request: MonitorRequest, settings: SettingsDep) -> dict:
+    history = tuple(Observation(row.date, row.ndviMedian, row.pixelCount, None, row.cloudFraction)
+                    for row in request.history)
+    if request.source == "sample":
+        # Simulated, for demo plots only: the season's dates come from the sample file, not the plot.
+        source = SampleSource()
+        planting, as_of = source.planting_date, source.as_of
+        fetch_from = max(request.fetchFrom or planting, planting)
+    else:
+        source = _open_gee(settings, request.boundary)
+        planting = request.plantingDate
+        as_of = request.asOf or datetime.now(ZoneInfo("Africa/Kigali")).date()
+        fetch_from = request.fetchFrom or planting
+    job = pipeline.MonitorJob(request.plotId, planting, fetch_from, as_of, request.minClearPixels, history)
+    try:
+        return pipeline.monitor(job, source)
+    except ValueError as ex:
+        raise HTTPException(status_code=400, detail=str(ex)) from ex
 
 
 @app.get("/health")

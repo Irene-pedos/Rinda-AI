@@ -1,0 +1,5408 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "Rinda API",
+    "description" : "Maize crop-insurance backend. Payouts are simulated. See docs/API.md.",
+    "version" : "v1"
+  },
+  "servers" : [ {
+    "url" : "http://localhost",
+    "description" : "Generated server url"
+  } ],
+  "security" : [ {
+    "bearerAuth" : [ ]
+  } ],
+  "paths" : {
+    "/api/v1/plots/{id}" : {
+      "get" : {
+        "tags" : [ "Plots" ],
+        "summary" : "Get one plot with its level, flags and checks. Returns 404 if not visible to this user.",
+        "operationId" : "get",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlotResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "Plots" ],
+        "summary" : "Rename your plot or correct its planting date (locked after the field check)",
+        "operationId" : "update",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PlotUpdateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlotResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "Plots" ],
+        "summary" : "Delete your plot. Returns 409 PLOT_DELETE_DEFERRED if it has active cover or an open claim.",
+        "operationId" : "delete",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/users/{id}/status" : {
+      "put" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Suspend or reactivate an account",
+        "operationId" : "setUserStatus",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UserStatusRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/thresholds/{key}" : {
+      "put" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Set a decision value from the team or insurer. null = not supplied yet.",
+        "operationId" : "updateThreshold",
+        "parameters" : [ {
+          "name" : "key",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ThresholdUpdate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ThresholdResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/seasons/{id}" : {
+      "put" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Change a season, for example to confirm its dates",
+        "operationId" : "updateSeason",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SeasonRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SeasonResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/enrollments/{id}" : {
+      "put" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Change a cover: status, dates, sum insured, premium",
+        "operationId" : "updateEnrollment",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EnrollmentRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EnrollmentResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/claims/{id}/payout-rate" : {
+      "put" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Enter the insurer's payout rate for a claim (0 to 1 of the sum insured)",
+        "operationId" : "setPayoutRate",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PayoutRateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/problem-reports" : {
+      "get" : {
+        "tags" : [ "Problem reports" ],
+        "summary" : "Problem reports you can see, newest first",
+        "operationId" : "list",
+        "parameters" : [ {
+          "name" : "plotId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "claimId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseProblemReportResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Problem reports" ],
+        "summary" : "Farmer: report a problem on your plot. Evidence only: it never starts a claim.",
+        "operationId" : "create",
+        "parameters" : [ {
+          "name" : "plotId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "reason",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "note",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "agentVisitRequested",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        }, {
+          "name" : "clientId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "reportedAt",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "photo" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemReportResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plots" : {
+      "get" : {
+        "tags" : [ "Plots" ],
+        "summary" : "List plots: farmers see their own, agents their cooperative's, officers and admins all",
+        "operationId" : "list_1",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponsePlotResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Plots" ],
+        "summary" : "Start a maize plot registration: UPI, planting date, relationship, declaration. A boundary is refused (400 BOUNDARY_NOT_ACCEPTED): it comes only from the GPS walk.",
+        "operationId" : "create_1",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PlotCreateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlotResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plots/{id}/walk" : {
+      "post" : {
+        "tags" : [ "Plots" ],
+        "summary" : "Submit the GPS boundary walk. The server builds and checks the polygon from the points.",
+        "operationId" : "walk",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/WalkRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlotResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plots/{id}/flags/{flagId}/resolve" : {
+      "post" : {
+        "tags" : [ "Plots" ],
+        "summary" : "Resolve a review flag after checking it (agent of the cooperative, officer or admin)",
+        "operationId" : "resolveFlag",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "flagId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/FlagResolveRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlotResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plots/{id}/documents" : {
+      "get" : {
+        "tags" : [ "Plots" ],
+        "summary" : "The plot's documents (details only), with the same visibility as the plot",
+        "operationId" : "listDocuments",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/DocumentResponse"
+                  }
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Plots" ],
+        "summary" : "Upload your e-title, a portal screenshot, a lease or the owner's consent (JPEG, PNG or PDF)",
+        "operationId" : "uploadDocument",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "type",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "E_TITLE", "PORTAL_SCREENSHOT", "LEASE", "OWNER_CONSENT" ]
+          }
+        }, {
+          "name" : "documentAreaM2",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "number"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DocumentResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payout-account" : {
+      "get" : {
+        "tags" : [ "Payout account" ],
+        "summary" : "Your mobile-money number for simulated payouts",
+        "operationId" : "get_1",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PayoutAccountResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Payout account" ],
+        "summary" : "Set or change the number. A code is sent to it unless it is already verified.",
+        "operationId" : "set",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PayoutAccountRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "description" : "Accepted",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PayoutAccountResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payout-account/verify" : {
+      "post" : {
+        "tags" : [ "Payout account" ],
+        "summary" : "Confirm the number with the code sent to it",
+        "operationId" : "verify",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PayoutVerifyRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PayoutAccountResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/{id}/read" : {
+      "post" : {
+        "tags" : [ "Notifications" ],
+        "summary" : "Mark one of your notifications as read",
+        "operationId" : "markRead",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{id}/review-request" : {
+      "post" : {
+        "tags" : [ "Claims" ],
+        "summary" : "Farmer: ask for a review of the decision (once per decision)",
+        "operationId" : "requestReview",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ReviewRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{id}/payout" : {
+      "post" : {
+        "tags" : [ "Claims" ],
+        "summary" : "Officer: send the simulated payout of an approved claim",
+        "operationId" : "pay",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{id}/field-visit-request" : {
+      "post" : {
+        "tags" : [ "Claims" ],
+        "summary" : "Officer: ask the cooperative agent to visit the field before deciding",
+        "operationId" : "requestFieldVisit",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{id}/decision" : {
+      "post" : {
+        "tags" : [ "Claims" ],
+        "summary" : "Officer: approve or decline, always with a written reason",
+        "operationId" : "decide",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DecisionRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh" : {
+      "post" : {
+        "tags" : [ "Auth" ],
+        "summary" : "Swap a refresh token for new tokens. Each refresh token works once.",
+        "description" : "Sending a used token again ends all of the user's sessions, so clients must never refresh twice at once.",
+        "operationId" : "refresh",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RefreshRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ ]
+      }
+    },
+    "/api/v1/auth/otp/verify" : {
+      "post" : {
+        "tags" : [ "Auth" ],
+        "summary" : "Log in, or sign up as a farmer",
+        "description" : "A new phone number gets 409 SIGNUP_DETAILS_REQUIRED. Resend with fullName and cooperativeId; the code stays valid.",
+        "operationId" : "verifyOtp",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/OtpVerifyRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ ]
+      }
+    },
+    "/api/v1/auth/otp/request" : {
+      "post" : {
+        "tags" : [ "Auth" ],
+        "summary" : "Send a login code. In dev mode it is printed in the backend log.",
+        "operationId" : "requestOtp",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/OtpRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "description" : "Accepted"
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ ]
+      }
+    },
+    "/api/v1/agent/plots/{id}/verify" : {
+      "post" : {
+        "tags" : [ "Agent" ],
+        "summary" : "Field check of a plot: verify it (raises it to FIELD_VERIFIED; needs a photo taken at the plot with its app-recorded location) or reject it with a reason",
+        "operationId" : "verifyPlot",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "decision",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "confirmedPlantingDate",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "rejectionReason",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "photoLat",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }, {
+          "name" : "photoLng",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }, {
+          "name" : "photoAccuracyM",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }, {
+          "name" : "photoTakenAt",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "photo" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlotResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/field-visits" : {
+      "post" : {
+        "tags" : [ "Agent" ],
+        "summary" : "Record a field visit (ground truth). Safe to resend with the same clientId.",
+        "operationId" : "recordVisit",
+        "parameters" : [ {
+          "name" : "plotId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "plantCondition",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "observedCause",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "growthStage",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "moistureChecked",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "standDensityChecked",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "farmerPresent",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "notes",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "lat",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "number"
+          }
+        }, {
+          "name" : "lng",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "number"
+          }
+        }, {
+          "name" : "visitedAt",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "clientId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "photo" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FieldVisitResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/users" : {
+      "get" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Accounts",
+        "operationId" : "users",
+        "parameters" : [ {
+          "name" : "role",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseUserResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Create an agent, officer or admin. Farmers sign up in the app.",
+        "operationId" : "createUser",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UserRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/seasons" : {
+      "get" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Seasons",
+        "operationId" : "seasons",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/SeasonResponse"
+                  }
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Add a season",
+        "operationId" : "createSeason",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SeasonRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SeasonResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/monitoring/refresh" : {
+      "post" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Run the weekly satellite refresh now, for every walked plot that needs a fetch",
+        "operationId" : "refresh_1",
+        "responses" : {
+          "202" : {
+            "description" : "Accepted",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RefreshResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/enrollments" : {
+      "get" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Covers (enrollments)",
+        "operationId" : "enrollments",
+        "parameters" : [ {
+          "name" : "seasonId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "plotId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseEnrollmentResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Cover a plot for a season. Sum insured and premium come from the insurer.",
+        "operationId" : "createEnrollment",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EnrollmentRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EnrollmentResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/cooperatives" : {
+      "post" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Add a cooperative",
+        "operationId" : "createCooperative",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CooperativeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CooperativeResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/analysis-runs" : {
+      "get" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Analysis runs, newest first",
+        "operationId" : "list_2",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseAnalysisRunResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Run analysis now. Returns at once; follow progress with GET /admin/analysis-runs/{id}.",
+        "operationId" : "start",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AnalysisRunRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AnalysisRunResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/problem-reports/{id}/photo" : {
+      "get" : {
+        "tags" : [ "Problem reports" ],
+        "summary" : "The report's photo, for people who can see the report",
+        "operationId" : "photo",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plots/{id}/weather" : {
+      "get" : {
+        "tags" : [ "Plot data" ],
+        "summary" : "Daily rain for the rain chart, oldest first",
+        "operationId" : "weather",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/WeatherResponse"
+                  }
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plots/{id}/status" : {
+      "get" : {
+        "tags" : [ "Plot data" ],
+        "summary" : "Latest crop health, with its confidence and data quality note",
+        "description" : "Crop health is not a claim. A plot with no analysis yet returns NOT_ENOUGH_DATA.",
+        "operationId" : "status",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plots/{id}/observations" : {
+      "get" : {
+        "tags" : [ "Plot data" ],
+        "summary" : "NDVI readings for the crop health chart, oldest first",
+        "operationId" : "observations",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ObservationResponse"
+                  }
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plots/{id}/monitoring" : {
+      "get" : {
+        "tags" : [ "Plots" ],
+        "summary" : "Satellite monitoring: NDVI curve, rainfall, latest image date and the maize season flag, or the empty state. Never live; a review flag, never proof of crop.",
+        "operationId" : "monitoring",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MonitoringResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plots/{id}/forecast" : {
+      "get" : {
+        "tags" : [ "Plot data" ],
+        "summary" : "Latest harvest forecast, as a range against this plot's normal",
+        "description" : "A prototype estimate of greenness, not a measured yield. Show the range, never one number.",
+        "operationId" : "forecast",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ForecastResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plots/{id}/enrollment" : {
+      "get" : {
+        "tags" : [ "Plot data" ],
+        "summary" : "The plot's newest enrollment, or NOT_ENROLLED",
+        "operationId" : "enrollment",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EnrollmentResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plots/{id}/documents/{documentId}/file" : {
+      "get" : {
+        "tags" : [ "Plots" ],
+        "summary" : "One document's file, with the same visibility as the plot",
+        "operationId" : "documentFile",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "documentId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plots/{id}/baseline" : {
+      "get" : {
+        "tags" : [ "Plot data" ],
+        "summary" : "The normal band for the crop health chart, by days after planting",
+        "operationId" : "baseline",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BaselineResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/officer/summary" : {
+      "get" : {
+        "tags" : [ "Officer dashboard" ],
+        "summary" : "Dashboard summary: claims by status, what is waiting, and missing trigger values",
+        "operationId" : "summary",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Summary"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/officer/claims" : {
+      "get" : {
+        "tags" : [ "Officer dashboard" ],
+        "summary" : "Claims queue, needs-attention first. status is a comma-separated list.",
+        "operationId" : "queue",
+        "parameters" : [ {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "flag",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "demo",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "cooperativeId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseQueueItem"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/officer/claims/{id}" : {
+      "get" : {
+        "tags" : [ "Officer dashboard" ],
+        "summary" : "One claim's case file: claim, farmer, plot, cover, evidence, decisions, reviews, history",
+        "operationId" : "caseFile",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CaseFile"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications" : {
+      "get" : {
+        "tags" : [ "Notifications" ],
+        "summary" : "Your notifications, newest first",
+        "operationId" : "list_3",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseNotificationResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me" : {
+      "get" : {
+        "tags" : [ "Me" ],
+        "summary" : "Get the logged-in user, including their role",
+        "operationId" : "me",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/land-registry/parcels" : {
+      "get" : {
+        "tags" : [ "Plots" ],
+        "summary" : "Look up a UPI before registering: the parcel's shape, area, land use and location if the registry provider has them. Never the owner's name. On the MOCK provider (dev only) the data is invented, for fake UPIs only.",
+        "operationId" : "lookup",
+        "parameters" : [ {
+          "name" : "upi",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ParcelLookupResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/field-visits" : {
+      "get" : {
+        "tags" : [ "Agent" ],
+        "summary" : "Field visits you can see, newest first",
+        "operationId" : "list_4",
+        "parameters" : [ {
+          "name" : "plotId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "claimId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseFieldVisitResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/field-visits/{id}/photo" : {
+      "get" : {
+        "tags" : [ "Agent" ],
+        "summary" : "The visit's photo",
+        "operationId" : "photo_1",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims" : {
+      "get" : {
+        "tags" : [ "Claims" ],
+        "summary" : "Claims you can see, newest first (without the evidence snapshot)",
+        "operationId" : "list_5",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseClaimResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{id}" : {
+      "get" : {
+        "tags" : [ "Claims" ],
+        "summary" : "One claim with its frozen evidence snapshot",
+        "operationId" : "get_2",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/cooperatives" : {
+      "get" : {
+        "tags" : [ "Auth" ],
+        "summary" : "List cooperatives for the sign-up screen",
+        "operationId" : "cooperatives",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CooperativeResponse"
+                  }
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ ]
+      }
+    },
+    "/api/v1/agent/farmers" : {
+      "get" : {
+        "tags" : [ "Agent" ],
+        "summary" : "Farmers in your cooperative, those needing attention first",
+        "operationId" : "farmers",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/FarmerSummaryResponse"
+                  }
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/thresholds" : {
+      "get" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Every decision value, with its status (TO_CONFIRM, CONFIRMED_FOR_DEMO, CONFIRMED)",
+        "operationId" : "thresholds",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ThresholdResponse"
+                  }
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/audit-log" : {
+      "get" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Audit log, newest first",
+        "operationId" : "auditLog",
+        "parameters" : [ {
+          "name" : "entity",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "entityId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "action",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "actorId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 50
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageResponseAuditLogEntry"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/analysis-runs/{id}" : {
+      "get" : {
+        "tags" : [ "Admin" ],
+        "summary" : "One run with the result for each plot",
+        "operationId" : "get_3",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AnalysisRunResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/analysis-runs/ml-health" : {
+      "get" : {
+        "tags" : [ "Admin" ],
+        "summary" : "Is the ML service reachable, which model version, and is Earth Engine authorised?",
+        "operationId" : "mlHealth",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/JsonNode"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "Error. Branch on `code`; see docs/API.md for each endpoint's codes.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "PlotUpdateRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 80,
+            "minLength" : 0
+          },
+          "plantingDate" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        },
+        "required" : [ "name", "plantingDate" ]
+      },
+      "CheckResponse" : {
+        "type" : "object",
+        "description" : "One registration check and its outcome. NOT_RUN is shown, never hidden.",
+        "properties" : {
+          "check" : {
+            "type" : "string"
+          },
+          "result" : {
+            "type" : "string",
+            "enum" : [ "PASSED", "FLAGGED", "REVIEWED", "PENDING", "NOT_RUN" ]
+          },
+          "note" : {
+            "type" : "string"
+          }
+        }
+      },
+      "FlagResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "OUTSIDE_ADMIN_AREA", "AREA_MISMATCH", "AREA_UNCHECKED", "GPS_ACCURACY_UNCHECKED", "MOCK_LOCATION", "OVERLAP", "DUPLICATE_UPI", "NON_OWNER", "LEGACY_DRAWN_BOUNDARY", "SATELLITE_INCONSISTENT", "OTHER" ]
+          },
+          "details" : {
+            "type" : "string"
+          },
+          "relatedPlotId" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int64"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "resolvedAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          },
+          "resolvedBy" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int64"
+          },
+          "resolutionNote" : {
+            "type" : [ "string", "null" ]
+          }
+        }
+      },
+      "GeoJsonPolygon" : {
+        "type" : "object",
+        "description" : "GeoJSON Polygon with one closed ring of [longitude, latitude] points",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "example" : "Polygon",
+            "minLength" : 1
+          },
+          "coordinates" : {
+            "type" : "array",
+            "items" : {
+              "type" : "array",
+              "items" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "number",
+                  "format" : "double"
+                }
+              }
+            }
+          }
+        },
+        "required" : [ "coordinates", "type" ]
+      },
+      "MonitoringSummary" : {
+        "type" : "object",
+        "properties" : {
+          "state" : {
+            "type" : "string",
+            "enum" : [ "NO_BOUNDARY", "FETCHING", "FETCH_FAILED", "NO_CLEAR_IMAGE", "DATA_AVAILABLE" ]
+          },
+          "latestImageDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date"
+          },
+          "seasonFlag" : {
+            "type" : [ "string", "null" ],
+            "enum" : [ "CONSISTENT", "INCONSISTENT", "NOT_ENOUGH_DATA" ]
+          }
+        }
+      },
+      "PlotResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "farmerId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "upi" : {
+            "type" : [ "string", "null" ]
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "crop" : {
+            "type" : "string"
+          },
+          "boundary" : {
+            "type" : [ "object", "null" ],
+            "$ref" : "#/components/schemas/GeoJsonPolygon",
+            "description" : "Null until the plot is walked"
+          },
+          "areaHa" : {
+            "type" : [ "number", "null" ]
+          },
+          "walkedAreaM2" : {
+            "type" : [ "number", "null" ]
+          },
+          "documentAreaM2" : {
+            "type" : [ "number", "null" ],
+            "description" : "Typed by the farmer from the document, not read from it"
+          },
+          "areaDiffPct" : {
+            "type" : [ "number", "null" ]
+          },
+          "plantedArea" : {
+            "type" : [ "object", "null" ],
+            "$ref" : "#/components/schemas/GeoJsonPolygon",
+            "description" : "Null means the whole walked boundary counts as planted"
+          },
+          "plantingDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "Null only on seeded placeholder plots"
+          },
+          "relationshipToPlot" : {
+            "type" : [ "string", "null" ],
+            "enum" : [ "OWNER", "FAMILY_MEMBER", "TENANT" ]
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "DRAFT", "PENDING_VERIFICATION", "FLAGGED", "DISPUTED", "ACTIVE", "REJECTED", "ARCHIVED" ]
+          },
+          "verificationLevel" : {
+            "type" : "string",
+            "enum" : [ "SELF_DECLARED", "DOCUMENT_SUPPORTED", "FIELD_VERIFIED", "NLA_VERIFIED" ]
+          },
+          "financialActionsAllowed" : {
+            "type" : "boolean",
+            "description" : "True only at FIELD_VERIFIED or higher, with no open dispute"
+          },
+          "flags" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FlagResponse"
+            }
+          },
+          "checks" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CheckResponse"
+            }
+          },
+          "monitoring" : {
+            "$ref" : "#/components/schemas/MonitoringSummary",
+            "description" : "Satellite state, latest image date and season flag. Details: GET /plots/{id}/monitoring"
+          },
+          "dataStatus" : {
+            "type" : "string",
+            "description" : "TO_CONFIRM marks a placeholder plot whose details are not real",
+            "enum" : [ "CONFIRMED", "TO_CONFIRM" ]
+          },
+          "isDemo" : {
+            "type" : "boolean",
+            "description" : "When true, every UI must show a Demo label"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "UserStatusRequest" : {
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "pattern" : "ACTIVE|SUSPENDED"
+          }
+        },
+        "required" : [ "status" ]
+      },
+      "UserResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "fullName" : {
+            "type" : "string"
+          },
+          "role" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "language" : {
+            "type" : "string"
+          },
+          "cooperativeId" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int64"
+          },
+          "cooperativeName" : {
+            "type" : [ "string", "null" ]
+          },
+          "isDemo" : {
+            "type" : "boolean"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "ThresholdUpdate" : {
+        "type" : "object",
+        "properties" : {
+          "value" : {
+            "type" : [ "number", "null" ],
+            "description" : "null means 'not supplied yet', never zero"
+          },
+          "status" : {
+            "type" : "string",
+            "pattern" : "TO_CONFIRM|CONFIRMED_FOR_DEMO|CONFIRMED"
+          }
+        },
+        "required" : [ "status" ]
+      },
+      "ThresholdResponse" : {
+        "type" : "object",
+        "properties" : {
+          "key" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : [ "number", "null" ]
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "TO_CONFIRM", "CONFIRMED_FOR_DEMO", "CONFIRMED" ]
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "updatedByName" : {
+            "type" : [ "string", "null" ]
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "SeasonRequest" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "example" : "2027A",
+            "maxLength" : 10,
+            "minLength" : 0
+          },
+          "type" : {
+            "type" : "string",
+            "pattern" : "A|B"
+          },
+          "startDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "dataStatus" : {
+            "type" : "string",
+            "pattern" : "TO_CONFIRM|CONFIRMED"
+          }
+        },
+        "required" : [ "code", "dataStatus", "type" ]
+      },
+      "SeasonResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string"
+          },
+          "startDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date"
+          },
+          "dataStatus" : {
+            "type" : "string"
+          },
+          "isDemo" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "EnrollmentRequest" : {
+        "type" : "object",
+        "properties" : {
+          "plotId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seasonId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "status" : {
+            "type" : "string",
+            "pattern" : "PENDING|COVERED|CANCELLED"
+          },
+          "sumInsured" : {
+            "type" : [ "number", "null" ],
+            "description" : "From the insurer. Leave null until confirmed.",
+            "minimum" : 0
+          },
+          "premium" : {
+            "type" : [ "number", "null" ],
+            "description" : "From the insurer. Leave null until confirmed.",
+            "minimum" : 0
+          },
+          "startDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        },
+        "required" : [ "plotId", "seasonId", "status" ]
+      },
+      "EnrollmentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "plotId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "plotName" : {
+            "type" : "string"
+          },
+          "farmerName" : {
+            "type" : "string"
+          },
+          "seasonId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seasonCode" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "sumInsured" : {
+            "type" : [ "number", "null" ]
+          },
+          "premium" : {
+            "type" : [ "number", "null" ]
+          },
+          "startDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date"
+          },
+          "isDemo" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "PayoutRateRequest" : {
+        "type" : "object",
+        "properties" : {
+          "payoutRate" : {
+            "type" : "number",
+            "description" : "Share of the sum insured to pay, from the insurer's rate table (0 to 1)",
+            "maximum" : 1,
+            "minimum" : 0
+          }
+        },
+        "required" : [ "payoutRate" ]
+      },
+      "ClaimResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "plotId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "plotName" : {
+            "type" : "string"
+          },
+          "seasonId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "seasonCode" : {
+            "type" : [ "string", "null" ]
+          },
+          "triggerDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "The date the trigger rule was met"
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "Always take it from the server, never from local data",
+            "enum" : [ "UNDER_REVIEW", "FIELD_VISIT_REQUESTED", "APPROVED", "DECLINED", "PAID", "REVIEW_REQUESTED", "FINAL" ]
+          },
+          "payoutRate" : {
+            "type" : [ "number", "null" ],
+            "description" : "Null until the insurer confirms the rates. Show 'not confirmed', never 0."
+          },
+          "amount" : {
+            "type" : [ "number", "null" ],
+            "description" : "Null until the insurer confirms the rates. Show 'not confirmed', never 0."
+          },
+          "evidenceSnapshot" : {
+            "$ref" : "#/components/schemas/JsonNode",
+            "description" : "Frozen evidence from when the claim started. Only in GET /claims/{id}; null in the list."
+          },
+          "decision" : {
+            "$ref" : "#/components/schemas/DecisionResponse",
+            "description" : "The latest officer decision, or null"
+          },
+          "modelVersion" : {
+            "type" : "string"
+          },
+          "isDemo" : {
+            "type" : "boolean",
+            "description" : "When true, show a Demo label"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "payout" : {
+            "$ref" : "#/components/schemas/PayoutResponse",
+            "description" : "The simulated payout, or null"
+          },
+          "review" : {
+            "$ref" : "#/components/schemas/ReviewResponse",
+            "description" : "The farmer's latest review request, or null"
+          },
+          "canRequestReview" : {
+            "type" : "boolean",
+            "description" : "True when the farmer may ask for a review now (one per decision)"
+          }
+        }
+      },
+      "DecisionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "decision" : {
+            "type" : "string",
+            "enum" : [ "APPROVED", "DECLINED" ]
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "decidedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "JsonNode" : { },
+      "PayoutResponse" : {
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "type" : "number"
+          },
+          "reference" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "PAID", "FAILED" ]
+          },
+          "isSimulated" : {
+            "type" : "boolean",
+            "description" : "Always true: Rinda never moves real money"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "ReviewResponse" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "OPEN", "ANSWERED" ]
+          },
+          "answer" : {
+            "type" : [ "string", "null" ]
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "ProblemReportResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "plotId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "plotName" : {
+            "type" : "string"
+          },
+          "farmerId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "reason" : {
+            "type" : "string",
+            "enum" : [ "DRY_LEAVES", "YELLOW_LEAVES", "FLOODING", "OTHER" ]
+          },
+          "note" : {
+            "type" : [ "string", "null" ]
+          },
+          "agentVisitRequested" : {
+            "type" : "boolean"
+          },
+          "claimId" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int64",
+            "description" : "The open claim this report was attached to as evidence. A report never creates one."
+          },
+          "photoUrl" : {
+            "type" : [ "string", "null" ],
+            "description" : "Fetch with your token; null when there is no photo"
+          },
+          "reportedAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time",
+            "description" : "When the farmer made the report on the phone"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "isDemo" : {
+            "type" : "boolean",
+            "description" : "When true, show a Demo label"
+          }
+        }
+      },
+      "PlotCreateRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 80,
+            "minLength" : 0
+          },
+          "upi" : {
+            "type" : "string",
+            "description" : "As typed from the farmer's own e-title",
+            "example" : "1/01/01/01/0001",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "plantingDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "relationshipToPlot" : {
+            "type" : "string",
+            "enum" : [ "OWNER", "FAMILY_MEMBER", "TENANT" ]
+          },
+          "declarationAccepted" : {
+            "type" : "boolean",
+            "description" : "Must be true: the farmer confirms they have the right to farm this plot and that a false claim can cancel cover"
+          },
+          "crop" : {
+            "type" : "string",
+            "description" : "Optional. Only MAIZE is accepted.",
+            "example" : "MAIZE"
+          }
+        },
+        "required" : [ "declarationAccepted", "name", "plantingDate", "relationshipToPlot", "upi" ]
+      },
+      "WalkPoint" : {
+        "type" : "object",
+        "description" : "One GPS fix recorded by the app while the farmer walks the plot's edge",
+        "properties" : {
+          "lat" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "lng" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "accuracyM" : {
+            "type" : "number",
+            "format" : "double",
+            "description" : "The fix's horizontal accuracy in metres, from the phone"
+          },
+          "recordedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "mockLocation" : {
+            "type" : "boolean",
+            "description" : "True when Android reports the fix came from a mock-location app"
+          }
+        },
+        "required" : [ "accuracyM", "lat", "lng", "recordedAt" ]
+      },
+      "WalkRequest" : {
+        "type" : "object",
+        "properties" : {
+          "points" : {
+            "type" : "array",
+            "description" : "In the order recorded. Don't repeat the first point at the end: the server closes the boundary.",
+            "items" : {
+              "$ref" : "#/components/schemas/WalkPoint"
+            },
+            "maxItems" : 499,
+            "minItems" : 3
+          }
+        },
+        "required" : [ "points" ]
+      },
+      "FlagResolveRequest" : {
+        "type" : "object",
+        "properties" : {
+          "note" : {
+            "type" : "string",
+            "maxLength" : 1000,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "note" ]
+      },
+      "DocumentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "plotId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "E_TITLE", "PORTAL_SCREENSHOT", "LEASE", "OWNER_CONSENT" ]
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "typedAreaM2" : {
+            "type" : [ "number", "null" ],
+            "description" : "Area typed by the farmer from the document, in m²"
+          },
+          "uploadedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "isDemo" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "PayoutAccountRequest" : {
+        "type" : "object",
+        "properties" : {
+          "provider" : {
+            "type" : "string",
+            "pattern" : "MTN_MOMO|AIRTEL"
+          },
+          "msisdn" : {
+            "type" : "string",
+            "example" : "0781234567",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "msisdn", "provider" ]
+      },
+      "PayoutAccountResponse" : {
+        "type" : "object",
+        "properties" : {
+          "provider" : {
+            "type" : "string",
+            "enum" : [ "MTN_MOMO", "AIRTEL" ]
+          },
+          "msisdn" : {
+            "type" : "string"
+          },
+          "verified" : {
+            "type" : "boolean",
+            "description" : "True once the farmer confirmed the number with the code sent to it"
+          },
+          "nameMatch" : {
+            "type" : "boolean",
+            "description" : "Whether the account name matches the farmer's name"
+          },
+          "nameCheck" : {
+            "type" : "string",
+            "description" : "The name check is simulated: Rinda has no access to mobile-money accounts",
+            "enum" : [ "SIMULATED" ]
+          },
+          "verifiedAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          }
+        }
+      },
+      "PayoutVerifyRequest" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "\\d{6}"
+          }
+        },
+        "required" : [ "code" ]
+      },
+      "ReviewRequest" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "What the farmer sees in the field",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "message" ]
+      },
+      "DecisionRequest" : {
+        "type" : "object",
+        "properties" : {
+          "decision" : {
+            "type" : "string",
+            "pattern" : "APPROVED|DECLINED"
+          },
+          "reason" : {
+            "type" : "string",
+            "description" : "Required for every decision; the farmer reads it",
+            "maxLength" : 2000,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "decision", "reason" ]
+      },
+      "RefreshRequest" : {
+        "type" : "object",
+        "properties" : {
+          "refreshToken" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "refreshToken" ]
+      },
+      "TokenResponse" : {
+        "type" : "object",
+        "properties" : {
+          "accessToken" : {
+            "type" : "string"
+          },
+          "accessTokenExpiresIn" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Seconds until the access token expires"
+          },
+          "refreshToken" : {
+            "type" : "string"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/UserResponse"
+          }
+        }
+      },
+      "OtpVerifyRequest" : {
+        "type" : "object",
+        "properties" : {
+          "phone" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "code" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "\\d{6}"
+          },
+          "fullName" : {
+            "type" : "string",
+            "maxLength" : 120,
+            "minLength" : 0
+          },
+          "cooperativeId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "code", "phone" ]
+      },
+      "OtpRequest" : {
+        "type" : "object",
+        "properties" : {
+          "phone" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "phone" ]
+      },
+      "FieldVisitResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "plotId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "plotName" : {
+            "type" : "string"
+          },
+          "agentId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "plantCondition" : {
+            "type" : "string",
+            "enum" : [ "GOOD", "STRESSED", "SEVERE_LOSS", "FAILED" ]
+          },
+          "observedCause" : {
+            "type" : "string",
+            "enum" : [ "WATER_DEFICIT", "EXCESS_WATER", "NUTRIENT", "OTHER" ]
+          },
+          "growthStage" : {
+            "type" : "string",
+            "enum" : [ "EMERGENCE", "VEGETATIVE", "FLOWERING", "GRAIN", "MATURITY" ]
+          },
+          "checklist" : {
+            "$ref" : "#/components/schemas/JsonNode",
+            "description" : "The checklist as the agent ticked it"
+          },
+          "notes" : {
+            "type" : [ "string", "null" ]
+          },
+          "lat" : {
+            "type" : [ "number", "null" ]
+          },
+          "lng" : {
+            "type" : [ "number", "null" ]
+          },
+          "visitedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "claimId" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int64",
+            "description" : "The plot's open claim this visit is evidence for"
+          },
+          "photoUrl" : {
+            "type" : [ "string", "null" ]
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "isDemo" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "UserRequest" : {
+        "type" : "object",
+        "properties" : {
+          "phone" : {
+            "type" : "string",
+            "example" : "0781234567",
+            "minLength" : 1
+          },
+          "fullName" : {
+            "type" : "string",
+            "maxLength" : 120,
+            "minLength" : 0
+          },
+          "role" : {
+            "type" : "string",
+            "pattern" : "AGENT|OFFICER|ADMIN"
+          },
+          "cooperativeId" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int64",
+            "description" : "Required for agents"
+          },
+          "language" : {
+            "type" : "string",
+            "pattern" : "rw|en"
+          }
+        },
+        "required" : [ "fullName", "phone", "role" ]
+      },
+      "RefreshResponse" : {
+        "type" : "object",
+        "properties" : {
+          "jobsQueued" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "CooperativeRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 150,
+            "minLength" : 0
+          },
+          "district" : {
+            "type" : "string",
+            "maxLength" : 80,
+            "minLength" : 0
+          },
+          "sector" : {
+            "type" : "string",
+            "maxLength" : 80,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "district", "name" ]
+      },
+      "CooperativeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "district" : {
+            "type" : "string"
+          },
+          "sector" : {
+            "type" : [ "string", "null" ]
+          },
+          "isDemo" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "AnalysisRunRequest" : {
+        "type" : "object",
+        "properties" : {
+          "source" : {
+            "type" : "string",
+            "description" : "GEE (real satellite data, the default) or SAMPLE (simulated, demo plots only)",
+            "pattern" : "GEE|SAMPLE"
+          },
+          "plotIds" : {
+            "type" : "array",
+            "description" : "Plots to analyse. For GEE, leave out to analyse every eligible real plot. Required for SAMPLE.",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            },
+            "maxItems" : 500,
+            "minItems" : 0
+          },
+          "asOf" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Last day of data to include. Defaults to today."
+          }
+        }
+      },
+      "AnalysisItemResponse" : {
+        "type" : "object",
+        "properties" : {
+          "plotId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "plotName" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "QUEUED", "RUNNING", "DONE", "FAILED", "SKIPPED" ]
+          },
+          "attempts" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "errorCode" : {
+            "type" : [ "string", "null" ],
+            "description" : "Why it was skipped or failed"
+          },
+          "error" : {
+            "type" : [ "string", "null" ]
+          },
+          "mlRunId" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int64",
+            "description" : "The saved ML result (ml_runs id)"
+          },
+          "finishedAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          }
+        }
+      },
+      "AnalysisRunResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "source" : {
+            "type" : "string",
+            "enum" : [ "GEE", "SAMPLE" ]
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "QUEUED", "RUNNING", "DONE", "FAILED", "INTERRUPTED" ]
+          },
+          "triggerType" : {
+            "type" : "string",
+            "enum" : [ "MANUAL", "SCHEDULE" ]
+          },
+          "requestedBy" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int64"
+          },
+          "asOf" : {
+            "type" : [ "string", "null" ],
+            "format" : "date"
+          },
+          "plotsTotal" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "plotsDone" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "plotsFailed" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "plotsSkipped" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "startedAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          },
+          "finishedAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          },
+          "items" : {
+            "type" : "array",
+            "description" : "Per plot. Only in GET /admin/analysis-runs/{id}; null in the list.",
+            "items" : {
+              "$ref" : "#/components/schemas/AnalysisItemResponse"
+            }
+          }
+        }
+      },
+      "PageResponseProblemReportResponse" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ProblemReportResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PageResponsePlotResponse" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PlotResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "WeatherResponse" : {
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "dap" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32",
+            "description" : "Days after planting. Null if the planting date is unknown."
+          },
+          "rainMm" : {
+            "type" : [ "number", "null" ]
+          },
+          "dataOrigin" : {
+            "type" : "string",
+            "description" : "SAMPLE_FILE is simulated and must be labelled Demo",
+            "enum" : [ "GEE", "SAMPLE_FILE" ]
+          }
+        }
+      },
+      "StatusResponse" : {
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "Null if the plot has not been analysed yet"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "HEALTHY", "WATCH", "AT_RISK", "NOT_ENOUGH_DATA" ]
+          },
+          "anomaly" : {
+            "type" : [ "number", "null" ]
+          },
+          "rainPct" : {
+            "type" : [ "number", "null" ],
+            "description" : "Rain over 30 days as a percent of normal. Null if unknown, never 0."
+          },
+          "cause" : {
+            "type" : [ "string", "null" ],
+            "enum" : [ "WATER_DEFICIT", "UNEXPLAINED" ]
+          },
+          "confidence" : {
+            "type" : "string",
+            "enum" : [ "HIGH", "MEDIUM", "LOW" ]
+          },
+          "needsFieldVisit" : {
+            "type" : "boolean"
+          },
+          "signals" : {
+            "$ref" : "#/components/schemas/JsonNode",
+            "description" : "What the status is based on. Each item has a code, and some have values."
+          },
+          "dataQualityNote" : {
+            "type" : "string"
+          },
+          "modelVersion" : {
+            "type" : [ "string", "null" ]
+          },
+          "dataOrigin" : {
+            "type" : [ "string", "null" ],
+            "description" : "GEE, or SAMPLE_FILE for simulated data",
+            "enum" : [ "GEE", "SAMPLE_FILE" ]
+          },
+          "lastKnownStatus" : {
+            "type" : [ "string", "null" ],
+            "description" : "Only with NOT_ENOUGH_DATA: the newest real status, which is not current"
+          },
+          "lastKnownDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "The date of lastKnownStatus, for \"Last update: <date>\""
+          },
+          "thresholdsUsed" : {
+            "type" : [ "object", "null" ],
+            "$ref" : "#/components/schemas/JsonNode",
+            "description" : "The threshold values this result used"
+          }
+        }
+      },
+      "ObservationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "dap" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32",
+            "description" : "Days after planting. Null if the planting date is unknown."
+          },
+          "source" : {
+            "type" : "string"
+          },
+          "ndvi" : {
+            "type" : [ "number", "null" ],
+            "description" : "Null when too few clear pixels were available. Show a gap."
+          },
+          "smoothedNdvi" : {
+            "type" : [ "number", "null" ]
+          },
+          "clearPixels" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "cloudPct" : {
+            "type" : [ "number", "null" ]
+          },
+          "dataOrigin" : {
+            "type" : "string",
+            "description" : "SAMPLE_FILE is simulated and must be labelled Demo",
+            "enum" : [ "GEE", "SAMPLE_FILE" ]
+          }
+        }
+      },
+      "JobView" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "BACKFILL", "REFRESH" ]
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "QUEUED", "RUNNING", "DONE", "FAILED", "INTERRUPTED" ]
+          },
+          "fetchFrom" : {
+            "type" : [ "string", "null" ],
+            "format" : "date"
+          },
+          "fetchTo" : {
+            "type" : [ "string", "null" ],
+            "format" : "date"
+          },
+          "errorCode" : {
+            "type" : [ "string", "null" ]
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "finishedAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          }
+        }
+      },
+      "MonitoringResponse" : {
+        "type" : "object",
+        "properties" : {
+          "plotId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "state" : {
+            "type" : "string",
+            "enum" : [ "NO_BOUNDARY", "FETCHING", "FETCH_FAILED", "NO_CLEAR_IMAGE", "DATA_AVAILABLE" ]
+          },
+          "message" : {
+            "type" : "string",
+            "description" : "Plain-words text for the state, in English. Apps may use their own translated copy."
+          },
+          "verificationLevel" : {
+            "type" : "string",
+            "enum" : [ "SELF_DECLARED", "DOCUMENT_SUPPORTED", "FIELD_VERIFIED", "NLA_VERIFIED" ]
+          },
+          "verificationNote" : {
+            "type" : "string",
+            "description" : "Null at FIELD_VERIFIED or higher; otherwise says the plot is not verified yet"
+          },
+          "healthStatusAvailable" : {
+            "type" : "boolean",
+            "description" : "Crop health and the claim trigger run only on FIELD_VERIFIED plots"
+          },
+          "isDemo" : {
+            "type" : "boolean"
+          },
+          "dataOrigin" : {
+            "type" : [ "string", "null" ],
+            "description" : "SAMPLE_FILE is simulated data, on demo plots only",
+            "enum" : [ "GEE", "SAMPLE_FILE" ]
+          },
+          "latestImageDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "Date of the latest usable image. Always show it."
+          },
+          "monitoredSince" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "Start of the fetched period (the planting date)"
+          },
+          "lastFetchedAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          },
+          "refreshing" : {
+            "type" : "boolean",
+            "description" : "A fetch is queued or running now"
+          },
+          "updateFrequency" : {
+            "type" : "string",
+            "enum" : [ "WEEKLY" ]
+          },
+          "minClearPixels" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32",
+            "description" : "Empty means no image counts as usable yet"
+          },
+          "seasonCheck" : {
+            "type" : [ "object", "null" ],
+            "$ref" : "#/components/schemas/SeasonCheckView"
+          },
+          "observations" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ObservationView"
+            }
+          },
+          "rainfall" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/RainView"
+            }
+          },
+          "latestJob" : {
+            "type" : [ "object", "null" ],
+            "$ref" : "#/components/schemas/JobView"
+          },
+          "notes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "ObservationView" : {
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "source" : {
+            "type" : "string"
+          },
+          "ndviMedian" : {
+            "type" : [ "number", "null" ],
+            "description" : "Median NDVI of the clear pixels"
+          },
+          "pixelCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "cloudFraction" : {
+            "type" : [ "number", "null" ],
+            "description" : "Share of the plot's pixels masked as cloud, shadow or not clear"
+          },
+          "usable" : {
+            "type" : "boolean",
+            "description" : "False when the image has fewer clear pixels than min_clear_pixels"
+          }
+        }
+      },
+      "RainView" : {
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "rainMm" : {
+            "type" : "number"
+          },
+          "source" : {
+            "type" : "string"
+          }
+        }
+      },
+      "SeasonCheckView" : {
+        "type" : "object",
+        "properties" : {
+          "flag" : {
+            "type" : "string",
+            "enum" : [ "CONSISTENT", "INCONSISTENT", "NOT_ENOUGH_DATA" ]
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "confidence" : {
+            "type" : "string",
+            "enum" : [ "MEDIUM", "LOW" ]
+          },
+          "checkDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "plantingDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "signals" : {
+            "$ref" : "#/components/schemas/JsonNode"
+          },
+          "dataQualityNote" : {
+            "type" : "string"
+          },
+          "imagesUsed" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pixelsUsed" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "latestImageDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date"
+          },
+          "modelVersion" : {
+            "type" : "string"
+          },
+          "dataOrigin" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ForecastResponse" : {
+        "type" : "object",
+        "properties" : {
+          "available" : {
+            "type" : "boolean"
+          },
+          "date" : {
+            "type" : [ "string", "null" ],
+            "format" : "date"
+          },
+          "lowPct" : {
+            "type" : [ "number", "null" ],
+            "description" : "Low end, as a percent of normal"
+          },
+          "highPct" : {
+            "type" : [ "number", "null" ],
+            "description" : "High end, as a percent of normal"
+          },
+          "confidence" : {
+            "type" : "string",
+            "enum" : [ "HIGH", "MEDIUM", "LOW" ]
+          },
+          "reason" : {
+            "type" : [ "string", "null" ],
+            "enum" : [ "NOT_ANALYSED", "TOO_EARLY", "NOT_ENOUGH_DATA" ]
+          },
+          "dataQualityNote" : {
+            "type" : "string"
+          },
+          "modelVersion" : {
+            "type" : [ "string", "null" ]
+          },
+          "dataOrigin" : {
+            "type" : [ "string", "null" ],
+            "description" : "GEE, or SAMPLE_FILE for simulated data",
+            "enum" : [ "GEE", "SAMPLE_FILE" ]
+          },
+          "thresholdsUsed" : {
+            "type" : [ "object", "null" ],
+            "$ref" : "#/components/schemas/JsonNode",
+            "description" : "The threshold values this result used"
+          }
+        }
+      },
+      "BaselineBinResponse" : {
+        "type" : "object",
+        "properties" : {
+          "dapBin" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "First day of the bin, in days after planting"
+          },
+          "p10" : {
+            "type" : "number"
+          },
+          "p50" : {
+            "type" : "number"
+          },
+          "p90" : {
+            "type" : "number"
+          },
+          "filled" : {
+            "type" : "boolean",
+            "description" : "True if estimated from the bins on each side. Show it differently."
+          }
+        }
+      },
+      "BaselineResponse" : {
+        "type" : "object",
+        "properties" : {
+          "seasonType" : {
+            "type" : [ "string", "null" ]
+          },
+          "version" : {
+            "type" : [ "string", "null" ]
+          },
+          "binDays" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32",
+            "description" : "Days covered by each bin"
+          },
+          "dataOrigin" : {
+            "type" : [ "string", "null" ],
+            "description" : "GEE, or SAMPLE_FILE for simulated data",
+            "enum" : [ "GEE", "SAMPLE_FILE" ]
+          },
+          "bins" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BaselineBinResponse"
+            }
+          }
+        }
+      },
+      "Summary" : {
+        "type" : "object",
+        "properties" : {
+          "claimsByStatus" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "format" : "int64"
+            },
+            "description" : "Claims by status"
+          },
+          "awaitingDecision" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Claims waiting for an officer: under review, field visit done or not, review requested"
+          },
+          "openReviews" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "flaggedOpen" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Open claims with at least one review flag"
+          },
+          "approvedUnpaid" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Approved but not paid: rates or the farmer's payout account are missing"
+          },
+          "simulatedPaidTotal" : {
+            "type" : "number",
+            "description" : "Sum of simulated payouts"
+          },
+          "plotsByStatus" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "format" : "int64"
+            },
+            "description" : "Plots by verification status"
+          },
+          "triggerValuesMissing" : {
+            "type" : "array",
+            "description" : "Trigger values not supplied yet; while any is missing, no claim can start",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "latestAnalysisRun" : {
+            "$ref" : "#/components/schemas/JsonNode",
+            "description" : "The latest analysis run, or null"
+          }
+        }
+      },
+      "PageResponseQueueItem" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/QueueItem"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "QueueItem" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "triggerDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "daysOpen" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Days since the claim started, while it is still open; null once closed"
+          },
+          "plotId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "plotName" : {
+            "type" : "string"
+          },
+          "areaHa" : {
+            "type" : "number"
+          },
+          "farmerId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "farmerName" : {
+            "type" : "string"
+          },
+          "farmerPhone" : {
+            "type" : "string"
+          },
+          "cooperativeName" : {
+            "type" : "string"
+          },
+          "seasonCode" : {
+            "type" : "string"
+          },
+          "reviewFlags" : {
+            "$ref" : "#/components/schemas/JsonNode",
+            "description" : "What the officer should check, from the evidence snapshot"
+          },
+          "problemReports" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "fieldVisits" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "openReview" : {
+            "type" : "boolean",
+            "description" : "The farmer asked for a review that is not answered yet"
+          },
+          "payoutRate" : {
+            "type" : [ "number", "null" ]
+          },
+          "amount" : {
+            "type" : [ "number", "null" ]
+          },
+          "modelVersion" : {
+            "type" : "string"
+          },
+          "isDemo" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "AuditEntry" : {
+        "type" : "object",
+        "properties" : {
+          "action" : {
+            "type" : "string"
+          },
+          "actorName" : {
+            "type" : [ "string", "null" ]
+          },
+          "actorRole" : {
+            "type" : [ "string", "null" ]
+          },
+          "before" : {
+            "$ref" : "#/components/schemas/JsonNode"
+          },
+          "after" : {
+            "$ref" : "#/components/schemas/JsonNode"
+          },
+          "occurredAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "CaseFile" : {
+        "type" : "object",
+        "properties" : {
+          "claim" : {
+            "$ref" : "#/components/schemas/ClaimResponse"
+          },
+          "farmer" : {
+            "$ref" : "#/components/schemas/Farmer"
+          },
+          "plot" : {
+            "$ref" : "#/components/schemas/Plot"
+          },
+          "cover" : {
+            "$ref" : "#/components/schemas/Cover",
+            "description" : "The cover the claim was made under, or null"
+          },
+          "payoutAccount" : {
+            "$ref" : "#/components/schemas/PayoutAccount",
+            "description" : "The farmer's payout account, or null when there is none"
+          },
+          "decisions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Decision"
+            }
+          },
+          "reviews" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Review"
+            }
+          },
+          "problemReports" : {
+            "type" : "array",
+            "description" : "Problem reports on the plot, newest first",
+            "items" : {
+              "$ref" : "#/components/schemas/ProblemReportResponse"
+            }
+          },
+          "fieldVisits" : {
+            "type" : "array",
+            "description" : "Field visits on the plot, newest first",
+            "items" : {
+              "$ref" : "#/components/schemas/FieldVisitResponse"
+            }
+          },
+          "history" : {
+            "type" : "array",
+            "description" : "Everything that happened to this claim, oldest first",
+            "items" : {
+              "$ref" : "#/components/schemas/AuditEntry"
+            }
+          }
+        }
+      },
+      "Cover" : {
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string"
+          },
+          "seasonCode" : {
+            "type" : "string"
+          },
+          "sumInsured" : {
+            "type" : [ "number", "null" ]
+          },
+          "premium" : {
+            "type" : [ "number", "null" ]
+          },
+          "startDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date"
+          }
+        }
+      },
+      "Decision" : {
+        "type" : "object",
+        "properties" : {
+          "decision" : {
+            "type" : "string"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "officerName" : {
+            "type" : "string"
+          },
+          "decidedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "answeredReview" : {
+            "type" : "boolean",
+            "description" : "True when this decision answered a review request"
+          }
+        }
+      },
+      "Farmer" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "fullName" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "cooperativeName" : {
+            "type" : "string"
+          },
+          "isDemo" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "PayoutAccount" : {
+        "type" : "object",
+        "properties" : {
+          "provider" : {
+            "type" : "string"
+          },
+          "msisdnMasked" : {
+            "type" : "string",
+            "description" : "Only the last 3 digits are shown"
+          },
+          "verified" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Plot" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "areaHa" : {
+            "type" : "number"
+          },
+          "plantingDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "dataStatus" : {
+            "type" : "string"
+          },
+          "verifiedByName" : {
+            "type" : [ "string", "null" ]
+          },
+          "isDemo" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Review" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "answer" : {
+            "type" : [ "string", "null" ]
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "answeredAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          }
+        }
+      },
+      "NotificationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "HEALTH opens plot detail, CLAIM opens claim detail",
+            "enum" : [ "HEALTH", "CLAIM", "SYSTEM" ]
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "Stable value to translate in the app, such as HEALTH_AT_RISK"
+          },
+          "title" : {
+            "type" : "string",
+            "description" : "English text. The app should show its own text for the code."
+          },
+          "body" : {
+            "type" : "string"
+          },
+          "plotId" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int64"
+          },
+          "plotName" : {
+            "type" : [ "string", "null" ]
+          },
+          "link" : {
+            "type" : [ "string", "null" ]
+          },
+          "isRead" : {
+            "type" : "boolean"
+          },
+          "isDemo" : {
+            "type" : "boolean",
+            "description" : "When true, show a Demo label"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "PageResponseNotificationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/NotificationResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "ParcelLookupResponse" : {
+        "type" : "object",
+        "properties" : {
+          "upi" : {
+            "type" : "string"
+          },
+          "found" : {
+            "type" : "boolean"
+          },
+          "source" : {
+            "type" : "string",
+            "enum" : [ "MOCK", "DOCUMENT" ]
+          },
+          "isMock" : {
+            "type" : "boolean",
+            "description" : "True: invented demo data, not official land records. Always label it."
+          },
+          "notice" : {
+            "type" : "string",
+            "description" : "Plain words to show with the result"
+          },
+          "parcel" : {
+            "type" : [ "object", "null" ],
+            "$ref" : "#/components/schemas/ParcelView"
+          }
+        }
+      },
+      "ParcelView" : {
+        "type" : "object",
+        "properties" : {
+          "boundary" : {
+            "$ref" : "#/components/schemas/GeoJsonPolygon",
+            "description" : "The parcel's shape as the provider has it. Never the plot's boundary."
+          },
+          "areaM2" : {
+            "type" : "number"
+          },
+          "areaHa" : {
+            "type" : "number"
+          },
+          "landUse" : {
+            "type" : [ "string", "null" ]
+          },
+          "location" : {
+            "type" : [ "string", "null" ]
+          }
+        }
+      },
+      "PageResponseFieldVisitResponse" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FieldVisitResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PageResponseClaimResponse" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ClaimResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "FarmerSummaryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "farmerId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "fullName" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "plotsCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Plots that are not archived"
+          },
+          "pendingVerificationCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Plots waiting for this agent's check"
+          },
+          "atRiskCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Plots whose newest crop health status is AT_RISK"
+          },
+          "openClaimsCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Claims not yet paid or final"
+          },
+          "isDemo" : {
+            "type" : "boolean",
+            "description" : "When true, show a Demo label"
+          }
+        }
+      },
+      "PageResponseUserResponse" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/UserResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PageResponseEnrollmentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EnrollmentResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "AuditLogEntry" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "action" : {
+            "type" : "string"
+          },
+          "entity" : {
+            "type" : "string"
+          },
+          "entityId" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int64"
+          },
+          "actorId" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int64"
+          },
+          "actorName" : {
+            "type" : [ "string", "null" ]
+          },
+          "before" : {
+            "$ref" : "#/components/schemas/JsonNode"
+          },
+          "after" : {
+            "$ref" : "#/components/schemas/JsonNode"
+          },
+          "occurredAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "PageResponseAuditLogEntry" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AuditLogEntry"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PageResponseAnalysisRunResponse" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AnalysisRunResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "Problem" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "detail" : {
+            "type" : "string",
+            "description" : "Plain-language message"
+          },
+          "instance" : {
+            "type" : "string"
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "Stable value that clients branch on"
+          },
+          "fields" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "Only with VALIDATION_FAILED: one message per field name"
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "type" : "http",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      }
+    }
+  }
+}

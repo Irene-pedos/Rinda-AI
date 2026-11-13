@@ -11,7 +11,25 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties("rinda")
 public record RindaProperties(@Valid Jwt jwt, @Valid Otp otp, @Valid Ml ml, @Valid Uploads uploads,
-                              @Valid Analysis analysis) {
+                              @Valid Analysis analysis, @Valid Plots plots, @Valid Monitoring monitoring) {
+
+    /**
+     * Satellite monitoring (docs/02-satellite-monitoring.md). cron is the weekly refresh ("-" turns it off).
+     * refreshOverlapDays re-reads the last days of the previous fetch, because images can appear a few days late.
+     * maxDaysAfterPlanting ends a season's refresh. Both are TO_CONFIRM starting values.
+     */
+    public record Monitoring(boolean runInline, @Min(1) int maxAttempts, @NotNull String cron,
+                             @Min(0) int refreshOverlapDays, @Min(1) int maxDaysAfterPlanting) {
+    }
+
+    /**
+     * Plot registration. upiPattern is a regular expression, loose until the UPI format is confirmed against a
+     * real e-title (docs/OPEN_QUESTIONS.md question 23). adminAreaCheckEnabled stays false until a boundary file
+     * with a confirmed licence exists (question 24). landRegistryProvider picks the LandRegistryProvider.
+     */
+    public record Plots(@NotNull String upiPattern, boolean adminAreaCheckEnabled,
+                        @NotNull String landRegistryProvider) {
+    }
 
     /**
      * "Run analysis". runInline processes a run in the calling thread (tests only); otherwise it runs in the

@@ -97,28 +97,7 @@ public class AlertsFragment extends Fragment {
     }
 
     private void saveNotificationsToCache(List<NotificationResponse> list) {
-        if (list == null) return;
-        final android.content.Context app = requireContext().getApplicationContext();
-        new Thread(() -> {
-            List<NotificationEntity> entities = new ArrayList<>();
-            for (NotificationResponse r : list) {
-                NotificationEntity e = new NotificationEntity();
-                e.id = r.getId();
-                e.type = r.getType();
-                e.code = r.getCode();
-                e.title = r.getTitle();
-                e.body = r.getBody();
-                e.plotId = r.getPlotId();
-                e.plotName = r.getPlotName();
-                e.link = r.getLink();
-                e.isRead = r.isRead();
-                e.isDemo = r.isDemo();
-                e.createdAt = r.getCreatedAt();
-                e.cachedAt = System.currentTimeMillis();
-                entities.add(e);
-            }
-            RindaDatabase.getInstance(app).notificationDao().insertAll(entities);
-        }).start();
+        NotificationCache.save(requireContext(), list);
     }
 
     @Override

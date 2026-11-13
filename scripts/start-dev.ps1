@@ -2,7 +2,7 @@
 #   1. MySQL 8 (port 3307), if it isn't running yet
 #   2. The backend (dev profile). Its window shows the login codes: [DEV OTP] phone=... code=...
 #   3. The ML service (port 8000)
-#   4. The USB link to a connected Android phone (adb reverse tcp:8080 tcp:8080)
+#   4. The USB link to a connected Android phone (scripts\phone-link.ps1: checked from the phone, kept alive)
 # Then it waits until the backend and the ML service answer.
 #
 # Usage, from the repo root:
@@ -77,27 +77,26 @@ if ($SkipMl) {
     Start-Process powershell -ArgumentList '-NoExit', '-ExecutionPolicy', 'Bypass', '-Command', $ml
 }
 
-# 4. Phone over USB
-$adb = Join-Path $env:LOCALAPPDATA 'Android\Sdk\platform-tools\adb.exe'
-if (Test-Path $adb) {
-    $devices = & $adb devices | Select-String -Pattern '\tdevice$'
-    if ($devices) {
-        & $adb reverse tcp:8080 tcp:8080 | Out-Null
-        Write-Host '[4/4] Phone connected: the app can reach the backend at http://127.0.0.1:8080.'
-    } else {
-        Write-Host '[4/4] No phone connected by USB. Plug it in and run:'
-        Write-Host "      & `"$adb`" reverse tcp:8080 tcp:8080"
-    }
-} else {
-    Write-Host '[4/4] adb not found; skipping the phone link.'
-}
-
 Write-Host ''
 Write-Host 'Waiting for the backend (the first start can take a few minutes)...'
 if (Wait-Http 'http://127.0.0.1:8080/actuator/health' 300) {
     Write-Host '  Backend:    http://localhost:8080/api/v1  (Swagger: http://localhost:8080/swagger-ui/index.html)'
 } else {
     Write-Host '  The backend did not answer within 5 minutes. Look at its window for the error.'
+}
+
+# 4. Phone over USB, after the backend is up so the link can be checked from the phone itself.
+# phone-link.ps1 clears a stale link first (the "Address already in use" failure) and never reports a link that
+# doesn't work. Its keep-alive window then restores the link whenever the phone reconnects.
+$adb = Join-Path $env:LOCALAPPDATA 'Android\Sdk\platform-tools\adb.exe'
+$phoneLink = Join-Path $PSScriptRoot 'phone-link.ps1'
+if (Test-Path $adb) {
+    Write-Host '[4/4] Linking the phone over USB...'
+    & powershell -ExecutionPolicy Bypass -File $phoneLink -Once
+    Start-Process powershell -ArgumentList '-NoExit', '-ExecutionPolicy', 'Bypass', '-File', $phoneLink
+    Write-Host '      A "Rinda phone link" window keeps the link alive. Leave it open while you test.'
+} else {
+    Write-Host '[4/4] adb not found; skipping the phone link.'
 }
 if (-not $SkipMl -and (Test-Path (Join-Path $root 'ml-service\.venv\Scripts\python.exe'))) {
     if (Wait-Http 'http://127.0.0.1:8000/health' 60) {

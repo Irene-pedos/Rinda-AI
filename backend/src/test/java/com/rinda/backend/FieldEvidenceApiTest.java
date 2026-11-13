@@ -32,12 +32,7 @@ class FieldEvidenceApiTest extends ApiTestBase {
     void farmerAgentAndPlot() throws Exception {
         farmer = farmerToken("+250788888881");
         agent = staffToken("+250788888882", "AGENT", cooperativeId);
-        Map<String, Object> plot = Map.of("name", "Valley field", "plantingDate", "2026-09-20",
-                "boundary", Map.of("type", "Polygon", "coordinates", List.of(SQUARE)));
-        String body = mvc.perform(post("/api/v1/plots").header("Authorization", "Bearer " + farmer)
-                        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(plot)))
-                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
-        plotId = mapper.readTree(body).get("id").asLong();
+        plotId = pendingPlot(farmer, "Valley field", "2026-09-20");
     }
 
     private ResultActions report(String token, Map<String, String> params, MockMultipartFile photo) throws Exception {
@@ -54,7 +49,7 @@ class FieldEvidenceApiTest extends ApiTestBase {
     }
 
     private long openClaim(String status) {
-        jdbc.update("UPDATE plots SET status = 'ACTIVE' WHERE id = ?", plotId);
+        jdbc.update("UPDATE plots SET status = 'ACTIVE', verification_level = 'FIELD_VERIFIED' WHERE id = ?", plotId);
         jdbc.update("INSERT INTO seasons (code, type) VALUES ('2026A', 'A')");
         long season = jdbc.queryForObject("SELECT id FROM seasons WHERE code = '2026A'", Long.class);
         jdbc.update("""
@@ -164,12 +159,13 @@ class FieldEvidenceApiTest extends ApiTestBase {
 
     @Test
     void agentVerifiesAPlotAndCanCorrectThePlantingDate() throws Exception {
-        mvc.perform(post("/api/v1/agent/plots/" + plotId + "/verify").header("Authorization", "Bearer " + agent)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(Map.of("decision", "ACTIVE",
-                                "confirmedPlantingDate", "2026-09-25"))))
+        Map<String, String> params = verifyAtPlot(plotId);
+        params.put("confirmedPlantingDate", "2026-09-25");
+        fieldCheck(agent, plotId, params, FAKE_JPEG)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("ACTIVE"))
+                .andExpect(jsonPath("$.verificationLevel").value("FIELD_VERIFIED"))
+                .andExpect(jsonPath("$.financialActionsAllowed").value(true))
                 .andExpect(jsonPath("$.plantingDate").value("2026-09-25"));
         assertThat(jdbc.queryForObject("SELECT verified_by IS NOT NULL FROM plots WHERE id = ?", Boolean.class, plotId))
                 .isTrue();
@@ -178,23 +174,17 @@ class FieldEvidenceApiTest extends ApiTestBase {
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM notifications WHERE code = 'PLOT_VERIFIED'", Long.class))
                 .isEqualTo(1);
 
-        mvc.perform(post("/api/v1/agent/plots/" + plotId + "/verify").header("Authorization", "Bearer " + agent)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(Map.of("decision", "REJECTED", "rejectionReason", "x"))))
+        fieldCheck(agent, plotId, Map.of("decision", "REJECTED", "rejectionReason", "x"), null)
                 .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("PLOT_NOT_PENDING"));
     }
 
     @Test
     void aRejectionNeedsAReasonForTheFarmer() throws Exception {
-        mvc.perform(post("/api/v1/agent/plots/" + plotId + "/verify").header("Authorization", "Bearer " + agent)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(Map.of("decision", "REJECTED"))))
+        fieldCheck(agent, plotId, Map.of("decision", "REJECTED"), null)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("REJECTION_REASON_REQUIRED"));
-        mvc.perform(post("/api/v1/agent/plots/" + plotId + "/verify").header("Authorization", "Bearer " + agent)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(Map.of("decision", "REJECTED",
-                                "rejectionReason", "The boundary includes the neighbour's field."))))
+        fieldCheck(agent, plotId, Map.of("decision", "REJECTED",
+                        "rejectionReason", "The boundary includes the neighbour's field."), null)
                 .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("REJECTED"));
         assertThat(jdbc.queryForObject("SELECT rejection_reason FROM plots WHERE id = ?", String.class, plotId))
                 .isEqualTo("The boundary includes the neighbour's field.");
@@ -203,10 +193,7 @@ class FieldEvidenceApiTest extends ApiTestBase {
     @Test
     void anAgentOfAnotherCooperativeCannotCheckThePlot() throws Exception {
         String outsider = staffToken("+250788888886", "AGENT", newCooperative("Other Cooperative"));
-        mvc.perform(post("/api/v1/agent/plots/" + plotId + "/verify").header("Authorization", "Bearer " + outsider)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(Map.of("decision", "ACTIVE"))))
-                .andExpect(status().isNotFound());
+        fieldCheck(outsider, plotId, verifyAtPlot(plotId), FAKE_JPEG).andExpect(status().isNotFound());
     }
 
     // ===== Field visits =====

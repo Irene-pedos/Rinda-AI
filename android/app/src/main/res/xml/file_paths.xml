@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the folder for field-check photos is shared with the camera app. -->
+<paths>
+    <cache-path
+        name="verify_photos"
+        path="verify_photos/" />
+</paths>

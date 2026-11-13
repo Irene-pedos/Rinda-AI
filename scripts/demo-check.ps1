@@ -70,6 +70,17 @@ Check 'Backend is up' {
     $h = Invoke-RestMethod ($Api -replace '/api/v1$', '/actuator/health')
     if ($h.status -ne 'UP') { "FAIL: status $($h.status)" } else { 'UP' }
 }
+# The phone check asks the backend from the phone itself, so "No connection to Rinda" shows up here first.
+$adbPath = Join-Path $env:LOCALAPPDATA 'Android\Sdk\platform-tools\adb.exe'
+if ((Test-Path $adbPath) -and (& $adbPath devices 2>$null | Select-String -Pattern "`tdevice$")) {
+    Check 'Phone over USB reaches the backend' {
+        $answer = & $adbPath shell "(printf 'GET /actuator/health HTTP/1.0\r\nHost: localhost\r\n\r\n'; sleep 2) | toybox nc 127.0.0.1 8080" 2>$null
+        if (($answer -join ' ') -match 'HTTP/1\.[01] 200') { 'linked' }
+        else { 'FAIL: no answer through the USB link. Run scripts\phone-link.ps1 -Once' }
+    }
+} else {
+    Info 'No phone connected by USB, so the phone link was not checked.'
+}
 if (-not (Test-Path $log)) {
     Fail "No backend log at $log. Start the backend with the dev profile (scripts\start-dev.ps1)."
     exit 1
@@ -118,10 +129,11 @@ if ($farmer1) {
     }
 }
 if ($farmer2) {
-    Check 'Farmer 2 has 1 plot waiting for the agent' {
+    # Demo plot 4 is unfinished on purpose: not walked yet, so no boundary and no satellite monitoring.
+    Check 'Farmer 2 has 1 unfinished plot with no boundary yet' {
         $p = Invoke-RestMethod "$Api/plots" -Headers $farmer2
-        $pending = @($p.items | Where-Object { $_.status -eq 'PENDING_VERIFICATION' }).Count
-        if ($pending -lt 1) { "FAIL: $pending pending" } else { "$pending pending" }
+        $draft = @($p.items | Where-Object { $_.status -eq 'DRAFT' -and $_.monitoring.state -eq 'NO_BOUNDARY' }).Count
+        if ($draft -lt 1) { "FAIL: $draft unfinished" } else { "$draft unfinished, monitoring NO_BOUNDARY" }
     }
 }
 Check 'No token gets 401' {

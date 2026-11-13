@@ -648,6 +648,7 @@
     <!-- Bottom Bar (Progress + Back + Next) -->
     <LinearLayout
         style="@style/Rinda.BottomBar"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 

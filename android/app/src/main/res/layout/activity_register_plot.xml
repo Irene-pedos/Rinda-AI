@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Register a plot in 3 steps (spec §9.4): 1 draw the field, 2 name + planting date, 3 check and send,
-    then a success screen that says what happens next ("Waiting for check").
+    Add a plot (docs/01-plot-verification.md). No drawing anywhere: the boundary comes only from the GPS walk.
+      1 UPI: type it, see the parcel the registry knows (a guide only; MOCK data is labelled Demo)
+      2 Details: name, planting date, relationship, declaration -> creates the plot (DRAFT)
+      3 Walk: stand at each corner and record the real GPS fix
+      4 E-title: the farmer's own e-title or portal screenshot, plus a lease or owner consent for non-owners
+      then a result screen with the level and every check.
     Only one step is visible at a time; Back / Next stay at the bottom.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -32,7 +36,7 @@
             android:id="@+id/stepProgress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="3"
+            android:max="4"
             android:progress="1"
             app:trackColor="@color/rinda_outline"
             app:trackCornerRadius="4dp"
@@ -59,132 +63,134 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <!-- ===== Step 1: draw ===== -->
-        <FrameLayout
-            android:id="@+id/stepDraw"
+        <!-- ===== Step 1: UPI ===== -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/stepUpi"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-
-            <org.osmdroid.views.MapView
-                android:id="@+id/mapView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:contentDescription="@string/cd_map" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="top"
-                android:layout_margin="@dimen/spacing_md"
-                app:cardElevation="@dimen/elevation_high"
-                app:strokeWidth="0dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="@dimen/spacing_md"
-                    android:paddingTop="@dimen/spacing_sm"
-                    android:paddingBottom="@dimen/spacing_sm">
-
-                    <ImageView
-                        style="@style/Widget.Rinda.IconBadge"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:padding="9dp"
-                        android:src="@drawable/ic_touch" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/spacing_md"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/draw_boundary_instruction"
-                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
-                            android:textColor="@color/rinda_text_primary" />
-
-                        <TextView
-                            android:id="@+id/tvPointCount"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_xxs"
-                            android:accessibilityLiveRegion="polite"
-                            android:textAppearance="@style/TextAppearance.Rinda.Label"
-                            android:textColor="@color/rinda_primary" />
-                    </LinearLayout>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnDrawHelp"
-                        style="@style/Widget.Rinda.IconButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:contentDescription="@string/cd_help"
-                        app:icon="@drawable/ic_help" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="@dimen/spacing_md">
+                android:orientation="vertical"
+                android:padding="@dimen/screen_padding">
 
                 <TextView
-                    android:id="@+id/tvEstimatedArea"
-                    style="@style/Widget.Rinda.Tag"
-                    android:layout_height="@dimen/min_touch_target"
-                    android:backgroundTint="@color/rinda_surface"
-                    android:drawablePadding="@dimen/spacing_xs"
-                    android:elevation="@dimen/elevation_low"
-                    android:gravity="center_vertical"
-                    android:paddingStart="@dimen/spacing_md"
-                    android:paddingEnd="@dimen/spacing_md"
-                    android:textAppearance="@style/TextAppearance.Rinda.Label"
-                    android:textColor="@color/rinda_secondary"
-                    app:drawableStartCompat="@drawable/ic_area"
-                    app:drawableTint="@color/rinda_secondary" />
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reg_upi_intro"
+                    android:textAppearance="@style/TextAppearance.Rinda.Body" />
 
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilUpi"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_lg"
+                    android:hint="@string/reg_upi_label"
+                    app:helperText="@string/reg_upi_helper"
+                    app:helperTextEnabled="true"
+                    app:startIconDrawable="@drawable/ic_map_pin">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etUpi"
+                        style="@style/Rinda.InputText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:digits="0123456789/"
+                        android:imeOptions="actionSearch"
+                        android:inputType="phone"
+                        android:maxLength="30" />
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnUndoPoint"
+                    android:id="@+id/btnLookup"
                     style="@style/Widget.Rinda.Button.Tonal"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/spacing_sm"
-                    android:elevation="@dimen/elevation_low"
-                    android:paddingStart="@dimen/spacing_base"
-                    android:paddingEnd="@dimen/spacing_base"
-                    android:text="@string/draw_undo"
-                    app:backgroundTint="@color/rinda_surface"
-                    app:icon="@drawable/ic_undo" />
+                    android:layout_marginTop="@dimen/spacing_md"
+                    android:text="@string/reg_btn_lookup"
+                    app:icon="@drawable/ic_map_pin" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnClearPoints"
-                    style="@style/Widget.Rinda.Button.Tonal"
-                    android:layout_width="wrap_content"
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardParcel"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:elevation="@dimen/elevation_low"
-                    android:paddingStart="@dimen/spacing_base"
-                    android:paddingEnd="@dimen/spacing_base"
-                    android:text="@string/draw_clear"
-                    android:textColor="@color/rinda_error"
-                    app:backgroundTint="@color/rinda_surface"
-                    app:icon="@drawable/ic_delete"
-                    app:iconTint="@color/rinda_error" />
+                    android:layout_marginTop="@dimen/card_gap"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/card_padding">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:accessibilityHeading="true"
+                                android:text="@string/reg_parcel_title"
+                                android:textAppearance="@style/TextAppearance.Rinda.Subtitle" />
+
+                            <TextView
+                                android:id="@+id/tvParcelDemo"
+                                style="@style/Widget.Rinda.Tag.Demo"
+                                android:text="@string/reg_parcel_demo"
+                                android:visibility="gone" />
+                        </LinearLayout>
+
+                        <org.osmdroid.views.MapView
+                            android:id="@+id/mapParcel"
+                            android:layout_width="match_parent"
+                            android:layout_height="220dp"
+                            android:layout_marginTop="@dimen/spacing_md"
+                            android:contentDescription="@string/cd_map"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/tvParcelArea"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_md"
+                            android:textAppearance="@style/TextAppearance.Rinda.Subtitle"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/tvParcelLocation"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/tvParcelLandUse"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/tvParcelNotice"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_md"
+                            android:accessibilityLiveRegion="polite"
+                            android:drawablePadding="@dimen/spacing_sm"
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                            app:drawableStartCompat="@drawable/ic_info"
+                            app:drawableTint="@color/rinda_primary" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
-        </FrameLayout>
+        </androidx.core.widget.NestedScrollView>
 
         <!-- ===== Step 2: details ===== -->
         <androidx.core.widget.NestedScrollView
@@ -291,12 +297,254 @@
                             app:tint="@color/rinda_text_tertiary" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/section_gap"
+                    android:accessibilityHeading="true"
+                    android:text="@string/reg_relationship_title"
+                    android:textAppearance="@style/TextAppearance.Rinda.Section" />
+
+                <RadioGroup
+                    android:id="@+id/rgRelationship"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm">
+
+                    <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/rbOwner"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:text="@string/reg_relationship_owner" />
+
+                    <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/rbFamily"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:text="@string/reg_relationship_family" />
+
+                    <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/rbTenant"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:text="@string/reg_relationship_tenant" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/tvRelationshipNote"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reg_relationship_non_owner_note"
+                    android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tvRelationshipError"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reg_relationship_required"
+                    android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                    android:textColor="@color/rinda_error"
+                    android:visibility="gone" />
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Rinda.Card.Tinted"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_lg">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_md">
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:id="@+id/cbDeclaration"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="@dimen/min_touch_target"
+                            android:text="@string/reg_declaration" />
+
+                        <TextView
+                            android:id="@+id/tvDeclarationError"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/reg_declaration_required"
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                            android:textColor="@color/rinda_error"
+                            android:visibility="gone" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 
-        <!-- ===== Step 3: review ===== -->
+        <!-- ===== Step 3: GPS walk ===== -->
+        <FrameLayout
+            android:id="@+id/stepWalk"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <org.osmdroid.views.MapView
+                android:id="@+id/mapWalk"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/cd_map" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:layout_margin="@dimen/spacing_md"
+                app:cardElevation="@dimen/elevation_high"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="@dimen/spacing_md"
+                    android:paddingTop="@dimen/spacing_sm"
+                    android:paddingBottom="@dimen/spacing_sm">
+
+                    <ImageView
+                        style="@style/Widget.Rinda.IconBadge"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:padding="9dp"
+                        android:src="@drawable/ic_map_pin" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_md"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/reg_walk_instruction"
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                            android:textColor="@color/rinda_text_primary" />
+
+                        <TextView
+                            android:id="@+id/tvGpsStatus"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xxs"
+                            android:accessibilityLiveRegion="polite"
+                            android:textAppearance="@style/TextAppearance.Rinda.Label" />
+
+                        <TextView
+                            android:id="@+id/tvCornerCount"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:accessibilityLiveRegion="polite"
+                            android:textAppearance="@style/TextAppearance.Rinda.Label"
+                            android:textColor="@color/rinda_primary" />
+
+                        <TextView
+                            android:id="@+id/tvMockWarning"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/reg_walk_mock_warning"
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                            android:textColor="@color/rinda_error"
+                            android:visibility="gone" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnWalkHelp"
+                        style="@style/Widget.Rinda.IconButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/cd_help"
+                        app:icon="@drawable/ic_help" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_md">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvWalkArea"
+                        style="@style/Widget.Rinda.Tag"
+                        android:layout_height="@dimen/min_touch_target"
+                        android:backgroundTint="@color/rinda_surface"
+                        android:drawablePadding="@dimen/spacing_xs"
+                        android:elevation="@dimen/elevation_low"
+                        android:gravity="center_vertical"
+                        android:paddingStart="@dimen/spacing_md"
+                        android:paddingEnd="@dimen/spacing_md"
+                        android:textAppearance="@style/TextAppearance.Rinda.Label"
+                        android:textColor="@color/rinda_secondary"
+                        app:drawableStartCompat="@drawable/ic_area"
+                        app:drawableTint="@color/rinda_secondary" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnUndoCorner"
+                        style="@style/Widget.Rinda.Button.Tonal"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/spacing_sm"
+                        android:elevation="@dimen/elevation_low"
+                        android:text="@string/draw_undo"
+                        app:backgroundTint="@color/rinda_surface"
+                        app:icon="@drawable/ic_undo" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRestartWalk"
+                        style="@style/Widget.Rinda.Button.Tonal"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:elevation="@dimen/elevation_low"
+                        android:text="@string/draw_clear"
+                        android:textColor="@color/rinda_error"
+                        app:backgroundTint="@color/rinda_surface"
+                        app:icon="@drawable/ic_delete"
+                        app:iconTint="@color/rinda_error" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnMarkCorner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:elevation="@dimen/elevation_low"
+                    android:text="@string/reg_walk_mark_corner"
+                    app:icon="@drawable/ic_map_pin" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <!-- ===== Step 4: e-title ===== -->
         <androidx.core.widget.NestedScrollView
-            android:id="@+id/stepReview"
+            android:id="@+id/stepDocument"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone">
@@ -307,90 +555,175 @@
                 android:orientation="vertical"
                 android:padding="@dimen/screen_padding">
 
-                <com.google.android.material.card.MaterialCardView
+                <TextView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:text="@string/reg_document_intro"
+                    android:textAppearance="@style/TextAppearance.Rinda.Body" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_lg"
+                    android:accessibilityHeading="true"
+                    android:text="@string/reg_document_type_title"
+                    android:textAppearance="@style/TextAppearance.Rinda.Section" />
+
+                <RadioGroup
+                    android:id="@+id/rgDocumentType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:checkedButton="@+id/rbETitle">
+
+                    <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/rbETitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:text="@string/reg_document_etitle" />
+
+                    <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/rbScreenshot"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="@dimen/min_touch_target"
+                        android:text="@string/reg_document_screenshot" />
+                </RadioGroup>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPickDocument"
+                    style="@style/Widget.Rinda.Button.Tonal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:text="@string/reg_document_pick"
+                    app:icon="@drawable/ic_camera" />
+
+                <TextView
+                    android:id="@+id/tvDocumentFile"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:accessibilityLiveRegion="polite"
+                    android:text="@string/reg_document_none"
+                    android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilDocumentArea"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_lg"
+                    android:hint="@string/reg_document_area_label"
+                    app:helperText="@string/reg_document_area_helper"
+                    app:helperTextEnabled="true"
+                    app:startIconDrawable="@drawable/ic_area">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etDocumentArea"
+                        style="@style/Rinda.InputText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionDone"
+                        android:inputType="numberDecimal"
+                        android:maxLength="12" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Non-owners only: a lease or the owner's permission, reviewed by a person. -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardTenure"
+                    style="@style/Widget.Rinda.Card.Tinted"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/section_gap"
+                    android:visibility="gone">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:paddingStart="@dimen/card_padding"
-                        android:paddingEnd="@dimen/card_padding"
-                        android:paddingTop="@dimen/spacing_xs"
-                        android:paddingBottom="@dimen/spacing_xs">
+                        android:padding="@dimen/card_padding">
 
-                        <include
-                            android:id="@+id/rowName"
-                            layout="@layout/view_detail_row" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:accessibilityHeading="true"
+                            android:text="@string/reg_tenure_title"
+                            android:textAppearance="@style/TextAppearance.Rinda.Subtitle" />
 
-                        <View style="@style/Rinda.Divider" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:text="@string/reg_tenure_body"
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
 
-                        <include
-                            android:id="@+id/rowArea"
-                            layout="@layout/view_detail_row" />
+                        <RadioGroup
+                            android:id="@+id/rgTenureType"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:checkedButton="@+id/rbLease">
 
-                        <View style="@style/Rinda.Divider" />
+                            <com.google.android.material.radiobutton.MaterialRadioButton
+                                android:id="@+id/rbLease"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:minHeight="@dimen/min_touch_target"
+                                android:text="@string/reg_tenure_lease" />
 
-                        <include
-                            android:id="@+id/rowPlanting"
-                            layout="@layout/view_detail_row" />
+                            <com.google.android.material.radiobutton.MaterialRadioButton
+                                android:id="@+id/rbOwnerConsent"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:minHeight="@dimen/min_touch_target"
+                                android:text="@string/reg_tenure_consent" />
+                        </RadioGroup>
 
-                        <View style="@style/Rinda.Divider" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnPickTenure"
+                            style="@style/Widget.Rinda.Button.Outlined"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/reg_document_pick"
+                            app:icon="@drawable/ic_camera" />
 
-                        <include
-                            android:id="@+id/rowCrop"
-                            layout="@layout/view_detail_row" />
-
-                        <View style="@style/Rinda.Divider" />
-
-                        <include
-                            android:id="@+id/rowCorners"
-                            layout="@layout/view_detail_row" />
+                        <TextView
+                            android:id="@+id/tvTenureFile"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:accessibilityLiveRegion="polite"
+                            android:text="@string/reg_document_none"
+                            android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
                     </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    style="@style/Widget.Rinda.Card.Tinted"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/card_gap">
-
-                    <include
-                        android:id="@+id/nextInfo"
-                        layout="@layout/view_icon_point"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="@dimen/card_padding" />
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 
-        <!-- ===== Success ===== -->
+        <!-- ===== Result ===== -->
         <androidx.core.widget.NestedScrollView
-            android:id="@+id/stepSuccess"
+            android:id="@+id/stepResult"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fillViewport="true"
             android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
+                android:gravity="center_horizontal"
                 android:orientation="vertical"
-                android:padding="@dimen/spacing_xxl">
+                android:padding="@dimen/screen_padding">
 
                 <FrameLayout
-                    android:id="@+id/successBadge"
-                    android:layout_width="120dp"
-                    android:layout_height="120dp"
+                    android:id="@+id/resultBadge"
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:layout_marginTop="@dimen/spacing_lg"
                     android:background="@drawable/bg_circle"
                     android:backgroundTint="@color/status_healthy_bg">
 
                     <ImageView
-                        android:layout_width="64dp"
-                        android:layout_height="64dp"
+                        android:layout_width="52dp"
+                        android:layout_height="52dp"
                         android:layout_gravity="center"
                         android:importantForAccessibility="no"
                         android:src="@drawable/ic_status_healthy"
@@ -400,14 +733,14 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_xl"
+                    android:layout_marginTop="@dimen/spacing_lg"
                     android:accessibilityHeading="true"
                     android:gravity="center"
-                    android:text="@string/register_success_title"
+                    android:text="@string/reg_result_title"
                     android:textAppearance="@style/TextAppearance.Rinda.Headline" />
 
                 <TextView
-                    android:id="@+id/tvSuccessBody"
+                    android:id="@+id/tvResultBody"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_sm"
@@ -415,16 +748,56 @@
                     android:textAppearance="@style/TextAppearance.Rinda.Body" />
 
                 <TextView
-                    android:id="@+id/tvSuccessStatus"
+                    android:id="@+id/tvResultStatus"
                     style="@style/Widget.Rinda.StatusPill"
                     android:layout_marginTop="@dimen/spacing_base" />
+
+                <TextView
+                    android:id="@+id/tvResultStatusMeaning"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:gravity="center"
+                    android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
+
+                <TextView
+                    android:id="@+id/tvResultLevel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_md"
+                    android:gravity="center"
+                    android:textAppearance="@style/TextAppearance.Rinda.Subtitle" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/section_gap"
+                    android:accessibilityHeading="true"
+                    android:text="@string/reg_result_checks"
+                    android:textAppearance="@style/TextAppearance.Rinda.Section" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm">
+
+                    <LinearLayout
+                        android:id="@+id/llChecks"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingStart="@dimen/card_padding"
+                        android:paddingTop="@dimen/spacing_xs"
+                        android:paddingEnd="@dimen/card_padding"
+                        android:paddingBottom="@dimen/spacing_xs" />
+                </com.google.android.material.card.MaterialCardView>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_base"
                     android:gravity="center"
-                    android:text="@string/register_success_next"
+                    android:text="@string/reg_result_next"
                     android:textAppearance="@style/TextAppearance.Rinda.BodySmall" />
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>

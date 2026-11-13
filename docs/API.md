@@ -222,76 +222,212 @@ Any role, with the same visibility as the list. Returns **200**:
 
 ```json
 {
-  "id": 9001,
-  "farmerId": 9001,
-  "name": "Demo plot 1",
+  "id": 42,
+  "farmerId": 7,
+  "upi": "0/00/00/00/42",
+  "name": "Hillside",
   "crop": "MAIZE",
-  "boundary": {
-    "type": "Polygon",
-    "coordinates": [[[30.1, -1.95], [30.102, -1.95], [30.102, -1.948], [30.1, -1.948], [30.1, -1.95]]]
-  },
+  "boundary": { "type": "Polygon", "coordinates": [[[30.1, -1.95], [30.102, -1.95], [30.102, -1.948], [30.1, -1.948], [30.1, -1.95]]] },
   "areaHa": 4.9209,
-  "plantingDate": null,
-  "status": "ACTIVE",
-  "dataStatus": "TO_CONFIRM",
-  "isDemo": true,
-  "createdAt": "2026-11-02T13:34:07.608495Z",
-  "updatedAt": "2026-11-02T13:34:07.608495Z"
+  "walkedAreaM2": 49209.0,
+  "documentAreaM2": 49000.0,
+  "areaDiffPct": 0.43,
+  "plantedArea": null,
+  "plantingDate": "2026-09-20",
+  "relationshipToPlot": "OWNER",
+  "status": "PENDING_VERIFICATION",
+  "verificationLevel": "DOCUMENT_SUPPORTED",
+  "financialActionsAllowed": false,
+  "flags": [],
+  "checks": [
+    { "check": "UPI_FORMAT", "result": "PASSED", "note": "Five numeric parts. The exact format is not confirmed yet." },
+    { "check": "ADMIN_AREA", "result": "NOT_RUN", "note": "Switched off until a cell boundary file with a confirmed licence is available." },
+    { "check": "FIELD_VERIFICATION", "result": "PENDING", "note": "Needed before any payout. Ownership is not proven until then." }
+  ],
+  "monitoring": { "state": "DATA_AVAILABLE", "latestImageDate": "2026-10-28", "seasonFlag": "CONSISTENT" },
+  "dataStatus": "CONFIRMED",
+  "isDemo": false,
+  "createdAt": "2026-11-11T08:00:00.000000Z",
+  "updatedAt": "2026-11-11T08:05:00.000000Z"
 }
 ```
 
-- `farmerId` is the farmer's user `id`.
-- `plantingDate` is null only on seeded placeholder plots, so handle null.
-- `status` is `PENDING_VERIFICATION`, `ACTIVE` or `REJECTED`. `ARCHIVED` plots are never returned.
-- This `status` is the verification state. It isn't crop health, which will come from `GET /plots/{id}/status`.
+- `boundary`, `areaHa` and `walkedAreaM2` are null until the plot is walked. **There is no way to draw or send a boundary.**
+- `documentAreaM2` is the area the farmer **typed** from their document. Nothing is read from the image, so the agent compares it with the image at the field check.
+- `plantedArea` is null: for now the whole walked boundary counts as planted, so the insured area can overstate what is really planted.
+- `upi` and `relationshipToPlot` are null only on plots registered before UPIs were collected. `plantingDate` is null only on seeded placeholder plots.
+- `checks` lists every registration check with `result` `PASSED`, `FLAGGED`, `REVIEWED` (a person resolved a flag), `PENDING` or `NOT_RUN`. Show `NOT_RUN` checks; don't hide them.
+- `flags` holds the review flags, open and resolved (`resolvedAt` null means open). `type` is one of `AREA_MISMATCH`, `AREA_UNCHECKED`, `GPS_ACCURACY_UNCHECKED`, `MOCK_LOCATION`, `OVERLAP`, `DUPLICATE_UPI`, `NON_OWNER`, `LEGACY_DRAWN_BOUNDARY`, `OUTSIDE_ADMIN_AREA` (not raised while that check is off), `SATELLITE_INCONSISTENT`, `OTHER`. `relatedPlotId` is the other plot of an overlap or shared UPI; never show the other farmer.
+- `status` is the registration state, not crop health (that is `GET /plots/{id}/status`):
+
+| `status` | Meaning |
+|---|---|
+| `DRAFT` | Registration not finished: walk the plot and upload the e-title or portal screenshot |
+| `PENDING_VERIFICATION` | Everything passed; waiting for the agent's field check |
+| `FLAGGED` | A check needs a person's review (open flag) |
+| `DISPUTED` | Overlaps another plot or shares its UPI. Every financial action is paused until a verifier resolves it. |
+| `ACTIVE` | Checked in the field (`FIELD_VERIFIED` or higher) |
+| `REJECTED` | The agent did not accept the plot. Walking it again starts over. |
+
+- `verificationLevel` must be shown next to every plot, in the app and on the dashboard:
+
+| `verificationLevel` | Reached by | Allowed use |
+|---|---|---|
+| `SELF_DECLARED` | UPI typed only | Demo only |
+| `DOCUMENT_SUPPORTED` | UPI + e-title or portal screenshot + GPS walk + automatic checks passed, no open flag | Onboarding. **Not proof of ownership.** |
+| `FIELD_VERIFIED` | The above + the agent's check at the plot with a geotagged photo | Minimum for payouts and cover |
+| `NLA_VERIFIED` | Matched against NLA data. Not reachable yet. | Production |
+
+- `financialActionsAllowed` is true only at `FIELD_VERIFIED` or higher with `status` `ACTIVE`. Otherwise payouts are refused (409 `PLOT_NOT_FIELD_VERIFIED` or `PLOT_NOT_ACTIVE`), and so is cover (409 `PLOT_NOT_ACTIVE`).
 
 A plot that doesn't exist and a plot this user can't see both return 404 `PLOT_NOT_FOUND`.
 
-### `POST /plots`
+### Registering a plot
 
-`FARMER` only. Registers a plot, which starts as `PENDING_VERIFICATION`.
+Free drawing is gone. The steps are: **`GET /land-registry/parcels`** (optional: look up the UPI and show the parcel), **`POST /plots`** (details), **`POST /plots/{id}/walk`** (the GPS boundary walk at the plot) and **`POST /plots/{id}/documents`** (the farmer's own e-title or portal screenshot). The last two can happen in either order. Rinda never contacts NLA, Irembo, Amakuru or the Land Dashboard: the farmer supplies the document with their own access.
+
+The automatic checks raise review flags; none of them rejects a plot. While a threshold is not supplied, its check sends the plot to a person instead of being skipped (`AREA_UNCHECKED`, `GPS_ACCURACY_UNCHECKED`). The thresholds are `TO_CONFIRM`, so **don't copy them into the app**: show `detail`.
+
+### `GET /land-registry/parcels?upi=`
+
+Any logged-in role. The first screen of "Add a plot": the farmer types the UPI and sees what the registry provider knows about that parcel (shape, area, land use, location), before the walk. Returns **200**:
 
 ```json
 {
-  "name": "Hillside",
-  "plantingDate": "2026-09-20",
-  "boundary": {
-    "type": "Polygon",
-    "coordinates": [[[30.12, -1.95], [30.122, -1.95], [30.122, -1.948], [30.12, -1.948], [30.12, -1.95]]]
+  "upi": "0/00/00/00/1002",
+  "found": true,
+  "source": "MOCK",
+  "isMock": true,
+  "notice": "Demo data, not official land records. Your plot's boundary still comes from walking its edge.",
+  "parcel": {
+    "boundary": { "type": "Polygon", "coordinates": [[[29.742, -2.596], [29.7432, -2.5961], [29.7435, -2.595], [29.7426, -2.5944], [29.7419, -2.595], [29.742, -2.596]]] },
+    "areaM2": 24039.4,
+    "areaHa": 2.4039,
+    "landUse": "Agriculture (mock)",
+    "location": "Demo province, Demo district, Demo sector, Demo cell"
   }
 }
 ```
 
-- `name` is required, up to 80 characters.
-- `plantingDate` is required, and it can't be in the future.
-- `boundary` has one ring of 4 to 500 `[longitude, latitude]` points, and the last point must repeat the first. Holes aren't allowed.
-- `crop` is optional. Only `MAIZE` is accepted, so don't send it and don't build a crop picker.
-
-The server calculates `areaHa`. Don't send it. Returns **201** with the plot.
+- **The parcel's shape is a reference, never the plot's boundary.** Show it as "this is roughly your parcel", then send the farmer to walk the edge (`POST /plots/{id}/walk`). Nothing here can be sent back as a boundary.
+- `found: false` is normal, not an error: register as usual with the walk and the e-title. `notice` says what to tell the farmer; `parcel` is null.
+- **`isMock: true` is invented demo data: always label it "Demo, not official land records".** The `MOCK` provider (dev profile only) knows only the fake zero-code UPIs in `backend/src/main/resources/mock-registry/parcels.json`: `0/00/00/00/9001` to `9004` (the demo plots) and `0/00/00/00/1001` to `1003`. A real UPI is never matched and never given an invented shape.
+- On the `DOCUMENT` provider (production for now) `found` is always false: Rinda has no parcel data until an official NLA agreement.
+- The owner's name is never returned, so a UPI can't be used to find out who owns a parcel. A lookup never changes the plot's verification level.
 
 | Status | Code | When |
 |---|---|---|
-| 400 | `PLOT_GEOMETRY_INVALID` | Not a polygon, not closed, crosses itself, has holes, or has too few or too many points |
-| 400 | `PLOT_OUTSIDE_RWANDA` | A point is outside Rwanda's bounding box |
-| 400 | `PLOT_TOO_SMALL` | Below the minimum area |
-| 400 | `PLOT_TOO_LARGE` | Above the maximum area |
+| 400 | `UPI_INVALID` | Not five numeric parts, for example `1/01/01/01/0001` |
+
+### `POST /plots`
+
+`FARMER` only. Starts a registration (`DRAFT`, `SELF_DECLARED`):
+
+```json
+{
+  "name": "Hillside",
+  "upi": "1/01/01/01/0001",
+  "plantingDate": "2026-09-20",
+  "relationshipToPlot": "OWNER",
+  "declarationAccepted": true
+}
+```
+
+- `name` is required, up to 80 characters. `plantingDate` is required and can't be in the future.
+- `upi` is typed from the farmer's e-title. It is checked loosely (five numeric parts separated by `/`) because the exact format is not confirmed.
+- `relationshipToPlot` is `OWNER`, `FAMILY_MEMBER` or `TENANT`. Anything but `OWNER` raises a `NON_OWNER` flag: the farmer uploads a `LEASE` or `OWNER_CONSENT` document and a person reviews it.
+- `declarationAccepted` must be `true`: the farmer confirms they have the right to farm the plot and that a false claim can cancel cover.
+- `crop` is optional. Only `MAIZE` is accepted, so don't send it and don't build a crop picker.
+- **Don't send `boundary`.** It is refused.
+
+Returns **201** with the plot. A second plot with the same UPI makes both `DISPUTED` (`DUPLICATE_UPI`), and both farmers get `PLOT_DISPUTED`.
+
+| Status | Code | When |
+|---|---|---|
+| 400 | `BOUNDARY_NOT_ACCEPTED` | The body has a `boundary` |
+| 400 | `UPI_INVALID` | Not five numeric parts |
+| 400 | `DECLARATION_REQUIRED` | `declarationAccepted` is not `true` |
 | 400 | `PLANTING_DATE_INVALID` | In the future, or outside a confirmed season |
 | 400 | `CROP_NOT_SUPPORTED` | `crop` is anything other than `MAIZE` |
 
-The area limits and season dates are `TO_CONFIRM` and can change, so **don't copy them into the app**. Let the server reject the plot and use `detail` to show the limit. Today the minimum is 0.1 ha, there's no maximum, and season dates aren't enforced because none are confirmed. Overlap checks (§5.2) aren't built yet.
+### `POST /plots/{id}/walk`
+
+`FARMER`, own plot. The farmer walks the edge of the plot and the app records a GPS fix at each corner, or along the edge. The server builds the polygon from the points, in order, and closes it.
+
+```json
+{
+  "points": [
+    { "lat": -1.95, "lng": 30.1, "accuracyM": 4.0, "recordedAt": "2026-11-11T07:00:00Z", "mockLocation": false },
+    { "lat": -1.95, "lng": 30.102, "accuracyM": 3.5, "recordedAt": "2026-11-11T07:02:10Z", "mockLocation": false },
+    { "lat": -1.948, "lng": 30.102, "accuracyM": 5.0, "recordedAt": "2026-11-11T07:04:30Z", "mockLocation": false }
+  ]
+}
+```
+
+- 3 to 499 points, each later than the one before. Don't repeat the first point at the end.
+- `accuracyM` is the fix's horizontal accuracy from Android. `mockLocation` is `Location.isMock()` (`isFromMockProvider()` before API 31). **Never send a default or remembered location.**
+- Walking again replaces the boundary, and every earlier walk is kept as a record. A walk is refused after the field check and while the plot is disputed.
+
+Returns **200** with the plot. A walk checks the area limits, overlap with other plots in Rinda, the walked area against the document area, GPS accuracy and mock location. Above the overlap limit, both plots become `DISPUTED`; shared edges don't count as overlap. Walk points are personal data: don't log them on the phone.
+
+| Status | Code | When |
+|---|---|---|
+| 400 | `WALK_INVALID` | Points out of order, or fewer than 3 different corners |
+| 400 | `WALK_ACCURACY_POOR` | A point is less accurate than the limit. Ask the farmer to wait for a better signal and walk again. |
+| 400 | `PLOT_GEOMETRY_INVALID` | The walk crosses itself |
+| 400 | `PLOT_OUTSIDE_RWANDA` | A point is outside Rwanda's bounding box |
+| 400 | `PLOT_TOO_SMALL`, `PLOT_TOO_LARGE` | Outside the area limits |
+| 409 | `PLOT_LOCKED` | Already checked in the field |
+| 409 | `PLOT_DISPUTED` | A verifier must resolve the dispute first |
+
+**Honest limit:** the server checks the points but can't prove they were walked, and a walk proves presence, not ownership. That is why payouts need the field check.
+
+### `POST /plots/{id}/documents`
+
+`FARMER`, own plot. Multipart form with these fields:
+
+- `type`: `E_TITLE`, `PORTAL_SCREENSHOT`, `LEASE` or `OWNER_CONSENT`.
+- `file`: JPEG, PNG or PDF, up to 5 MB.
+- `documentAreaM2`: required for `E_TITLE` and `PORTAL_SCREENSHOT`. The area shown on the document, in m², typed by the farmer.
+
+Returns **201**:
+
+```json
+{ "id": 3, "plotId": 42, "type": "E_TITLE", "contentType": "application/pdf", "typedAreaM2": 49000.0,
+  "uploadedAt": "2026-11-11T08:00:00Z", "isDemo": false }
+```
+
+| Status | Code | When |
+|---|---|---|
+| 400 | `DOCUMENT_REQUIRED` | No file |
+| 400 | `DOCUMENT_INVALID` | Not a JPEG, PNG or PDF (checked by content, not by file name) |
+| 400 | `DOCUMENT_AREA_REQUIRED` | E-title or screenshot without a positive `documentAreaM2` |
+| 409 | `PLOT_LOCKED` | E-title or screenshot after the field check |
+
+### `GET /plots/{id}/documents`
+
+Same visibility as the plot. Returns **200** with a list of documents (details only).
+
+### `GET /plots/{id}/documents/{documentId}/file`
+
+Same visibility as the plot. Returns the file, marked not to be cached, or 404 `DOCUMENT_NOT_FOUND` if it isn't this plot's.
+
+### `POST /plots/{id}/flags/{flagId}/resolve`
+
+`AGENT` (the farmer's cooperative), `OFFICER` or `ADMIN`, never the plot's farmer. Body: `{ "note": "Checked the e-title with the farmer." }` (required, max 1000). A person resolves a flag after reviewing it; nothing resolves one automatically. Returns **200** with the plot, with its status and level recomputed. `audit_log` records `PLOT_FLAG_RESOLVED`.
+
+Each side of an overlap has its own flag, so resolve both if both plots are legitimate. To refuse a plot instead, reject it with `POST /agent/plots/{id}/verify`.
+
+| Status | Code | When |
+|---|---|---|
+| 404 | `FLAG_NOT_FOUND` | Not a flag of this plot |
+| 409 | `FLAG_ALREADY_RESOLVED` | Already resolved |
+| 409 | `FLAG_NEEDS_WALK` | `LEGACY_DRAWN_BOUNDARY`: only walking the plot replaces a drawn boundary |
+| 409 | `TENURE_PROOF_MISSING` | `NON_OWNER` with no `LEASE` or `OWNER_CONSENT` uploaded |
 
 ### `PUT /plots/{id}`
 
-`FARMER`, own plots only. Always send the full body, as for `POST /plots`. Returns **200** with the plot.
-
-| Plot status | What can change |
-|---|---|
-| `ACTIVE` | `name` only. Changing the boundary or date returns 409 `PLOT_LOCKED`. Send them unchanged. |
-| `PENDING_VERIFICATION`, `REJECTED` | Everything. Changing the boundary or date sets the plot to `PENDING_VERIFICATION`. |
-
-Validation errors are the same as `POST /plots`, plus `PLOT_NOT_FOUND`.
-
-**Known limit:** seeded demo plots can't be edited. Their `plantingDate` is null, but `PUT` requires one, so the request fails with `VALIDATION_FAILED` or `PLOT_LOCKED`. Hide the edit action when `plantingDate` is null. This goes away when real plot details replace the placeholders.
+`FARMER`, own plots only. Body: `name` and `plantingDate`, both required. Returns **200** with the plot. After the field check only `name` can change: a new date returns 409 `PLOT_LOCKED`. A `boundary` is refused with 400 `BOUNDARY_NOT_ACCEPTED`; walk the plot again instead.
 
 ### `DELETE /plots/{id}`
 
@@ -300,6 +436,68 @@ Validation errors are the same as `POST /plots`, plus `PLOT_NOT_FOUND`.
 | Status | Code | When |
 |---|---|---|
 | 409 | `PLOT_DELETE_DEFERRED` | The plot has active cover or an open claim. Explain that it can be deleted after the season or claim closes (§2.2 #11). |
+
+### Satellite monitoring
+
+Monitoring starts only once a plot has a walked boundary (`docs/02-satellite-monitoring.md`). Saving the walk queues a **backfill** from the planting date to today, so a new plot shows its season so far. A **weekly refresh** (Mondays 04:00 Kigali time) then fetches whatever new images exist. A new walk starts a fresh series; an earlier planting date starts a new backfill.
+
+Satellite data is **a review flag, never proof of crop**, and it is **never live**: always show `latestImageDate`. Real plots get Earth Engine data; demo plots only the simulated sample, labelled Demo. Nothing falls back to the sample.
+
+### `GET /plots/{id}/monitoring`
+
+Any role, with the same visibility as `GET /plots/{id}` (404 `PLOT_NOT_FOUND` otherwise). Returns **200**:
+
+```json
+{
+  "plotId": 42,
+  "state": "DATA_AVAILABLE",
+  "message": "Satellite images up to the date shown. Not live: updated weekly.",
+  "verificationLevel": "DOCUMENT_SUPPORTED",
+  "verificationNote": "This plot is not verified yet (DOCUMENT_SUPPORTED). The satellite curve checks what was declared; crop health and claims start after the agent's field check.",
+  "healthStatusAvailable": false,
+  "isDemo": false,
+  "dataOrigin": "GEE",
+  "latestImageDate": "2026-10-28",
+  "monitoredSince": "2026-09-20",
+  "lastFetchedAt": "2026-11-09T02:04:11.000000Z",
+  "refreshing": false,
+  "updateFrequency": "WEEKLY",
+  "minClearPixels": 20,
+  "seasonCheck": {
+    "flag": "CONSISTENT", "reason": "CONSISTENT_SO_FAR", "confidence": "LOW", "checkDate": "2026-11-09",
+    "plantingDate": "2026-09-20", "signals": ["BARE_START_SEEN", "GROWTH_SEEN"],
+    "dataQualityNote": "6 clear image(s) since planting, latest 2026-10-28, median 31 clear pixels each (minimum 20). A review flag, not proof of crop: ...",
+    "imagesUsed": 6, "pixelsUsed": 29, "latestImageDate": "2026-10-28", "modelVersion": "0.6.0", "dataOrigin": "GEE"
+  },
+  "observations": [
+    { "date": "2026-09-25", "source": "S2", "ndviMedian": 0.2104, "pixelCount": 31, "cloudFraction": 0.0313, "usable": true },
+    { "date": "2026-09-30", "source": "S2", "ndviMedian": 0.4012, "pixelCount": 4, "cloudFraction": 0.875, "usable": false }
+  ],
+  "rainfall": [ { "date": "2026-09-20", "rainMm": 3.21, "source": "CHIRPS" } ],
+  "latestJob": { "id": 7, "kind": "REFRESH", "status": "DONE", "fetchFrom": "2026-10-30", "fetchTo": "2026-11-09",
+                 "errorCode": null, "createdAt": "2026-11-09T02:00:00.000000Z", "finishedAt": "2026-11-09T02:04:11.000000Z" },
+  "notes": ["Satellite data is a review flag, never proof of crop: satellites can't tell maize from similar crops.",
+            "Not live: Rinda checks for new images once a week, and cloudy weeks have none. The date of the latest image is always shown."]
+}
+```
+
+`state` drives the screen (`docs/02-satellite-monitoring.md`, "UI states"). The app shows "Register your plot to start monitoring" itself when the farmer has no plot.
+
+| `state` | Show |
+|---|---|
+| `NO_BOUNDARY` | "Walk the edge of your plot to start satellite monitoring", with a button to the walk. No chart. |
+| `FETCHING` | "Fetching satellite data". The first fetch is queued or running. |
+| `FETCH_FAILED` | The first fetch failed (for example Earth Engine down). Rinda tries again at the next weekly update. |
+| `NO_CLEAR_IMAGE` | "No clear image since [`monitoredSince`]; showing rainfall only". Expected in cloudy weeks. |
+| `DATA_AVAILABLE` | NDVI curve, rainfall, `latestImageDate` and the season flag |
+
+- `observations` are the **raw** values, one per image date: the median NDVI of the clear pixels inside the plot (shrunk by one pixel so edge pixels are left out), how many clear pixels it used, and the share of the plot's pixels masked as cloud or shadow. `usable` is false when `pixelCount` is below the `min_clear_pixels` threshold; plot only usable points, and show `pixelCount` so weak signals are visible. With `min_clear_pixels` empty (`minClearPixels` null), no image is usable.
+- `seasonCheck.flag` answers "consistent with a maize season?": `CONSISTENT`, `INCONSISTENT` or `NOT_ENOUGH_DATA`. It compares the curve since planting with the expected pattern: low (bare soil), a rise, a peak, a decline. `reason` is one of `SEASON_PATTERN_SEEN`, `CONSISTENT_SO_FAR`, `GREEN_AT_PLANTING`, `NO_GROWTH_SEEN`, `STILL_GREEN_AFTER_SEASON`, `FEW_CLEAR_IMAGES`, `NO_CLEAR_IMAGE_AFTER_PLANTING`, `TOO_EARLY`, `PATTERN_UNCLEAR`, `MIN_CLEAR_PIXELS_NOT_SET`. `confidence` is never `HIGH`: the rules aren't checked against field results yet. `seasonCheck` is null before the first fetch.
+- `INCONSISTENT` opens a `SATELLITE_INCONSISTENT` flag on the plot for a person to review (`POST /plots/{id}/flags/{flagId}/resolve`). It never rejects a plot. On a plot below `FIELD_VERIFIED` the open flag makes it `FLAGGED` until reviewed; on a `FIELD_VERIFIED` plot it is shown and the field check stands.
+- `verificationNote` is null at `FIELD_VERIFIED` or higher. Otherwise show it: the curve and flag start at the boundary, but crop health (`GET /plots/{id}/status`) and the claim trigger run only on `FIELD_VERIFIED` plots (`healthStatusAvailable`).
+- `dataOrigin` `SAMPLE_FILE` is simulated data on a demo plot: label it Demo. Never call anything "live" or "real-time".
+
+`GET /plots` and `GET /plots/{id}` carry a short `monitoring` summary for lists and the dashboard: `{ "state": "DATA_AVAILABLE", "latestImageDate": "2026-10-28", "seasonFlag": "CONSISTENT" }` (`latestImageDate` and `seasonFlag` can be null).
 
 ### Plot data for the charts
 
@@ -520,6 +718,7 @@ Any role. Takes `page` and `size`. Returns **200** with a page of your own notif
 | `CLAIM_TRIGGERED` | The trigger started a claim. `type` is `CLAIM` and `link` is `/claims/{id}`. |
 | `CLAIM_APPROVED`, `CLAIM_DECLINED`, `CLAIM_FINAL`, `CLAIM_FIELD_VISIT`, `CLAIM_PAID`, `PAYOUT_ACCOUNT_NEEDED` | Claim changes for the farmer (`type` `CLAIM`) |
 | `PLOT_VERIFIED`, `PLOT_REJECTED` | The agent checked the plot (`type` `SYSTEM`, opens the plot) |
+| `PLOT_DISPUTED` | Another registration overlaps this plot or shares its UPI (`type` `SYSTEM`, opens the plot). Payouts wait. |
 | `AGENT_VISIT_REQUESTED`, `FIELD_VISIT_NEEDED` | For agents: a farmer or an officer asked for a field visit |
 | `FIELD_VISIT_RECORDED` | For officers: the visit a claim was waiting for was recorded |
 
@@ -694,15 +893,32 @@ Any role: farmers see their own, agents their cooperative's, officers and admins
 
 #### `POST /agent/plots/{id}/verify`
 
-`AGENT` of the farmer's cooperative (question 8: admins may get this later). Body: `decision` (`ACTIVE` or `REJECTED`), `confirmedPlantingDate` (optional; corrects the farmer's date, §2.2 #10), `rejectionReason` (required to reject, max 500). Returns **200** with the plot. The farmer gets `PLOT_VERIFIED` or `PLOT_REJECTED` (with the reason), and `audit_log` records the change.
+`AGENT` of the farmer's cooperative (question 8: admins may get this later), never the plot's own farmer. **Multipart form** (it was JSON before 2026-11-11):
+
+| Field | Required | Notes |
+|---|---|---|
+| `decision` | yes | `ACTIVE` (verify) or `REJECTED` |
+| `confirmedPlantingDate` | no | Corrects the farmer's date (§2.2 #10) |
+| `rejectionReason` | to reject | Max 500 |
+| `photo` | to verify | Taken at the plot **in the app** (JPEG or PNG) |
+| `photoLat`, `photoLng`, `photoAccuracyM`, `photoTakenAt` | to verify | Recorded by the app when the photo was taken. Never typed in or defaulted. |
+
+Verifying needs the plot at `PENDING_VERIFICATION`: registration complete and no open flag. The photo must be taken inside the walked boundary, or within the `verification_photo_max_distance_m` limit once that is set. The plot becomes `FIELD_VERIFIED` and `ACTIVE`. Rejecting works from any status before the check.
+
+Returns **200** with the plot. The farmer gets `PLOT_VERIFIED` or `PLOT_REJECTED`, `plot_verifications` keeps the check, and `audit_log` records it.
 
 | Status | Code | When |
 |---|---|---|
 | 400 | `PLANTING_DATE_REQUIRED` | Verifying a plot with no planting date and none sent |
 | 400 | `PLANTING_DATE_INVALID` | The date is in the future, or outside a confirmed season |
 | 400 | `REJECTION_REASON_REQUIRED` | Rejecting without a reason |
+| 400 | `VERIFICATION_PHOTO_REQUIRED` | Verifying without a photo |
+| 400 | `VERIFICATION_LOCATION_REQUIRED` | Verifying without the photo's location and time, or with a time in the future |
+| 400 | `VERIFICATION_PHOTO_TOO_FAR` | The photo was taken too far from the walked boundary |
+| 403 | `VERIFIER_IS_FARMER` | The agent is the plot's farmer |
 | 404 | `PLOT_NOT_FOUND` | Not a plot of your cooperative |
 | 409 | `PLOT_NOT_PENDING` | Already checked |
+| 409 | `PLOT_NOT_READY` | Verifying a plot that is `DRAFT`, `FLAGGED` or `DISPUTED` |
 
 #### `POST /agent/field-visits`
 
@@ -807,6 +1023,12 @@ The case file: everything for one decision in one call.
 #### `GET /officer/summary`
 
 For the dashboard home: `claimsByStatus` (counts), `awaitingDecision`, `openReviews`, `flaggedOpen` (open claims with a review flag), `approvedUnpaid` (approved but rates or the payout account are missing), `simulatedPaidTotal`, `plotsByStatus`, **`triggerValuesMissing`** (the trigger keys still empty; while any is listed, no claim can start), and `latestAnalysisRun`.
+
+### Satellite refresh (admin)
+
+#### `POST /admin/monitoring/refresh`
+
+`ADMIN` only. Runs the weekly satellite refresh now, for every walked plot that needs a fetch (useful for the demo and for checking Earth Engine). No body. Returns **202** with `{ "jobsQueued": 3 }`; the fetches run in the background, and each plot's `GET /plots/{id}/monitoring` shows its `latestJob`. A plot with a fetch already queued or running is skipped, and so is a plot whose season ended (200 days after planting, TO_CONFIRM). A plot that never had a successful fetch gets a backfill again.
 
 ### Admin settings
 

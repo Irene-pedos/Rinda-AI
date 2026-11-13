@@ -52,7 +52,7 @@ Log in with the phone number; the 6-digit code appears in the **Rinda backend** 
 | Phone | Role | Use it to show |
 |---|---|---|
 | `0780000001` | Farmer 1 | 3 covered plots, crop health, forecast, alerts, claims, payout account |
-| `0780000002` | Farmer 2 | A plot waiting for the agent's check |
+| `0780000002` | Farmer 2 | An unfinished plot (not walked yet): the "no boundary" empty states |
 | `0780000003` | Agent | My farmers, verify a plot, record a field visit |
 | `0780000004` | Officer | Claims queue and case file, decisions (dashboard or API) |
 | `0780000005` | Admin | Run analysis, thresholds, seasons, cover, payout rates, accounts, audit log |
@@ -79,15 +79,16 @@ A suggested order. Each step names the account and what it proves.
 1. **First launch (any new phone number).** Language, three onboarding slides, consent with a tick box, phone login, sign-up as a farmer. *Roles come from the account: sign-up only ever creates farmers.*
 2. **Farmer 1: Home.** Farm summary, latest alert, rain, big shortcuts, Demo label.
 3. **Farmer 1: Plot detail (Demo plot 1).** Crop health in plain words with "What you can do", confidence, the NDVI chart against the normal band, rain, a harvest forecast **range** labelled as a prototype, insurance cover. Tap the "?" buttons. *Every result shows its confidence; forecasts are ranges.*
-4. **Farmer 1: Add a plot.** Draw it in 3 steps; it ends as "Waiting for check". *New plots are never monitored before verification.*
-5. **Agent: verify the new plot,** correcting the planting date if needed. The farmer gets a "Plot verified" alert.
-6. **Admin: Run analysis** (`POST /admin/analysis-runs`, `{"source":"SAMPLE","plotIds":[9001]}`), then show the run's per-plot result. *Real data only on real, verified plots; the sample only on demo plots; never a fallback.*
-7. **Claim triggered** (needs section 5's trigger values, and a sample or real result that meets them). The farmer gets "A claim was started"; the claim is `UNDER_REVIEW`. *Claims start only from the satellite trigger; a farmer can't create one.*
-8. **Farmer 1: Report a problem** with a photo. *It is evidence, attached to the claim; it never starts a claim or a payout.*
-9. **Officer: queue and case file** (`GET /officer/claims`, `GET /officer/claims/{id}`): evidence, review flags, reports, field visits, history. Ask for a field visit; the agent records it.
-10. **Officer: decide** with a written reason. Decline → the farmer reads why and asks for a review once → the officer answers. *A person decides every claim; the system never declines.*
-11. **Payout (simulated).** Farmer 1 adds and verifies a mobile-money number (code in the backend window); the admin enters the insurer's payout rate; approval pays `sum insured × rate`, labelled simulated. *No real money moves.*
-12. **Admin: audit log** (`GET /admin/audit-log`): every decision, threshold change and payout, with who and when.
+4. **Farmer 1: Add a plot.** Enter the UPI and declaration, walk the plot's edge with GPS, and upload the e-title; it ends as "Waiting for check" with level `DOCUMENT_SUPPORTED`. *There is no drawing: the boundary comes only from the walk.* **Not in the app yet:** the walk flow is Phase B (Agy, against `docs/API.md`). The current app still draws, and the backend refuses that with `BOUNDARY_NOT_ACCEPTED`.
+5. **Agent: verify the new plot** at the plot, with a photo taken in the app, correcting the planting date if needed. It becomes `FIELD_VERIFIED`, the only level that allows payouts. The farmer gets a "Plot verified" alert. **Not in the app yet** (Phase B): the endpoint is now multipart with the photo.
+6. **Satellite monitoring** (`GET /plots/9001/monitoring`). Demo plots 1-3 get the simulated sample; if their screen says `FETCHING` or has no data, run the refresh as the admin: `POST /admin/monitoring/refresh`. Show the NDVI curve with pixel counts, rainfall, **the date of the latest image**, and the "consistent with a maize season?" flag. *Satellite data is a review flag, never proof of crop, and never live.* Demo plot 4 shows the empty state: it has no walked boundary. **The app screen is Phase D** (Agy).
+7. **Admin: Run analysis** (`POST /admin/analysis-runs`, `{"source":"SAMPLE","plotIds":[9001]}`), then show the run's per-plot result. *Real data only on real, verified plots; the sample only on demo plots; never a fallback.*
+8. **Claim triggered** (needs section 5's trigger values, and a sample or real result that meets them). The farmer gets "A claim was started"; the claim is `UNDER_REVIEW`. *Claims start only from the satellite trigger; a farmer can't create one.*
+9. **Farmer 1: Report a problem** with a photo. *It is evidence, attached to the claim; it never starts a claim or a payout.*
+10. **Officer: queue and case file** (`GET /officer/claims`, `GET /officer/claims/{id}`): evidence, review flags, reports, field visits, history. Ask for a field visit; the agent records it.
+11. **Officer: decide** with a written reason. Decline → the farmer reads why and asks for a review once → the officer answers. *A person decides every claim; the system never declines.*
+12. **Payout (simulated).** Farmer 1 adds and verifies a mobile-money number (code in the backend window); the admin enters the insurer's payout rate; approval pays `sum insured × rate`, labelled simulated. *No real money moves.*
+13. **Admin: audit log** (`GET /admin/audit-log`): every decision, threshold change and payout, with who and when.
 
 ## 7. What is simulated, and what to say
 

@@ -16,9 +16,8 @@ import com.rinda.app.data.model.PayoutAccountRequest;
 import com.rinda.app.data.model.PayoutAccountResponse;
 import com.rinda.app.data.model.PayoutVerifyRequest;
 import com.rinda.app.data.model.PlotHealthStatusResponse;
-import com.rinda.app.data.model.PlotRequest;
+import com.rinda.app.data.model.PlotMonitoringResponse;
 import com.rinda.app.data.model.PlotResponse;
-import com.rinda.app.data.model.PlotVerifyRequest;
 import com.rinda.app.data.model.ProblemReportResponse;
 import com.rinda.app.data.model.RefreshRequest;
 import com.rinda.app.data.model.ReviewRequestDto;
@@ -79,11 +78,29 @@ public interface RindaApiService {
     @GET("plots/{id}")
     Call<PlotResponse> getPlot(@Path("id") long id);
 
+    /** Step 1 of a registration: details only. The boundary comes from {@link #walkPlot}. */
     @POST("plots")
-    Call<PlotResponse> createPlot(@Body PlotRequest request);
+    Call<PlotResponse> createPlot(@Body com.rinda.app.data.model.PlotRegistration.CreateRequest request);
 
+    /** Name and planting date only: a boundary is refused. */
     @PUT("plots/{id}")
-    Call<PlotResponse> updatePlot(@Path("id") long id, @Body PlotRequest request);
+    Call<PlotResponse> updatePlot(@Path("id") long id,
+                                  @Body com.rinda.app.data.model.PlotRegistration.UpdateRequest request);
+
+    @GET("land-registry/parcels")
+    Call<com.rinda.app.data.model.PlotRegistration.ParcelLookupResponse> lookupParcel(@Query("upi") String upi);
+
+    @POST("plots/{id}/walk")
+    Call<PlotResponse> walkPlot(@Path("id") long id,
+                                @Body com.rinda.app.data.model.PlotRegistration.WalkRequest request);
+
+    @Multipart
+    @POST("plots/{id}/documents")
+    Call<com.rinda.app.data.model.PlotRegistration.DocumentResponse> uploadPlotDocument(
+            @Path("id") long id,
+            @PartMap Map<String, RequestBody> fields,
+            @Part MultipartBody.Part file
+    );
 
     @DELETE("plots/{id}")
     Call<Void> deletePlot(@Path("id") long id);
@@ -109,6 +126,10 @@ public interface RindaApiService {
 
     @GET("plots/{id}/status")
     Call<PlotHealthStatusResponse> getPlotHealthStatus(@Path("id") long id);
+
+    /** Satellite monitoring state (NO_BOUNDARY until the plot is walked). */
+    @GET("plots/{id}/monitoring")
+    Call<PlotMonitoringResponse> getPlotMonitoring(@Path("id") long id);
 
     @GET("plots/{id}/forecast")
     Call<HarvestForecastResponse> getHarvestForecast(@Path("id") long id);
@@ -157,8 +178,17 @@ public interface RindaApiService {
     @GET("agent/farmers")
     Call<List<FarmerSummaryResponse>> getAgentFarmers();
 
+    /**
+     * Field check. Multipart: decision, confirmedPlantingDate, rejectionReason, and to verify a photo taken at
+     * the plot in the app with photoLat, photoLng, photoAccuracyM, photoTakenAt (never typed in or defaulted).
+     */
+    @Multipart
     @POST("agent/plots/{id}/verify")
-    Call<PlotResponse> verifyAgentPlot(@Path("id") long id, @Body PlotVerifyRequest request);
+    Call<PlotResponse> verifyAgentPlot(
+            @Path("id") long id,
+            @PartMap Map<String, RequestBody> fields,
+            @Part MultipartBody.Part photo
+    );
 
     @Multipart
     @POST("agent/field-visits")

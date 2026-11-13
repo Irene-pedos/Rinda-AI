@@ -1,0 +1,1153 @@
+import type { Plot, OverviewStats, SatelliteObservation, RainfallObservation } from "@/lib/types/plot"
+import type { OfficerClaimItem, ClaimCaseFile } from "@/lib/types/claim"
+
+// Helper to generate healthy maize NDVI curve (starting low ~0.15 bare soil, rising to peak ~0.75 at ~60-70 days)
+function generateHealthyMaizeNdvi(plantingDateStr: string, latestDateStr: string): SatelliteObservation[] {
+  const observations: SatelliteObservation[] = []
+  const planting = new Date(plantingDateStr)
+  const latest = new Date(latestDateStr)
+
+  // Sentinel-2 revisit ~ 5 days
+  let current = new Date(planting.getTime() - 10 * 86400000) // 10 days before planting (pre-planting bare soil)
+
+  while (current <= latest) {
+    const daysSincePlanting = Math.round((current.getTime() - planting.getTime()) / 86400000)
+    let ndvi = 0.16
+
+    if (daysSincePlanting < 0) {
+      ndvi = 0.15 + Math.random() * 0.04
+    } else if (daysSincePlanting <= 20) {
+      // Emergence / early vegetative
+      ndvi = 0.18 + (daysSincePlanting / 20) * 0.12 + Math.random() * 0.03
+    } else if (daysSincePlanting <= 55) {
+      // Rapid vegetative growth
+      ndvi = 0.30 + ((daysSincePlanting - 20) / 35) * 0.42 + Math.random() * 0.04
+    } else {
+      // Tasseling / peak canopy
+      ndvi = 0.72 + Math.min(0.06, (daysSincePlanting - 55) * 0.002) + (Math.random() - 0.5) * 0.03
+    }
+
+    const dateStr = current.toISOString().slice(0, 10)
+    observations.push({
+      date: dateStr,
+      ndviMedian: parseFloat(ndvi.toFixed(3)),
+      pixelCount: 78,
+      cloudFraction: parseFloat((Math.random() * 0.15).toFixed(2)),
+      source: "Sentinel-2 MSI Level-2A",
+    })
+
+    current = new Date(current.getTime() + 5 * 86400000) // 5 days interval
+  }
+
+  return observations
+}
+
+// Flat bare soil NDVI curve (for inconsistent declaration)
+function generateFlatNdvi(plantingDateStr: string, latestDateStr: string): SatelliteObservation[] {
+  const observations: SatelliteObservation[] = []
+  const planting = new Date(plantingDateStr)
+  const latest = new Date(latestDateStr)
+
+  let current = new Date(planting.getTime() - 10 * 86400000)
+
+  while (current <= latest) {
+    const ndvi = 0.15 + Math.random() * 0.04
+    observations.push({
+      date: current.toISOString().slice(0, 10),
+      ndviMedian: parseFloat(ndvi.toFixed(3)),
+      pixelCount: 65,
+      cloudFraction: 0.08,
+      source: "Sentinel-2 MSI Level-2A",
+    })
+    current = new Date(current.getTime() + 5 * 86400000)
+  }
+
+  return observations
+}
+
+// Daily rainfall generator matching Rwanda's Season A rainy season (September - November)
+function generateSeasonRainfall(startDateStr: string, endDateStr: string): RainfallObservation[] {
+  const daily: RainfallObservation[] = []
+  const start = new Date(startDateStr)
+  const end = new Date(endDateStr)
+
+  let current = new Date(start)
+
+  while (current <= end) {
+    // Rainfall event probability: ~40% of days have rain in Season A
+    const hasRain = Math.random() > 0.6
+    const mm = hasRain ? Math.round((Math.random() * 18 + 2) * 10) / 10 : 0
+
+    daily.push({
+      date: current.toISOString().slice(0, 10),
+      rainfallMm: mm,
+      source: "CHIRPS / Open-Meteo",
+    })
+
+    current = new Date(current.getTime() + 86400000)
+  }
+
+  return daily
+}
+
+const standardRainfall = generateSeasonRainfall("2026-09-01", "2026-11-04")
+
+export const MOCK_PLOTS: Plot[] = [
+  {
+    id: 1,
+    farmerId: 101,
+    farmerName: "Farmer Alpha (Demo)",
+    farmerPhoneMasked: "+250 78 *** 0001",
+    upi: "1/01/01/01/0001",
+    verificationLevel: "FIELD_VERIFIED",
+    status: "ACTIVE",
+    relationshipToPlot: "OWNER",
+    crop: "MAIZE",
+    plantingDate: "2026-09-15",
+    season: "2026A",
+    walkedAreaM2: 8450,
+    documentAreaM2: 8500,
+    areaDiffPct: 0.59,
+    latestSatelliteImageDate: "2026-11-04",
+    monitoringStatus: "DATA_AVAILABLE",
+    satelliteSummary: {
+      latestImageDate: "2026-11-04",
+      flag: "CONSISTENT",
+      pixelsUsed: 78,
+      notes: "Healthy vegetative growth index matching 50-day post-planting maize curve.",
+    },
+    ndviTimeseries: generateHealthyMaizeNdvi("2026-09-15", "2026-11-04"),
+    rainfallDaily: standardRainfall,
+    flags: [],
+    documents: [
+      {
+        id: 1,
+        plotId: 1,
+        type: "E_TITLE",
+        storagePath: "/restricted/docs/mock_etitle_0001.pdf",
+        extractedOwnerName: "Farmer Alpha (Demo)",
+        extractedUpi: "1/01/01/01/0001",
+        extractedAreaM2: 8500,
+        extractedLandUse: "Agricultural - Crops",
+        uploadedAt: "2026-09-16T08:30:00Z",
+      },
+    ],
+    verifications: [
+      {
+        id: 1,
+        plotId: 1,
+        verifierId: 501,
+        verifierName: "Agent Mukamana (Coop Verifier)",
+        method: "AGENT_VISIT",
+        geotaggedPhotoUrl: "/mock/photo_plot_0001.jpg",
+        result: "PASSED",
+        verifiedAt: "2026-09-28T14:15:00Z",
+        notes: "Physical boundary corners walked with farmer; verified standing hybrid maize seedlings.",
+      },
+    ],
+    boundaryGeojson: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [29.721, -2.595],
+          [29.724, -2.595],
+          [29.725, -2.597],
+          [29.723, -2.599],
+          [29.720, -2.597],
+          [29.721, -2.595],
+        ],
+      ],
+    },
+    plantedAreaGeojson: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [29.7215, -2.5955],
+          [29.7235, -2.5955],
+          [29.7242, -2.5970],
+          [29.7225, -2.5985],
+          [29.7208, -2.5968],
+          [29.7215, -2.5955],
+        ],
+      ],
+    },
+    createdAt: "2026-09-16T08:30:00Z",
+    updatedAt: "2026-11-04T12:00:00Z",
+  },
+  {
+    id: 2,
+    farmerId: 102,
+    farmerName: "Farmer Beta (Demo)",
+    farmerPhoneMasked: "+250 78 *** 0002",
+    upi: "1/01/01/01/0002",
+    verificationLevel: "DOCUMENT_SUPPORTED",
+    status: "FLAGGED",
+    relationshipToPlot: "FAMILY_MEMBER",
+    crop: "MAIZE",
+    plantingDate: "2026-09-20",
+    season: "2026A",
+    walkedAreaM2: 6100,
+    documentAreaM2: 8000,
+    areaDiffPct: 23.75, // Mismatch exceeds 15% threshold
+    latestSatelliteImageDate: "2026-11-04",
+    monitoringStatus: "DATA_AVAILABLE",
+    satelliteSummary: {
+      latestImageDate: "2026-11-04",
+      flag: "CONSISTENT",
+      pixelsUsed: 54,
+      notes: "Vegetation rising consistently with 45-day cycle.",
+    },
+    ndviTimeseries: generateHealthyMaizeNdvi("2026-09-20", "2026-11-04"),
+    rainfallDaily: standardRainfall,
+    flags: [
+      {
+        id: 201,
+        plotId: 2,
+        type: "AREA_MISMATCH",
+        details:
+          "Walked polygon area (6,100 m²) differs by 23.8% from uploaded document area (8,000 m²). Suggested tolerance is 10–15%.",
+        createdAt: "2026-09-21T10:00:00Z",
+        resolvedAt: null,
+        resolvedBy: null,
+      },
+    ],
+    documents: [
+      {
+        id: 2,
+        plotId: 2,
+        type: "PORTAL_SCREENSHOT",
+        storagePath: "/restricted/docs/mock_screenshot_0002.png",
+        extractedOwnerName: "Family Elder (Demo)",
+        extractedUpi: "1/01/01/01/0002",
+        extractedAreaM2: 8000,
+        extractedLandUse: "Agricultural",
+        uploadedAt: "2026-09-21T09:45:00Z",
+      },
+      {
+        id: 3,
+        plotId: 2,
+        type: "OWNER_CONSENT",
+        storagePath: "/restricted/docs/mock_consent_0002.pdf",
+        extractedOwnerName: "Family Elder (Demo)",
+        uploadedAt: "2026-09-21T09:46:00Z",
+      },
+    ],
+    verifications: [],
+    boundaryGeojson: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [29.730, -2.590],
+          [29.734, -2.591],
+          [29.733, -2.594],
+          [29.729, -2.593],
+          [29.730, -2.590],
+        ],
+      ],
+    },
+    createdAt: "2026-09-21T09:45:00Z",
+    updatedAt: "2026-11-04T12:00:00Z",
+  },
+  {
+    id: 3,
+    farmerId: 103,
+    farmerName: "Farmer Gamma (Demo)",
+    farmerPhoneMasked: "+250 78 *** 0003",
+    upi: "1/01/01/01/0003",
+    verificationLevel: "DOCUMENT_SUPPORTED",
+    status: "DISPUTED",
+    relationshipToPlot: "OWNER",
+    crop: "MAIZE",
+    plantingDate: "2026-09-18",
+    season: "2026A",
+    walkedAreaM2: 7200,
+    documentAreaM2: 7150,
+    areaDiffPct: 0.7,
+    latestSatelliteImageDate: "2026-11-04",
+    monitoringStatus: "DATA_AVAILABLE",
+    satelliteSummary: {
+      latestImageDate: "2026-11-04",
+      flag: "CONSISTENT",
+      pixelsUsed: 66,
+      notes: "Vegetation profile is consistent.",
+    },
+    ndviTimeseries: generateHealthyMaizeNdvi("2026-09-18", "2026-11-04"),
+    rainfallDaily: standardRainfall,
+    flags: [
+      {
+        id: 301,
+        plotId: 3,
+        type: "OVERLAP",
+        details:
+          "Walked polygon boundary overlaps 68% with claim on UPI 1/01/01/01/0004 registered by Farmer Delta. Disputed status triggered; payouts paused.",
+        relatedPlotId: 4,
+        createdAt: "2026-09-23T11:20:00Z",
+        resolvedAt: null,
+        resolvedBy: null,
+      },
+    ],
+    documents: [
+      {
+        id: 4,
+        plotId: 3,
+        type: "E_TITLE",
+        storagePath: "/restricted/docs/mock_etitle_0003.pdf",
+        extractedOwnerName: "Farmer Gamma (Demo)",
+        extractedUpi: "1/01/01/01/0003",
+        extractedAreaM2: 7150,
+        uploadedAt: "2026-09-19T11:00:00Z",
+      },
+    ],
+    verifications: [],
+    boundaryGeojson: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [29.740, -2.600],
+          [29.744, -2.600],
+          [29.743, -2.604],
+          [29.739, -2.603],
+          [29.740, -2.600],
+        ],
+      ],
+    },
+    createdAt: "2026-09-19T11:00:00Z",
+    updatedAt: "2026-11-04T12:00:00Z",
+  },
+  {
+    id: 4,
+    farmerId: 104,
+    farmerName: "Farmer Delta (Demo)",
+    farmerPhoneMasked: "+250 78 *** 0004",
+    upi: "1/01/01/01/0004",
+    verificationLevel: "DOCUMENT_SUPPORTED",
+    status: "DISPUTED",
+    relationshipToPlot: "TENANT",
+    crop: "MAIZE",
+    plantingDate: "2026-09-22",
+    season: "2026A",
+    walkedAreaM2: 6900,
+    documentAreaM2: 7000,
+    areaDiffPct: 1.43,
+    latestSatelliteImageDate: "2026-11-04",
+    monitoringStatus: "DATA_AVAILABLE",
+    satelliteSummary: {
+      latestImageDate: "2026-11-04",
+      flag: "CONSISTENT",
+      pixelsUsed: 62,
+      notes: "Vegetation profile is consistent.",
+    },
+    ndviTimeseries: generateHealthyMaizeNdvi("2026-09-22", "2026-11-04"),
+    rainfallDaily: standardRainfall,
+    flags: [
+      {
+        id: 401,
+        plotId: 4,
+        type: "OVERLAP",
+        details:
+          "Walked polygon boundary overlaps with claim on UPI 1/01/01/01/0003 registered by Farmer Gamma. Sent to verifier review queue; payouts paused.",
+        relatedPlotId: 3,
+        createdAt: "2026-09-23T11:20:00Z",
+        resolvedAt: null,
+        resolvedBy: null,
+      },
+    ],
+    documents: [
+      {
+        id: 5,
+        plotId: 4,
+        type: "LEASE",
+        storagePath: "/restricted/docs/mock_lease_0004.pdf",
+        extractedOwnerName: "Landlord Karemera (Demo)",
+        extractedUpi: "1/01/01/01/0004",
+        extractedAreaM2: 7000,
+        uploadedAt: "2026-09-23T10:15:00Z",
+      },
+    ],
+    verifications: [],
+    boundaryGeojson: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [29.741, -2.601],
+          [29.745, -2.601],
+          [29.744, -2.605],
+          [29.740, -2.604],
+          [29.741, -2.601],
+        ],
+      ],
+    },
+    createdAt: "2026-09-23T10:15:00Z",
+    updatedAt: "2026-11-04T12:00:00Z",
+  },
+  {
+    id: 5,
+    farmerId: 105,
+    farmerName: "Farmer Epsilon (Demo)",
+    farmerPhoneMasked: "+250 78 *** 0005",
+    upi: "1/01/01/01/0005",
+    verificationLevel: "SELF_DECLARED",
+    status: "ACTIVE",
+    relationshipToPlot: "OWNER",
+    crop: "MAIZE",
+    plantingDate: "2026-10-01",
+    season: "2026A",
+    walkedAreaM2: 4200,
+    documentAreaM2: null,
+    areaDiffPct: null,
+    latestSatelliteImageDate: "2026-10-14",
+    monitoringStatus: "NO_CLEAR_IMAGE", // Demonstrates State 3: "No clear image since Oct 14; showing rainfall only"
+    satelliteSummary: {
+      latestImageDate: "2026-10-14",
+      flag: "NOT_ENOUGH_DATA",
+      pixelsUsed: 14,
+      notes: "Heavy cloud cover across Southern Province; no cloud-free optical observation since Oct 14.",
+    },
+    ndviTimeseries: [
+      {
+        date: "2026-09-24",
+        ndviMedian: 0.17,
+        pixelCount: 14,
+        cloudFraction: 0.1,
+        source: "Sentinel-2 MSI",
+      },
+      {
+        date: "2026-10-04",
+        ndviMedian: 0.22,
+        pixelCount: 12,
+        cloudFraction: 0.25,
+        source: "Sentinel-2 MSI",
+      },
+      {
+        date: "2026-10-14",
+        ndviMedian: 0.26,
+        pixelCount: 14,
+        cloudFraction: 0.35,
+        source: "Sentinel-2 MSI",
+      },
+    ],
+    rainfallDaily: standardRainfall,
+    flags: [],
+    documents: [],
+    verifications: [],
+    boundaryGeojson: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [29.715, -2.585],
+          [29.719, -2.585],
+          [29.718, -2.588],
+          [29.714, -2.587],
+          [29.715, -2.585],
+        ],
+      ],
+    },
+    createdAt: "2026-10-01T15:00:00Z",
+    updatedAt: "2026-11-04T12:00:00Z",
+  },
+  {
+    id: 6,
+    farmerId: 106,
+    farmerName: "Farmer Zeta (Demo)",
+    farmerPhoneMasked: "+250 78 *** 0006",
+    upi: "1/01/01/01/0006",
+    verificationLevel: "FIELD_VERIFIED",
+    status: "ACTIVE",
+    relationshipToPlot: "OWNER",
+    crop: "MAIZE",
+    plantingDate: "2026-09-10",
+    season: "2026A",
+    walkedAreaM2: 12500,
+    documentAreaM2: 12400,
+    areaDiffPct: 0.81,
+    latestSatelliteImageDate: "2026-11-04",
+    monitoringStatus: "DATA_AVAILABLE",
+    satelliteSummary: {
+      latestImageDate: "2026-11-04",
+      flag: "CONSISTENT",
+      pixelsUsed: 118,
+      notes: "Peak vegetative development consistent with mid-season maize.",
+    },
+    ndviTimeseries: generateHealthyMaizeNdvi("2026-09-10", "2026-11-04"),
+    rainfallDaily: standardRainfall,
+    flags: [],
+    documents: [
+      {
+        id: 6,
+        plotId: 6,
+        type: "E_TITLE",
+        storagePath: "/restricted/docs/mock_etitle_0006.pdf",
+        extractedOwnerName: "Farmer Zeta (Demo)",
+        extractedUpi: "1/01/01/01/0006",
+        extractedAreaM2: 12400,
+        uploadedAt: "2026-09-11T09:00:00Z",
+      },
+    ],
+    verifications: [
+      {
+        id: 2,
+        plotId: 6,
+        verifierId: 502,
+        verifierName: "Agronomist Habimana (Sector Agronomist)",
+        method: "AGRONOMIST_CHECK",
+        geotaggedPhotoUrl: "/mock/photo_plot_0006.jpg",
+        result: "PASSED",
+        verifiedAt: "2026-09-25T11:00:00Z",
+        notes: "Full parcel boundary inspection confirmed healthy hybrid maize stand.",
+      },
+    ],
+    boundaryGeojson: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [29.750, -2.610],
+          [29.756, -2.611],
+          [29.755, -2.616],
+          [29.749, -2.614],
+          [29.750, -2.610],
+        ],
+      ],
+    },
+    createdAt: "2026-09-11T09:00:00Z",
+    updatedAt: "2026-11-04T12:00:00Z",
+  },
+  {
+    id: 7,
+    farmerId: 107,
+    farmerName: "Farmer Eta (Demo)",
+    farmerPhoneMasked: "+250 78 *** 0007",
+    upi: "1/01/01/01/0007",
+    verificationLevel: "DOCUMENT_SUPPORTED",
+    status: "FLAGGED",
+    relationshipToPlot: "OWNER",
+    crop: "MAIZE",
+    plantingDate: "2026-09-12",
+    season: "2026A",
+    walkedAreaM2: 9800,
+    documentAreaM2: 9900,
+    areaDiffPct: 1.01,
+    latestSatelliteImageDate: "2026-11-04",
+    monitoringStatus: "DATA_AVAILABLE",
+    satelliteSummary: {
+      latestImageDate: "2026-11-04",
+      flag: "INCONSISTENT",
+      pixelsUsed: 89,
+      notes:
+        "NDVI curve shows continuous bare soil with no green-up signature 50 days after declared planting date.",
+    },
+    ndviTimeseries: generateFlatNdvi("2026-09-12", "2026-11-04"),
+    rainfallDaily: standardRainfall,
+    flags: [
+      {
+        id: 701,
+        plotId: 7,
+        type: "SATELLITE_INCONSISTENT",
+        details:
+          "Review flag from satellite data: NDVI curve is inconsistent with expected maize vegetative growth. Ground truth check recommended.",
+        createdAt: "2026-10-25T16:00:00Z",
+        resolvedAt: null,
+        resolvedBy: null,
+      },
+    ],
+    documents: [
+      {
+        id: 7,
+        plotId: 7,
+        type: "E_TITLE",
+        storagePath: "/restricted/docs/mock_etitle_0007.pdf",
+        extractedOwnerName: "Farmer Eta (Demo)",
+        extractedUpi: "1/01/01/01/0007",
+        extractedAreaM2: 9900,
+        uploadedAt: "2026-09-13T14:00:00Z",
+      },
+    ],
+    verifications: [],
+    boundaryGeojson: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [29.760, -2.580],
+          [29.765, -2.581],
+          [29.764, -2.585],
+          [29.759, -2.584],
+          [29.760, -2.580],
+        ],
+      ],
+    },
+    createdAt: "2026-09-13T14:00:00Z",
+    updatedAt: "2026-11-04T12:00:00Z",
+  },
+  {
+    id: 8,
+    farmerId: 108,
+    farmerName: "Farmer Theta (Demo)",
+    farmerPhoneMasked: "+250 78 *** 0008",
+    upi: "1/01/01/01/0008",
+    verificationLevel: "DOCUMENT_SUPPORTED",
+    status: "FLAGGED",
+    relationshipToPlot: "OWNER",
+    crop: "MAIZE",
+    plantingDate: "2026-09-25",
+    season: "2026A",
+    walkedAreaM2: 5400,
+    documentAreaM2: 5500,
+    areaDiffPct: 1.82,
+    latestSatelliteImageDate: "2026-11-04",
+    monitoringStatus: "DATA_AVAILABLE",
+    satelliteSummary: {
+      latestImageDate: "2026-11-04",
+      flag: "CONSISTENT",
+      pixelsUsed: 49,
+      notes: "Vegetation index rising.",
+    },
+    ndviTimeseries: generateHealthyMaizeNdvi("2026-09-25", "2026-11-04"),
+    rainfallDaily: standardRainfall,
+    flags: [
+      {
+        id: 801,
+        plotId: 8,
+        type: "OUTSIDE_ADMIN_AREA",
+        details:
+          "Walked GPS centroid falls 1.4 km outside administrative cell encoded in UPI prefix. Requires verifier boundary confirmation.",
+        createdAt: "2026-09-26T08:00:00Z",
+        resolvedAt: null,
+        resolvedBy: null,
+      },
+    ],
+    documents: [
+      {
+        id: 8,
+        plotId: 8,
+        type: "PORTAL_SCREENSHOT",
+        storagePath: "/restricted/docs/mock_screenshot_0008.png",
+        extractedOwnerName: "Farmer Theta (Demo)",
+        extractedUpi: "1/01/01/01/0008",
+        extractedAreaM2: 5500,
+        uploadedAt: "2026-09-25T16:30:00Z",
+      },
+    ],
+    verifications: [],
+    boundaryGeojson: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [29.770, -2.570],
+          [29.774, -2.571],
+          [29.773, -2.574],
+          [29.769, -2.573],
+          [29.770, -2.570],
+        ],
+      ],
+    },
+    createdAt: "2026-09-25T16:30:00Z",
+    updatedAt: "2026-11-04T12:00:00Z",
+  },
+  {
+    id: 9,
+    farmerId: 109,
+    farmerName: "Farmer Iota (Demo)",
+    farmerPhoneMasked: "+250 78 *** 0009",
+    upi: "1/01/01/01/0009",
+    verificationLevel: "NLA_VERIFIED",
+    status: "ACTIVE",
+    relationshipToPlot: "OWNER",
+    crop: "MAIZE",
+    plantingDate: "2026-09-05",
+    season: "2026A",
+    walkedAreaM2: 15200,
+    documentAreaM2: 15200,
+    areaDiffPct: 0.0,
+    latestSatelliteImageDate: "2026-11-04",
+    monitoringStatus: "DATA_AVAILABLE",
+    satelliteSummary: {
+      latestImageDate: "2026-11-04",
+      flag: "CONSISTENT",
+      pixelsUsed: 142,
+      notes: "Optimal vegetation development matching NLA surveyed parcel boundary.",
+    },
+    ndviTimeseries: generateHealthyMaizeNdvi("2026-09-05", "2026-11-04"),
+    rainfallDaily: standardRainfall,
+    flags: [],
+    documents: [
+      {
+        id: 9,
+        plotId: 9,
+        type: "E_TITLE",
+        storagePath: "/restricted/docs/mock_etitle_0009.pdf",
+        extractedOwnerName: "Farmer Iota (Demo)",
+        extractedUpi: "1/01/01/01/0009",
+        extractedAreaM2: 15200,
+        uploadedAt: "2026-09-06T10:00:00Z",
+      },
+    ],
+    verifications: [
+      {
+        id: 3,
+        plotId: 9,
+        verifierId: 501,
+        verifierName: "Agent Mukamana",
+        method: "AGENT_VISIT",
+        geotaggedPhotoUrl: "/mock/photo_plot_0009.jpg",
+        result: "PASSED",
+        verifiedAt: "2026-09-18T10:00:00Z",
+      },
+    ],
+    boundaryGeojson: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [29.700, -2.620],
+          [29.707, -2.620],
+          [29.706, -2.627],
+          [29.699, -2.625],
+          [29.700, -2.620],
+        ],
+      ],
+    },
+    createdAt: "2026-09-06T10:00:00Z",
+    updatedAt: "2026-11-04T12:00:00Z",
+  },
+  {
+    id: 10,
+    farmerId: 110,
+    farmerName: "Farmer Kappa (Demo)",
+    farmerPhoneMasked: "+250 78 *** 0010",
+    upi: "1/01/01/01/0010",
+    verificationLevel: "DOCUMENT_SUPPORTED",
+    status: "ACTIVE",
+    relationshipToPlot: "OWNER",
+    crop: "MAIZE",
+    plantingDate: "2026-09-28",
+    season: "2026A",
+    walkedAreaM2: 7800,
+    documentAreaM2: 7900,
+    areaDiffPct: 1.27,
+    latestSatelliteImageDate: "2026-11-04",
+    monitoringStatus: "DATA_AVAILABLE",
+    satelliteSummary: {
+      latestImageDate: "2026-11-04",
+      flag: "CONSISTENT",
+      pixelsUsed: 72,
+      notes: "Early vegetative growth.",
+    },
+    ndviTimeseries: generateHealthyMaizeNdvi("2026-09-28", "2026-11-04"),
+    rainfallDaily: standardRainfall,
+    flags: [],
+    documents: [
+      {
+        id: 10,
+        plotId: 10,
+        type: "E_TITLE",
+        storagePath: "/restricted/docs/mock_etitle_0010.pdf",
+        extractedOwnerName: "Farmer Kappa (Demo)",
+        extractedUpi: "1/01/01/01/0010",
+        extractedAreaM2: 7900,
+        uploadedAt: "2026-09-29T13:00:00Z",
+      },
+    ],
+    verifications: [],
+    boundaryGeojson: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [29.710, -2.605],
+          [29.715, -2.605],
+          [29.714, -2.610],
+          [29.709, -2.609],
+          [29.710, -2.605],
+        ],
+      ],
+    },
+    createdAt: "2026-09-29T13:00:00Z",
+    updatedAt: "2026-11-04T12:00:00Z",
+  },
+  {
+    id: 11,
+    farmerId: 111,
+    farmerName: "Farmer Lambda (Demo)",
+    farmerPhoneMasked: "+250 78 *** 0011",
+    upi: "1/01/01/01/0011",
+    verificationLevel: "DOCUMENT_SUPPORTED",
+    status: "ACTIVE",
+    relationshipToPlot: "OWNER",
+    crop: "MAIZE",
+    plantingDate: "2026-10-25",
+    season: "2026A",
+    walkedAreaM2: 5200,
+    documentAreaM2: 5250,
+    areaDiffPct: 0.95,
+    latestSatelliteImageDate: "2026-11-04",
+    monitoringStatus: "FETCHING_DATA", // Demonstrates State 2: "Fetching satellite data..."
+    flags: [],
+    documents: [
+      {
+        id: 11,
+        plotId: 11,
+        type: "E_TITLE",
+        storagePath: "/restricted/docs/mock_etitle_0011.pdf",
+        extractedOwnerName: "Farmer Lambda (Demo)",
+        extractedUpi: "1/01/01/01/0011",
+        extractedAreaM2: 5250,
+        uploadedAt: "2026-10-26T09:00:00Z",
+      },
+    ],
+    verifications: [],
+    boundaryGeojson: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [29.735, -2.615],
+          [29.739, -2.615],
+          [29.738, -2.618],
+          [29.734, -2.617],
+          [29.735, -2.615],
+        ],
+      ],
+    },
+    createdAt: "2026-10-26T09:00:00Z",
+    updatedAt: "2026-11-04T12:00:00Z",
+  },
+  {
+    id: 12,
+    farmerId: 112,
+    farmerName: "Farmer Mu (Demo)",
+    farmerPhoneMasked: "+250 78 *** 0012",
+    upi: "1/01/01/01/0012",
+    verificationLevel: "SELF_DECLARED",
+    status: "ACTIVE",
+    relationshipToPlot: "TENANT",
+    crop: "MAIZE",
+    plantingDate: "2026-11-01",
+    season: "2026A",
+    walkedAreaM2: 0,
+    documentAreaM2: null,
+    areaDiffPct: null,
+    latestSatelliteImageDate: "2026-11-04",
+    monitoringStatus: "NO_PLOT", // Demonstrates State 1: "No plot boundary registered"
+    flags: [],
+    documents: [],
+    verifications: [],
+    createdAt: "2026-11-01T10:00:00Z",
+    updatedAt: "2026-11-04T12:00:00Z",
+  },
+]
+
+export const MOCK_OVERVIEW_STATS: OverviewStats = {
+  totalPlots: 128,
+  byVerificationLevel: {
+    SELF_DECLARED: 18,
+    DOCUMENT_SUPPORTED: 65,
+    FIELD_VERIFIED: 42,
+    NLA_VERIFIED: 3,
+  },
+  flaggedPlotsCount: 14,
+  disputedPlotsCount: 3,
+  awaitingFieldVerificationCount: 38,
+  activePlotsCount: 111,
+  registrationsOverTime: [
+    { date: "2026-09-01", registeredPlots: 8, fieldVerified: 0 },
+    { date: "2026-09-08", registeredPlots: 19, fieldVerified: 2 },
+    { date: "2026-09-15", registeredPlots: 34, fieldVerified: 8 },
+    { date: "2026-09-22", registeredPlots: 58, fieldVerified: 16 },
+    { date: "2026-09-29", registeredPlots: 79, fieldVerified: 29 },
+    { date: "2026-10-06", registeredPlots: 95, fieldVerified: 45 },
+    { date: "2026-10-13", registeredPlots: 110, fieldVerified: 62 },
+    { date: "2026-10-20", registeredPlots: 118, fieldVerified: 74 },
+    { date: "2026-10-27", registeredPlots: 124, fieldVerified: 81 },
+    { date: "2026-11-03", registeredPlots: 126, fieldVerified: 85 },
+    { date: "2026-11-10", registeredPlots: 128, fieldVerified: 87 },
+  ],
+}
+
+export const MOCK_CLAIMS: OfficerClaimItem[] = [
+  {
+    id: 1,
+    status: "UNDER_REVIEW",
+    triggerDate: "2026-10-28",
+    daysOpen: 16,
+    plotId: 1,
+    plotName: "Maize Plot Alpha",
+    plotUpi: "1/01/01/01/0001",
+    areaHa: 0.482,
+    farmerId: 101,
+    farmerName: "Farmer Alpha (Demo)",
+    farmerPhone: "+250 78 *** 0001",
+    cooperativeName: "Huye Maize Farmers Coop",
+    seasonCode: "2026A",
+    reviewFlags: [],
+    problemReports: 0,
+    fieldVisits: 1,
+    openReview: false,
+    payoutRate: 0.35,
+    amount: 145000,
+    modelVersion: "0.5.0",
+    isDemo: true,
+    verificationLevel: "FIELD_VERIFIED",
+    triggerCause: "21 consecutive dry-spell days in vegetative phase",
+  },
+  {
+    id: 2,
+    status: "UNDER_REVIEW",
+    triggerDate: "2026-10-30",
+    daysOpen: 14,
+    plotId: 2,
+    plotName: "Maize Plot Beta",
+    plotUpi: "1/01/01/01/0002",
+    areaHa: 0.64,
+    farmerId: 102,
+    farmerName: "Farmer Beta (Demo)",
+    farmerPhone: "+250 78 *** 0002",
+    cooperativeName: "Nyanza Producers Union",
+    seasonCode: "2026A",
+    reviewFlags: ["AREA_MISMATCH_OPEN"],
+    problemReports: 1,
+    fieldVisits: 0,
+    openReview: false,
+    payoutRate: null,
+    amount: null,
+    modelVersion: "0.5.0",
+    isDemo: true,
+    verificationLevel: "DOCUMENT_SUPPORTED",
+    triggerCause: "CHIRPS cumulative rainfall below 60% of baseline",
+  },
+  {
+    id: 3,
+    status: "UNDER_REVIEW",
+    triggerDate: "2026-11-01",
+    daysOpen: 12,
+    plotId: 3,
+    plotName: "Maize Plot Gamma",
+    plotUpi: "1/01/01/01/0003",
+    areaHa: 0.72,
+    farmerId: 103,
+    farmerName: "Farmer Gamma (Demo)",
+    farmerPhone: "+250 78 *** 0003",
+    cooperativeName: "Gisagara Grain Coop",
+    seasonCode: "2026A",
+    reviewFlags: ["BOUNDARY_OVERLAP_DISPUTE"],
+    problemReports: 0,
+    fieldVisits: 0,
+    openReview: false,
+    payoutRate: null,
+    amount: null,
+    modelVersion: "0.5.0",
+    isDemo: true,
+    verificationLevel: "DOCUMENT_SUPPORTED",
+    triggerCause: "NDVI vegetation drop > 25% post-germination",
+  },
+  {
+    id: 4,
+    status: "APPROVED",
+    triggerDate: "2026-10-24",
+    daysOpen: 20,
+    plotId: 8,
+    plotName: "Maize Plot Theta",
+    plotUpi: "1/01/01/01/0008",
+    areaHa: 0.95,
+    farmerId: 108,
+    farmerName: "Farmer Theta (Demo)",
+    farmerPhone: "+250 78 *** 0008",
+    cooperativeName: "Huye Maize Farmers Coop",
+    seasonCode: "2026A",
+    reviewFlags: [],
+    problemReports: 0,
+    fieldVisits: 1,
+    openReview: false,
+    payoutRate: 0.5,
+    amount: 220000,
+    modelVersion: "0.5.0",
+    isDemo: true,
+    verificationLevel: "NLA_VERIFIED",
+    triggerCause: "Severe dry spell during tasseling/flowering stage",
+  },
+  {
+    id: 5,
+    status: "FIELD_VISIT_REQUESTED",
+    triggerDate: "2026-11-04",
+    daysOpen: 9,
+    plotId: 7,
+    plotName: "Maize Plot Eta",
+    plotUpi: "1/01/01/01/0007",
+    areaHa: 0.82,
+    farmerId: 107,
+    farmerName: "Farmer Eta (Demo)",
+    farmerPhone: "+250 78 *** 0007",
+    cooperativeName: "Nyanza Producers Union",
+    seasonCode: "2026A",
+    reviewFlags: ["SATELLITE_INCONSISTENT"],
+    problemReports: 1,
+    fieldVisits: 0,
+    openReview: true,
+    payoutRate: null,
+    amount: null,
+    modelVersion: "0.5.0",
+    isDemo: true,
+    verificationLevel: "FIELD_VERIFIED",
+    triggerCause: "Vegetation profile deviates from planting schedule",
+  },
+  {
+    id: 6,
+    status: "PAID",
+    triggerDate: "2026-10-15",
+    daysOpen: null,
+    plotId: 1,
+    plotName: "Maize Plot Alpha (Early Season)",
+    plotUpi: "1/01/01/01/0001",
+    areaHa: 0.482,
+    farmerId: 101,
+    farmerName: "Farmer Alpha (Demo)",
+    farmerPhone: "+250 78 *** 0001",
+    cooperativeName: "Huye Maize Farmers Coop",
+    seasonCode: "2026A",
+    reviewFlags: [],
+    problemReports: 0,
+    fieldVisits: 1,
+    openReview: false,
+    payoutRate: 0.2,
+    amount: 85000,
+    modelVersion: "0.5.0",
+    isDemo: true,
+    verificationLevel: "FIELD_VERIFIED",
+    triggerCause: "Delayed germination rainfall deficit",
+  },
+]
+
+export const MOCK_CASE_FILES: Record<number, ClaimCaseFile> = {
+  1: {
+    id: 1,
+    claim: {
+      id: 1,
+      plotId: 1,
+      plotName: "Maize Plot Alpha",
+      seasonId: 1,
+      seasonCode: "2026A",
+      triggerDate: "2026-10-28",
+      status: "UNDER_REVIEW",
+      payoutRate: 0.35,
+      amount: 145000,
+      evidenceSnapshot: {
+        drySpellDays: 21,
+        rainfallDeficitPct: 42,
+        satelliteNdviDropPct: 18,
+        triggerIndex: "CONSECUTIVE_DRY_DAYS_V2",
+      },
+      decision: null,
+    },
+    farmer: {
+      id: 101,
+      fullName: "Farmer Alpha (Demo)",
+      phone: "+250 78 *** 0001",
+      cooperativeName: "Huye Maize Farmers Coop",
+      isDemo: true,
+    },
+    plot: {
+      id: 1,
+      name: "Maize Plot Alpha",
+      upi: "1/01/01/01/0001",
+      areaHa: 0.482,
+      walkedAreaM2: 4820,
+      plantingDate: "2026-09-12",
+      status: "ACTIVE",
+      verificationLevel: "FIELD_VERIFIED",
+      dataStatus: "CONFIRMED",
+      isDemo: true,
+    },
+    cover: {
+      status: "ACTIVE",
+      seasonCode: "2026A",
+      sumInsured: 414285,
+      premium: 24850,
+      startDate: "2026-09-01",
+      endDate: "2027-01-31",
+    },
+    payoutAccount: {
+      provider: "MTN_MOMO",
+      msisdnMasked: "+250 78 *** 001",
+      verified: true,
+    },
+    decisions: [],
+    reviews: [],
+    history: [
+      {
+        action: "CLAIM_TRIGGERED",
+        actorName: "Parametric Trigger Engine",
+        actorRole: "SYSTEM",
+        before: "NONE",
+        after: "UNDER_REVIEW",
+        occurredAt: "2026-10-28T04:12:00Z",
+      },
+      {
+        action: "WEATHER_SNAPSHOT_FROZEN",
+        actorName: "Analysis Engine",
+        actorRole: "SYSTEM",
+        occurredAt: "2026-10-28T04:12:05Z",
+      },
+    ],
+  },
+  2: {
+    id: 2,
+    claim: {
+      id: 2,
+      plotId: 2,
+      plotName: "Maize Plot Beta",
+      seasonId: 1,
+      seasonCode: "2026A",
+      triggerDate: "2026-10-30",
+      status: "UNDER_REVIEW",
+      payoutRate: null,
+      amount: null,
+      evidenceSnapshot: {
+        drySpellDays: 18,
+        rainfallDeficitPct: 38,
+        satelliteNdviDropPct: 14,
+        triggerIndex: "CHIRPS_RAINFALL_DEFICIT",
+      },
+      decision: null,
+    },
+    farmer: {
+      id: 102,
+      fullName: "Farmer Beta (Demo)",
+      phone: "+250 78 *** 0002",
+      cooperativeName: "Nyanza Producers Union",
+      isDemo: true,
+    },
+    plot: {
+      id: 2,
+      name: "Maize Plot Beta",
+      upi: "1/01/01/01/0002",
+      areaHa: 0.64,
+      walkedAreaM2: 6400,
+      plantingDate: "2026-09-20",
+      status: "FLAGGED",
+      verificationLevel: "DOCUMENT_SUPPORTED",
+      dataStatus: "TO_CONFIRM",
+      isDemo: true,
+    },
+    cover: {
+      status: "ACTIVE",
+      seasonCode: "2026A",
+      sumInsured: 550000,
+      premium: 33000,
+      startDate: "2026-09-01",
+      endDate: "2027-01-31",
+    },
+    payoutAccount: {
+      provider: "MTN_MOMO",
+      msisdnMasked: "+250 78 *** 002",
+      verified: true,
+    },
+    decisions: [],
+    reviews: [],
+    history: [
+      {
+        action: "CLAIM_TRIGGERED",
+        actorName: "Parametric Trigger Engine",
+        actorRole: "SYSTEM",
+        before: "NONE",
+        after: "UNDER_REVIEW",
+        occurredAt: "2026-10-30T05:00:00Z",
+      },
+    ],
+  },
+}
+

@@ -28,13 +28,8 @@ class NotificationApiTest extends ApiTestBase {
     @BeforeEach
     void createPlot() throws Exception {
         farmer = farmerToken("+250786666661");
-        Map<String, Object> plot = Map.of("name", "Hillside", "plantingDate", PLANTED,
-                "boundary", Map.of("type", "Polygon", "coordinates", List.of(SQUARE)));
-        String body = mvc.perform(post("/api/v1/plots").header("Authorization", "Bearer " + farmer)
-                        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(plot)))
-                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
-        plotId = mapper.readTree(body).get("id").asLong();
-        jdbc.update("UPDATE plots SET status = 'ACTIVE' WHERE id = ?", plotId);
+        plotId = pendingPlot(farmer, "Hillside", PLANTED);
+        jdbc.update("UPDATE plots SET status = 'ACTIVE', verification_level = 'FIELD_VERIFIED' WHERE id = ?", plotId);
     }
 
     private void health(String date, String status, String cause) throws Exception {

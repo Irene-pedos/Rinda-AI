@@ -33,11 +33,15 @@ def parse_s2(features: list[dict]) -> list[Observation]:
     result = []
     for feature in features:
         props = feature["properties"]
+        clear = int(props.get("clear_pixels") or 0)
+        total = int(props.get("total_pixels") or 0)
         result.append(Observation(
             day=date.fromisoformat(props["date"]),
             ndvi=props.get("ndvi"),
-            clear_pixels=int(props.get("clear_pixels") or 0),
+            clear_pixels=clear,
             cloud_pct=props.get("cloud_pct"),
+            # Pixels inside the shrunk plot that the cloud and scene masks removed.
+            cloud_fraction=round(1 - clear / total, 4) if total > 0 else None,
         ))
     return result
 
@@ -75,16 +79,23 @@ class GeeSource:
         scene_clear = scl.eq(params.SCL_CLEAR_CLASSES[0]).Or(scl.eq(params.SCL_CLEAR_CLASSES[1]))
         cloud_free = ee.Image(image.get("cloud")).select("probability").lt(params.CLOUD_PROBABILITY_MAX)
         index = image.normalizedDifference(["B8", "B4"]).rename("ndvi").updateMask(scene_clear.And(cloud_free))
+        # Median, not mean (docs/02-satellite-monitoring.md), over pixels inside the plot shrunk by one pixel,
+        # so pixels touching the boundary are left out.
         stats = index.reduceRegion(
-            reducer=ee.Reducer.mean().combine(ee.Reducer.count(), sharedInputs=True),
+            reducer=ee.Reducer.median().combine(ee.Reducer.count(), sharedInputs=True),
             geometry=self.region,
             scale=params.SENTINEL2_SCALE_METRES,
             maxPixels=1_000_000,
         )
+        total = image.select("B4").reduceRegion(
+            reducer=ee.Reducer.count(), geometry=self.region, scale=params.SENTINEL2_SCALE_METRES,
+            maxPixels=1_000_000,
+        )
         return ee.Feature(None, {
             "date": image.date().format("YYYY-MM-dd"),
-            "ndvi": stats.get("ndvi_mean"),
+            "ndvi": stats.get("ndvi_median"),
             "clear_pixels": stats.get("ndvi_count"),
+            "total_pixels": total.get("B4"),
             "cloud_pct": image.get("CLOUDY_PIXEL_PERCENTAGE"),
         })
 

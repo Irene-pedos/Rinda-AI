@@ -92,13 +92,8 @@ class AnalysisRunApiTest extends ApiTestBase {
     }
 
     private long plot(String name, String status, boolean covered) throws Exception {
-        Map<String, Object> plot = Map.of("name", name, "plantingDate", "2026-09-20",
-                "boundary", Map.of("type", "Polygon", "coordinates", List.of(SQUARE)));
-        String body = mvc.perform(post("/api/v1/plots").header("Authorization", "Bearer " + farmer)
-                        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(plot)))
-                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
-        long id = mapper.readTree(body).get("id").asLong();
-        jdbc.update("UPDATE plots SET status = ? WHERE id = ?", status, id);
+        long id = pendingPlot(farmer, name, "2026-09-20");
+        jdbc.update("UPDATE plots SET status = ?, verification_level = IF(? = 'ACTIVE', 'FIELD_VERIFIED', verification_level) WHERE id = ?", status, status, id);
         if (covered) {
             jdbc.update("INSERT INTO enrollments (plot_id, season_id, status) VALUES (?, ?, 'COVERED')", id, seasonId);
         }

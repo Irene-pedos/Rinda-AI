@@ -71,8 +71,13 @@ public class PlotsAdapter extends RecyclerView.Adapter<PlotsAdapter.PlotViewHold
             binding.tvPlotName.setText(plot.name != null ? plot.name : context.getString(R.string.plot_number, plot.id));
             binding.tvPlotDemoBadge.setVisibility(plot.isDemo ? View.VISIBLE : View.GONE);
 
-            double area = plot.areaHa != null ? plot.areaHa.doubleValue() : 0.0;
-            binding.tvArea.setText(String.format(Locale.getDefault(), context.getString(R.string.plot_area), area));
+            if (plot.areaHa != null) {
+                binding.tvArea.setText(String.format(Locale.getDefault(),
+                        context.getString(R.string.plot_area), plot.areaHa.doubleValue()));
+            } else {
+                // No walk yet: never show 0.00 ha, which reads as a measured area.
+                binding.tvArea.setText(R.string.plot_area_not_walked);
+            }
 
             if (plot.plantingDate != null && !plot.plantingDate.isEmpty()) {
                 binding.tvPlantingDate.setText(context.getString(R.string.plot_planted_on, DateTimeUtils.formatDate(plot.plantingDate)));

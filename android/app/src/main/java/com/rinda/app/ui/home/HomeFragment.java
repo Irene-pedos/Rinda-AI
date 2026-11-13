@@ -211,6 +211,9 @@ public class HomeFragment extends Fragment {
                             if (!response.body().getItems().isEmpty()) {
                                 loadWeatherForPlot(response.body().getItems().get(0).getId());
                             }
+                            // Home shows the latest alert from the phone's copy, so fill it here too:
+                            // right after a login that copy is empty until the alerts are fetched.
+                            loadAlerts();
                         }
                     }
 
@@ -219,6 +222,26 @@ public class HomeFragment extends Fragment {
                         if (binding == null) return;
                         // Offline: cached data stays on screen and the shell shows the offline banner.
                         binding.swipeRefresh.setRefreshing(false);
+                    }
+                });
+    }
+
+    private void loadAlerts() {
+        ApiClient.getInstance(requireContext()).getService().getNotifications(0, 50)
+                .enqueue(new Callback<PageResponse<com.rinda.app.data.model.NotificationResponse>>() {
+                    @Override
+                    public void onResponse(Call<PageResponse<com.rinda.app.data.model.NotificationResponse>> call,
+                                           Response<PageResponse<com.rinda.app.data.model.NotificationResponse>> response) {
+                        if (binding == null) return;
+                        if (response.isSuccessful() && response.body() != null) {
+                            com.rinda.app.ui.alerts.NotificationCache.save(requireContext(), response.body().getItems());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<PageResponse<com.rinda.app.data.model.NotificationResponse>> call,
+                                          Throwable t) {
+                        // Offline: the cached alerts stay on screen.
                     }
                 });
     }

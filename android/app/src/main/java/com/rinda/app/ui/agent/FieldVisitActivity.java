@@ -61,11 +61,20 @@ public class FieldVisitActivity extends AppCompatActivity {
     private String selectedCause = "WATER_DEFICIT";
     private String selectedStage = "VEGETATIVE";
     private String attachedPhotoPath = null;
-    private double currentLat = -1.9441;
-    private double currentLng = 30.0619;
+    // Only a real reading from the phone is ever sent: no default location, so evidence never carries a made-up place.
+    private double currentLat;
+    private double currentLng;
     private boolean hasGps = false;
 
     private ActivityResultLauncher<String> photoPickerLauncher;
+    private final ActivityResultLauncher<String> locationPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(), granted -> {
+                if (granted) {
+                    readLocation();
+                } else {
+                    showNoGps(R.string.field_gps_permission_denied);
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -240,12 +249,22 @@ public class FieldVisitActivity extends AppCompatActivity {
         highlight(binding.cardStageMaturity, "MATURITY".equals(stage));
     }
 
+    /** The location is read only when the agent taps the button at the plot, after the permission is granted. */
     private void setupGpsButton() {
-        captureGps();
+        showNoGps(R.string.field_gps_not_captured);
         binding.btnCaptureGps.setOnClickListener(v -> captureGps());
     }
 
     private void captureGps() {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            readLocation();
+        } else {
+            locationPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+    }
+
+    private void readLocation() {
         try {
             LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             if (lm != null) {
@@ -261,13 +280,15 @@ public class FieldVisitActivity extends AppCompatActivity {
                     return;
                 }
             }
-        } catch (SecurityException ignored) {}
+        } catch (SecurityException ignored) {
+            // Falls through: no location is recorded.
+        }
+        showNoGps(R.string.field_gps_unavailable);
+    }
 
-        // Fallback default coordinates within Rwanda if permission not granted
-        currentLat = -1.9441;
-        currentLng = 30.0619;
-        hasGps = true;
-        binding.tvGpsLocation.setText(String.format(Locale.US, "GPS: %.5f, %.5f", currentLat, currentLng));
+    private void showNoGps(int messageRes) {
+        hasGps = false;
+        binding.tvGpsLocation.setText(messageRes);
     }
 
     private void highlight(MaterialCardView card, boolean selected) {
@@ -418,7 +439,8 @@ public class FieldVisitActivity extends AppCompatActivity {
                 getStageLabel(selectedStage));
 
         bindDetailRow(binding.rowReviewGps, R.drawable.ic_map_pin, R.string.field_visit_step_photo,
-                String.format(Locale.US, "%.4f, %.4f", currentLat, currentLng));
+                hasGps ? String.format(Locale.US, "%.4f, %.4f", currentLat, currentLng)
+                        : getString(R.string.field_gps_review_none));
     }
 
     private void bindDetailRow(ViewDetailRowBinding row, int iconRes, int labelRes, String value) {
@@ -485,8 +507,10 @@ public class FieldVisitActivity extends AppCompatActivity {
         payload.addProperty("moistureChecked", binding.cbMoisture.isChecked());
         payload.addProperty("standDensityChecked", binding.cbStand.isChecked());
         payload.addProperty("farmerPresent", binding.cbFarmerPresent.isChecked());
-        payload.addProperty("lat", currentLat);
-        payload.addProperty("lng", currentLng);
+        if (hasGps) {
+            payload.addProperty("lat", currentLat);
+            payload.addProperty("lng", currentLng);
+        }
         payload.addProperty("notes", notes);
         payload.addProperty("visitedAt", System.currentTimeMillis());
 

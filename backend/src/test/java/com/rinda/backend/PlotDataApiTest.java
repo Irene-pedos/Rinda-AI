@@ -29,13 +29,8 @@ class PlotDataApiTest extends ApiTestBase {
     @BeforeEach
     void createPlot() throws Exception {
         farmer = farmerToken("+250785555551");
-        Map<String, Object> plot = Map.of("name", "Field", "plantingDate", PLANTED,
-                "boundary", Map.of("type", "Polygon", "coordinates", List.of(SQUARE)));
-        String body = mvc.perform(post("/api/v1/plots").header("Authorization", "Bearer " + farmer)
-                        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(plot)))
-                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
-        plotId = mapper.readTree(body).get("id").asLong();
-        jdbc.update("UPDATE plots SET status = 'ACTIVE' WHERE id = ?", plotId);
+        plotId = pendingPlot(farmer, "Field", PLANTED);
+        jdbc.update("UPDATE plots SET status = 'ACTIVE', verification_level = 'FIELD_VERIFIED' WHERE id = ?", plotId);
     }
 
     private void saveResult(String plantingDate) throws Exception {

@@ -22,16 +22,79 @@ from app.processing import (
     plot_status,
     rain_percent,
     same_day_in_year,
+    season_check,
     smooth,
 )
 
 
 class DataSource(Protocol):
+    """Where images and rainfall come from. Earth Engine and the simulated sample implement it; another provider
+    (Planetary Computer, Copernicus Data Space) can be added without changing the API or the calculations."""
+
     origin: str
 
     def observations(self, start: date, end: date) -> list[Observation]: ...
 
     def rain(self, start: date, end: date) -> list[RainDay]: ...
+
+
+@dataclass(frozen=True)
+class MonitorJob:
+    """One satellite fetch. history is what the backend already stored for this boundary, so a weekly refresh
+    fetches only new images while the season check still sees the whole season."""
+
+    plot_id: int
+    planting_date: date
+    fetch_from: date
+    as_of: date
+    min_clear_pixels: int | None
+    history: tuple[Observation, ...] = ()
+
+
+def monitor(job: MonitorJob, source: DataSource) -> dict:
+    """Fetches the raw observations and rainfall in the window and checks the season so far. Saves nothing:
+    the backend stores what this returns."""
+    if job.as_of < job.fetch_from:
+        raise ValueError("asOf is before fetchFrom")
+    fetched = one_per_day(source.observations(job.fetch_from, job.as_of))
+    rain = [day for day in source.rain(job.fetch_from, job.as_of) if day.rain_mm is not None]
+    merged = {obs.day: obs for obs in job.history}
+    merged.update({obs.day: obs for obs in fetched})
+    check = season_check(list(merged.values()), job.planting_date, job.as_of, job.min_clear_pixels)
+    return {
+        "plotId": job.plot_id,
+        "dataOrigin": source.origin,
+        "modelVersion": params.MODEL_VERSION,
+        "plantingDate": job.planting_date.isoformat(),
+        "fetchFrom": job.fetch_from.isoformat(),
+        "fetchTo": job.as_of.isoformat(),
+        "params": {**params.season_params(), "minClearPixels": job.min_clear_pixels},
+        # Raw values, with no pixel limit applied, so the rules can change later without fetching again.
+        "observations": [
+            {
+                "date": obs.day.isoformat(),
+                "source": "S2",
+                "ndviMedian": _round(obs.ndvi, 4),
+                "pixelCount": obs.clear_pixels,
+                "cloudFraction": _round(obs.cloud_fraction, 4),
+                "sceneCloudPct": _round(obs.cloud_pct, 2),
+            }
+            for obs in fetched
+        ],
+        "rainfall": [{"date": day.day.isoformat(), "rainMm": _round(day.rain_mm, 2), "source": "CHIRPS"}
+                     for day in rain],
+        "seasonCheck": {
+            "checkDate": job.as_of.isoformat(),
+            "flag": check.flag,
+            "reason": check.reason,
+            "confidence": check.confidence,
+            "signals": check.signals,
+            "dataQualityNote": check.data_quality_note,
+            "imagesUsed": check.images_used,
+            "pixelsUsed": check.pixels_used,
+            "latestImageDate": check.latest_image_date.isoformat() if check.latest_image_date else None,
+        },
+    }
 
 
 @dataclass(frozen=True)

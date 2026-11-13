@@ -11,6 +11,9 @@ rinda:
     dir: target/test-uploads
   analysis:
     run-inline: true
+  monitoring:
+    run-inline: true
+    cron: "-"
   ml:
     internal-api-key: test-only-key-test-only-key-test-only-key
   jwt:

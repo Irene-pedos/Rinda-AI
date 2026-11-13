@@ -77,11 +77,66 @@ public final class StatusUi {
         }
     }
 
+    /**
+     * Satellite monitoring state (docs/02-satellite-monitoring.md, "UI states"), shown on the crop health
+     * card until crop health can be judged. Returns null for DATA_AVAILABLE: then the card shows crop health.
+     * Never "live".
+     */
+    @Nullable
+    public static Spec forMonitoring(@Nullable String state) {
+        if (state == null) return null;
+        switch (state) {
+            case "NO_BOUNDARY":
+                return new Spec(R.string.monitoring_no_boundary, R.drawable.ic_map_pin,
+                        R.color.status_not_enough_data, R.color.status_not_enough_data_bg,
+                        R.string.monitoring_no_boundary_meaning, 0);
+            case "FETCHING":
+                return new Spec(R.string.monitoring_fetching, R.drawable.ic_sync,
+                        R.color.status_pending, R.color.status_pending_bg,
+                        R.string.monitoring_fetching_meaning, 0);
+            case "FETCH_FAILED":
+                return new Spec(R.string.monitoring_fetch_failed, R.drawable.ic_satellite,
+                        R.color.status_not_enough_data, R.color.status_not_enough_data_bg,
+                        R.string.monitoring_fetch_failed_meaning, 0);
+            case "NO_CLEAR_IMAGE":
+                return new Spec(R.string.monitoring_no_clear_image, R.drawable.ic_satellite,
+                        R.color.status_not_enough_data, R.color.status_not_enough_data_bg,
+                        R.string.monitoring_no_clear_image_meaning, 0);
+            default:
+                return null;
+        }
+    }
+
+    /** Satellite images are in, but crop health only runs on field-verified plots. */
+    @NonNull
+    public static Spec forHealthAwaitingFieldCheck() {
+        return new Spec(R.string.monitoring_awaiting_field_check, R.drawable.ic_visit,
+                R.color.status_pending, R.color.status_pending_bg,
+                R.string.monitoring_awaiting_field_check_meaning, 0);
+    }
+
     /** Plot verification status. This is not crop health and not insurance cover. */
     @NonNull
     public static Spec forPlot(@Nullable PlotStatus status) {
-        PlotStatus s = status != null ? status : PlotStatus.PENDING_VERIFICATION;
-        switch (s) {
+        if (status == null) {
+            // A status this app version doesn't know: say so, never pretend the plot is waiting for its check.
+            return new Spec(R.string.plot_status_unknown, R.drawable.ic_status_no_data,
+                    R.color.status_not_enough_data, R.color.status_not_enough_data_bg,
+                    R.string.plot_status_unknown_meaning, 0);
+        }
+        switch (status) {
+            case DRAFT:
+                return new Spec(R.string.plot_status_draft, R.drawable.ic_status_no_data,
+                        R.color.status_not_enough_data, R.color.status_not_enough_data_bg,
+                        R.string.plot_status_draft_meaning, 0);
+            case FLAGGED:
+                return new Spec(R.string.plot_status_flagged, R.drawable.ic_status_watch,
+                        R.color.status_watch, R.color.status_watch_bg,
+                        R.string.plot_status_flagged_meaning, 0);
+            case DISPUTED:
+                return new Spec(R.string.plot_status_disputed, R.drawable.ic_status_at_risk,
+                        R.color.status_at_risk, R.color.status_at_risk_bg,
+                        R.string.plot_status_disputed_meaning, 0);
             case ACTIVE:
                 return new Spec(R.string.plot_status_active, R.drawable.ic_status_healthy,
                         R.color.status_healthy, R.color.status_healthy_bg,
@@ -158,6 +213,23 @@ public final class StatusUi {
                 return new Spec(R.string.enrollment_not_enrolled, R.drawable.ic_status_no_data,
                         R.color.status_not_enough_data, R.color.status_not_enough_data_bg,
                         R.string.enrollment_not_enrolled_hint, 0);
+        }
+    }
+
+    /** Plot verification level (docs/01-plot-verification.md). Null shows a dash, never a guessed level. */
+    @NonNull
+    public static String verificationLevelLabel(@NonNull Context context, @Nullable String level) {
+        if (level == null) return "-";
+        switch (level) {
+            case "DOCUMENT_SUPPORTED":
+                return context.getString(R.string.reg_level_document_supported);
+            case "FIELD_VERIFIED":
+                return context.getString(R.string.reg_level_field_verified);
+            case "NLA_VERIFIED":
+                return context.getString(R.string.reg_level_nla_verified);
+            case "SELF_DECLARED":
+            default:
+                return context.getString(R.string.reg_level_self_declared);
         }
     }
 

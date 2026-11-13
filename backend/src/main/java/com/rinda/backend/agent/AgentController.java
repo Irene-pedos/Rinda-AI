@@ -2,8 +2,8 @@ package com.rinda.backend.agent;
 
 import com.rinda.backend.agent.AgentDtos.FarmerSummaryResponse;
 import com.rinda.backend.agent.AgentDtos.FieldVisitResponse;
-import com.rinda.backend.agent.AgentDtos.PlotVerifyRequest;
 import com.rinda.backend.auth.AuthPrincipal;
+import com.rinda.backend.common.ApiException;
 import com.rinda.backend.plot.PlotDtos.PlotResponse;
 import com.rinda.backend.plot.PlotService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -48,12 +49,27 @@ public class AgentController {
         return service.farmers(principal.userId());
     }
 
-    @Operation(summary = "Verify or reject a new plot, optionally correcting its planting date")
-    @PostMapping("/plots/{id}/verify")
+    @Operation(summary = "Field check of a plot: verify it (raises it to FIELD_VERIFIED; needs a photo taken at the "
+            + "plot with its app-recorded location) or reject it with a reason")
+    @PostMapping(value = "/plots/{id}/verify", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public PlotResponse verifyPlot(@AuthenticationPrincipal AuthPrincipal principal, @PathVariable long id,
-                                   @Valid @RequestBody PlotVerifyRequest request) {
-        return plots.verify(principal, id, request.decision(), request.confirmedPlantingDate(),
-                request.rejectionReason());
+                                   @RequestParam String decision,
+                                   @RequestParam(required = false) LocalDate confirmedPlantingDate,
+                                   @RequestParam(required = false) String rejectionReason,
+                                   @RequestParam(required = false) Double photoLat,
+                                   @RequestParam(required = false) Double photoLng,
+                                   @RequestParam(required = false) Double photoAccuracyM,
+                                   @RequestParam(required = false) Instant photoTakenAt,
+                                   @RequestPart(required = false) MultipartFile photo) {
+        if (!"ACTIVE".equals(decision) && !"REJECTED".equals(decision)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "decision must be ACTIVE or REJECTED.");
+        }
+        if (rejectionReason != null && rejectionReason.length() > 500) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED",
+                    "rejectionReason must be at most 500 characters.");
+        }
+        return plots.verify(principal, id, new PlotService.VerifyInput(decision, confirmedPlantingDate,
+                rejectionReason, photo, photoLat, photoLng, photoAccuracyM, photoTakenAt));
     }
 
     @Operation(summary = "Record a field visit (ground truth). Safe to resend with the same clientId.")

@@ -29,6 +29,8 @@ powershell -ExecutionPolicy Bypass -File scripts\mvn.ps1 spring-boot:run "-Dspri
 
 - **Tests use real MySQL** (`rinda_test`) through `ApiTestBase`, because H2 has no spatial functions.
 - **Flyway owns the schema.** Add a new `V<n>__*.sql` migration; never edit an applied one. Demo data is the repeatable `db/demo/R__demo_seed.sql`, which only the `dev` profile loads.
+- **Plot boundaries come only from a GPS walk** (`WalkService`, `POST /plots/{id}/walk`). Never add an endpoint that accepts a drawn polygon. Level, status and the financial gate are derived in `PlotRules`; parcel data goes through `LandRegistryProvider` (never scrape NLA, Irembo, Amakuru or the Land Dashboard); the dev profile uses `MockLandRegistryProvider` (fake zero-code UPIs only, `GET /land-registry/parcels`), production uses `DOCUMENT`. Rules: `docs/01-plot-verification.md`.
+- **Satellite monitoring** (`monitoring/`, `docs/02-satellite-monitoring.md`) starts only after a walk is saved: `MonitoringService` queues a backfill from the planting date, then a weekly refresh, and stores raw values per walk. Jobs run on their own thread, never inside the request's transaction. Tests replace `SatelliteClient` with `FakeSatellite`. A season result is a review flag, never proof of crop, and never "live".
 - **Plot polygons** are stored as GeoJSON through a `@ColumnTransformer` using `ST_GeomFromGeoJSON`. SRID 4326 in MySQL is lat/lon order, so don't write WKT by hand.
 - **Decision values** come from the `thresholds` table through `ThresholdService`. An empty result means "not supplied yet", never zero.
 - **Errors** are `ProblemDetail` JSON with a stable `code`. Throw `ApiException`.

@@ -1,6 +1,7 @@
 package com.rinda.backend.claim;
 
 import com.rinda.backend.common.ApiException;
+import com.rinda.backend.plot.PlotRules;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
@@ -19,7 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * Only an officer decides, always with a written reason; the system never declines. A farmer can ask for one
  * review per decision. Payouts are simulated, and only happen with an amount the insurer confirmed and a
- * verified payout account. Every change goes to audit_log, and the farmer is told.
+ * verified payout account, on a plot that is FIELD_VERIFIED or higher and not disputed. Every change goes to
+ * audit_log, and the farmer is told.
  */
 @Service
 public class ClaimActionService {
@@ -28,10 +30,12 @@ public class ClaimActionService {
     private static final Set<String> REVIEWABLE = Set.of("APPROVED", "DECLINED");
 
     private final JdbcTemplate jdbc;
+    private final PlotRules plotRules;
     private final SecureRandom random = new SecureRandom();
 
-    public ClaimActionService(JdbcTemplate jdbc) {
+    public ClaimActionService(JdbcTemplate jdbc, PlotRules plotRules) {
         this.jdbc = jdbc;
+        this.plotRules = plotRules;
     }
 
     private record ClaimRow(long id, long plotId, long seasonId, String status, BigDecimal payoutRate,
@@ -39,7 +43,7 @@ public class ClaimActionService {
     }
 
     /** Payout result for the API: PAID, or why it can't happen yet. */
-    public enum PayoutOutcome { PAID, AMOUNT_NOT_CONFIRMED, ACCOUNT_NOT_VERIFIED }
+    public enum PayoutOutcome { PAID, AMOUNT_NOT_CONFIRMED, ACCOUNT_NOT_VERIFIED, PLOT_NOT_ELIGIBLE }
 
     // ===== Officer =====
 
@@ -118,6 +122,12 @@ public class ClaimActionService {
         if (!"APPROVED".equals(claim.status())) {
             throw new ApiException(HttpStatus.CONFLICT, "CLAIM_NOT_APPROVED", "Only an approved claim can be paid.");
         }
+        String plotBlock = plotRules.financialBlock(claim.plotId());
+        if (plotBlock != null) {
+            throw new ApiException(HttpStatus.CONFLICT, plotBlock, "PLOT_NOT_FIELD_VERIFIED".equals(plotBlock)
+                    ? "Payouts need a plot that a person checked in the field (FIELD_VERIFIED)."
+                    : "The plot is disputed or under review, so the payout waits until that is resolved.");
+        }
         PayoutOutcome outcome = tryPay(claim, officerId);
         if (outcome == PayoutOutcome.AMOUNT_NOT_CONFIRMED) {
             throw new ApiException(HttpStatus.CONFLICT, "PAYOUT_AMOUNT_NOT_CONFIRMED",
@@ -166,6 +176,10 @@ public class ClaimActionService {
      * or without a verified payout account, the claim stays APPROVED and nothing is paid.
      */
     private PayoutOutcome tryPay(ClaimRow claim, long actorId) {
+        // Financial actions need FIELD_VERIFIED or higher and no open dispute (docs/01-plot-verification.md).
+        if (plotRules.financialBlock(claim.plotId()) != null) {
+            return PayoutOutcome.PLOT_NOT_ELIGIBLE;
+        }
         BigDecimal amount = claim.amount();
         if (amount == null && claim.payoutRate() != null) {
             BigDecimal sumInsured = jdbc.query("""

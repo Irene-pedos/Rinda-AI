@@ -32,7 +32,7 @@ import com.rinda.app.data.model.EnrollmentResponse;
 import com.rinda.app.data.model.HarvestForecastResponse;
 import com.rinda.app.data.model.ObservationResponse;
 import com.rinda.app.data.model.PlotHealthStatusResponse;
-import com.rinda.app.data.model.PlotRequest;
+import com.rinda.app.data.model.PlotMonitoringResponse;
 import com.rinda.app.data.model.PlotResponse;
 import com.rinda.app.databinding.ActivityPlotDetailBinding;
 import com.rinda.app.databinding.DialogTextInputBinding;
@@ -56,6 +56,8 @@ public class PlotDetailActivity extends AppCompatActivity {
 
     private ActivityPlotDetailBinding binding;
     private long plotId;
+    /** Latest GET /plots/{id}/monitoring, so a missing crop health result can fall back to its state. */
+    private PlotMonitoringResponse lastMonitoring;
     private PlotEntity currentPlot;
     private BaselineResponse currentBaseline;
     private List<ObservationResponse> currentObservations = new ArrayList<>();
@@ -102,6 +104,18 @@ public class PlotDetailActivity extends AppCompatActivity {
         });
         binding.btnEditPlot.setOnClickListener(v -> showEditNameDialog());
         binding.btnDeletePlot.setOnClickListener(v -> showDeleteConfirmDialog());
+        binding.btnAgentVerifyPlot.setOnClickListener(v -> {
+            Intent intent = new Intent(this, com.rinda.app.ui.agent.VerifyPlotActivity.class);
+            intent.putExtra(com.rinda.app.ui.agent.VerifyPlotActivity.EXTRA_PLOT_ID, plotId);
+            startActivity(intent);
+        });
+        binding.btnHealthWalk.setOnClickListener(v -> binding.btnContinueRegistration.performClick());
+        binding.btnContinueRegistration.setOnClickListener(v -> {
+            Intent intent = new Intent(this, RegisterPlotActivity.class);
+            intent.putExtra(RegisterPlotActivity.EXTRA_PLOT_ID, plotId);
+            startActivity(intent);
+        });
+        bindManageButtons(null);
 
         observeLocalPlot();
         fetchAllData();
@@ -122,8 +136,34 @@ public class PlotDetailActivity extends AppCompatActivity {
                     if (plot != null) {
                         currentPlot = plot;
                         updatePlotMetadataUi(plot);
+                        bindManageButtons(plot.status);
                     }
                 });
+    }
+
+    /**
+     * Report, rename and delete are the farmer's own actions (the server refuses them for anyone else). An agent
+     * gets only "Check boundary", and only while the plot is waiting for that check.
+     */
+    private void bindManageButtons(@androidx.annotation.Nullable com.rinda.app.data.model.PlotStatus status) {
+        boolean agent = com.rinda.app.data.api.TokenManager.getInstance(this).getUserRole()
+                == com.rinda.app.data.model.Role.AGENT;
+        int farmerOnly = agent ? View.GONE : View.VISIBLE;
+        binding.btnReportProblem.setVisibility(farmerOnly);
+        binding.btnEditPlot.setVisibility(farmerOnly);
+        binding.btnDeletePlot.setVisibility(farmerOnly);
+        // Unfinished, rejected (walk again), or flagged (for example an old drawn boundary that must be walked).
+        boolean unfinished = status == com.rinda.app.data.model.PlotStatus.DRAFT
+                || status == com.rinda.app.data.model.PlotStatus.REJECTED
+                || status == com.rinda.app.data.model.PlotStatus.FLAGGED;
+        binding.btnContinueRegistration.setVisibility(!agent && unfinished ? View.VISIBLE : View.GONE);
+        // Verify needs PENDING_VERIFICATION; a flagged or disputed plot can still be rejected, and the
+        // check screen says why Verify is off.
+        boolean canVerify = agent && (status == com.rinda.app.data.model.PlotStatus.PENDING_VERIFICATION
+                || status == com.rinda.app.data.model.PlotStatus.FLAGGED
+                || status == com.rinda.app.data.model.PlotStatus.DISPUTED);
+        binding.btnAgentVerifyPlot.setVisibility(canVerify ? View.VISIBLE : View.GONE);
+        binding.tvManageTitle.setVisibility(!agent || canVerify ? View.VISIBLE : View.GONE);
     }
 
     private void fetchAllData() {
@@ -134,7 +174,7 @@ public class PlotDetailActivity extends AppCompatActivity {
         }
         binding.swipeRefresh.setRefreshing(true);
         fetchPlotMetadata();
-        fetchCropHealthStatus();
+        fetchMonitoring();
         fetchEnrollment();
         fetchHarvestForecast();
         fetchBaseline();
@@ -165,8 +205,11 @@ public class PlotDetailActivity extends AppCompatActivity {
         binding.tvPlotName.setText(plot.name);
         binding.tvHeaderDemoBadge.setVisibility(plot.isDemo ? View.VISIBLE : View.GONE);
 
-        double area = plot.areaHa != null ? plot.areaHa.doubleValue() : 0.0;
-        binding.tvArea.setText(getString(R.string.plot_area, area));
+        if (plot.areaHa != null) {
+            binding.tvArea.setText(getString(R.string.plot_area, plot.areaHa.doubleValue()));
+        } else {
+            binding.tvArea.setText(R.string.plot_area_not_walked);
+        }
 
         if (plot.plantingDate != null && !plot.plantingDate.isEmpty()) {
             binding.tvPlantingDate.setText(getString(R.string.plot_planted_on, DateTimeUtils.formatDate(plot.plantingDate)));
@@ -193,13 +236,99 @@ public class PlotDetailActivity extends AppCompatActivity {
 
     // ===== Crop health =====
 
+    /**
+     * The monitoring state decides what the card shows (docs/02-satellite-monitoring.md, UI states):
+     * before the walk and while there are no usable images, an empty state instead of a crop health word.
+     * Crop health itself is fetched only when the backend says it is available (field-verified plots).
+     */
+    private void fetchMonitoring() {
+        ApiClient.getInstance(this).getService().getPlotMonitoring(plotId)
+                .enqueue(new Callback<PlotMonitoringResponse>() {
+                    @Override
+                    public void onResponse(Call<PlotMonitoringResponse> call, Response<PlotMonitoringResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            bindMonitoring(response.body());
+                        } else {
+                            fetchCropHealthStatus();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<PlotMonitoringResponse> call, Throwable t) {
+                        // Offline: keep what is shown. Never guess a state.
+                    }
+                });
+    }
+
+    private void bindMonitoring(PlotMonitoringResponse monitoring) {
+        lastMonitoring = monitoring;
+        if (monitoring.isDemo || monitoring.healthStatusAvailable && !"NO_BOUNDARY".equals(monitoring.state)) {
+            // A crop health result wins when there is one; with none, the card falls back to the state.
+            binding.btnHealthWalk.setVisibility(View.GONE);
+            fetchCropHealthStatus();
+            return;
+        }
+        showMonitoringState(monitoring);
+    }
+
+    private void showMonitoringState(PlotMonitoringResponse monitoring) {
+        StatusUi.Spec spec = StatusUi.forMonitoring(monitoring.state);
+        if (spec == null) {
+            spec = StatusUi.forHealthAwaitingFieldCheck();
+        }
+        StatusUi.applyBadge(binding.ivHealthIcon, spec);
+        binding.tvHealthWord.setText(spec.labelRes);
+        binding.tvHealthWord.setTextColor(ContextCompat.getColor(this, spec.fgColorRes));
+
+        boolean agent = com.rinda.app.data.api.TokenManager.getInstance(this).getUserRole()
+                == com.rinda.app.data.model.Role.AGENT;
+        boolean noBoundary = "NO_BOUNDARY".equals(monitoring.state);
+        if (noBoundary && agent) {
+            binding.tvHealthMeaning.setText(R.string.monitoring_no_boundary_agent);
+        } else if ("NO_CLEAR_IMAGE".equals(monitoring.state) && monitoring.monitoredSince != null) {
+            binding.tvHealthMeaning.setText(getString(R.string.monitoring_no_clear_image_since,
+                    DateTimeUtils.formatDate(monitoring.monitoredSince)));
+        } else {
+            binding.tvHealthMeaning.setText(spec.meaningRes);
+        }
+        binding.btnHealthWalk.setVisibility(noBoundary && !agent ? View.VISIBLE : View.GONE);
+
+        // Always the date of the latest image, never "live".
+        if (monitoring.latestImageDate != null) {
+            binding.tvHealthDate.setText(getString(R.string.monitoring_latest_image,
+                    DateTimeUtils.formatDate(monitoring.latestImageDate)));
+            binding.tvHealthDate.setVisibility(View.VISIBLE);
+        } else {
+            binding.tvHealthDate.setVisibility(View.GONE);
+        }
+
+        // No crop health result here, so nothing that belongs to one: no cause, todo, confidence or note.
+        binding.tvCause.setVisibility(View.GONE);
+        binding.tvExplanation.setVisibility(View.GONE);
+        binding.layoutTodo.setVisibility(View.GONE);
+        binding.tvFieldVisit.setVisibility(View.GONE);
+        binding.layoutConfidence.setVisibility(View.GONE);
+        binding.tvDataQualityNote.setVisibility(View.GONE);
+    }
+
     private void fetchCropHealthStatus() {
         ApiClient.getInstance(this).getService().getPlotHealthStatus(plotId)
                 .enqueue(new Callback<PlotHealthStatusResponse>() {
                     @Override
                     public void onResponse(Call<PlotHealthStatusResponse> call, Response<PlotHealthStatusResponse> response) {
                         if (response.isSuccessful() && response.body() != null) {
-                            updateHealthStatusUi(response.body());
+                            PlotHealthStatusResponse health = response.body();
+                            boolean noResult = health.getDate() == null && health.getStatus() == null
+                                    || health.getDate() == null && "NOT_ENOUGH_DATA".equals(health.getStatus());
+                            // Demo plots use seeded results and placeholder walks that never get a satellite
+                            // job, so their monitoring state would wrongly say "fetching".
+                            if (noResult && lastMonitoring != null && !lastMonitoring.isDemo
+                                    && StatusUi.forMonitoring(lastMonitoring.state) != null) {
+                                // Not analysed yet: say what the satellite fetch is doing instead.
+                                showMonitoringState(lastMonitoring);
+                            } else {
+                                updateHealthStatusUi(health);
+                            }
                         }
                     }
 
@@ -429,6 +558,9 @@ public class PlotDetailActivity extends AppCompatActivity {
             legend.add(new LegendEntry(getString(R.string.chart_legend_normal), Legend.LegendForm.LINE, 12f, 1.6f, null, color(R.color.chart_normal_median)));
         }
         chart.getLegend().setCustom(legend);
+        // setData() already measured the old legend; re-measure, or the legend renderer reads past the end
+        // of its cached sizes (IndexOutOfBoundsException) when the baseline and observations arrive in turn.
+        chart.notifyDataSetChanged();
         chart.animateX(500);
     }
 
@@ -636,7 +768,9 @@ public class PlotDetailActivity extends AppCompatActivity {
     }
 
     private void updatePlotName(String newName) {
-        PlotRequest req = new PlotRequest(newName, currentPlot.boundary, currentPlot.plantingDate, "MAIZE");
+        // Name and planting date only: the server refuses a boundary (it comes only from the GPS walk).
+        com.rinda.app.data.model.PlotRegistration.UpdateRequest req =
+                new com.rinda.app.data.model.PlotRegistration.UpdateRequest(newName, currentPlot.plantingDate);
         ApiClient.getInstance(this).getService().updatePlot(plotId, req)
                 .enqueue(new Callback<PlotResponse>() {
                     @Override

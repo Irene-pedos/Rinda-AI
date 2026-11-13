@@ -31,13 +31,8 @@ class ClaimTriggerApiTest extends ApiTestBase {
     @BeforeEach
     void coveredActivePlot() throws Exception {
         farmerToken = farmerToken("+250785555551");
-        Map<String, Object> plot = Map.of("name", "River field", "plantingDate", "2026-09-20",
-                "boundary", Map.of("type", "Polygon", "coordinates", List.of(SQUARE)));
-        String body = mvc.perform(post("/api/v1/plots").header("Authorization", "Bearer " + farmerToken)
-                        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(plot)))
-                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
-        plotId = mapper.readTree(body).get("id").asLong();
-        jdbc.update("UPDATE plots SET status = 'ACTIVE' WHERE id = ?", plotId);
+        plotId = pendingPlot(farmerToken, "River field", "2026-09-20");
+        jdbc.update("UPDATE plots SET status = 'ACTIVE', verification_level = 'FIELD_VERIFIED' WHERE id = ?", plotId);
 
         jdbc.update("INSERT INTO seasons (code, type) VALUES ('2026A', 'A')");
         seasonId = jdbc.queryForObject("SELECT id FROM seasons WHERE code = '2026A'", Long.class);
@@ -114,6 +109,35 @@ class ClaimTriggerApiTest extends ApiTestBase {
                 Long.class)).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM audit_log WHERE action = 'CLAIM_TRIGGERED'", Long.class))
                 .isEqualTo(1);
+    }
+
+    @Test
+    void noClaimOnAPlotThatWasNotCheckedInTheField() throws Exception {
+        jdbc.update("UPDATE plots SET verification_level = 'DOCUMENT_SUPPORTED' WHERE id = ?", plotId);
+        sendStatus("2026-11-15", "AT_RISK", 45.0, null, null);
+        sendStatus("2026-11-29", "AT_RISK", 45.0, 55.0, 70.0);
+
+        assertThat(claims()).isZero();
+    }
+
+    @Test
+    void onlyOneClaimPerUpiPerSeason() throws Exception {
+        String upi = jdbc.queryForObject("SELECT upi FROM plots WHERE id = ?", String.class, plotId);
+        long farmerId = jdbc.queryForObject("SELECT farmer_id FROM plots WHERE id = ?", Long.class, plotId);
+        jdbc.update("""
+                INSERT INTO plots (farmer_id, upi, name, status, verification_level) VALUES (?, ?, 'Same parcel', 'ACTIVE',
+                'FIELD_VERIFIED')
+                """, farmerId, upi);
+        long sameUpiPlot = jdbc.queryForObject("SELECT MAX(id) FROM plots", Long.class);
+        jdbc.update("""
+                INSERT INTO claims (plot_id, season_id, trigger_date, status, evidence_snapshot_json, model_version)
+                VALUES (?, ?, '2026-11-20', 'UNDER_REVIEW', '{}', '0.3.0')
+                """, sameUpiPlot, seasonId);
+
+        sendStatus("2026-11-15", "AT_RISK", 45.0, null, null);
+        sendStatus("2026-11-29", "AT_RISK", 45.0, 55.0, 70.0);
+
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM claims WHERE plot_id = ?", Long.class, plotId)).isZero();
     }
 
     @Test

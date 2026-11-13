@@ -1,0 +1,47 @@
+{
+  "notice": "MOCK DATA. Invented parcels for development and demos only: not official land records, not real UPIs. Only zero-code UPIs (0/00/00/00/...) are used, so a real UPI never matches.",
+  "parcels": [
+    {
+      "upi": "0/00/00/00/9001",
+      "landUse": "Agriculture (mock)",
+      "location": "Demo province, Demo district, Demo sector, Demo cell",
+      "boundary": {"type": "Polygon", "coordinates": [[[30.1000, -1.9500], [30.1020, -1.9500], [30.1020, -1.9480], [30.1000, -1.9480], [30.1000, -1.9500]]]}
+    },
+    {
+      "upi": "0/00/00/00/9002",
+      "landUse": "Agriculture (mock)",
+      "location": "Demo province, Demo district, Demo sector, Demo cell",
+      "boundary": {"type": "Polygon", "coordinates": [[[30.1030, -1.9500], [30.1050, -1.9500], [30.1050, -1.9480], [30.1030, -1.9480], [30.1030, -1.9500]]]}
+    },
+    {
+      "upi": "0/00/00/00/9003",
+      "landUse": "Agriculture (mock)",
+      "location": "Demo province, Demo district, Demo sector, Demo cell",
+      "boundary": {"type": "Polygon", "coordinates": [[[30.1060, -1.9500], [30.1080, -1.9500], [30.1080, -1.9480], [30.1060, -1.9480], [30.1060, -1.9500]]]}
+    },
+    {
+      "upi": "0/00/00/00/9004",
+      "landUse": "Agriculture (mock)",
+      "location": "Demo province, Demo district, Demo sector, Demo cell",
+      "boundary": {"type": "Polygon", "coordinates": [[[30.1090, -1.9500], [30.1110, -1.9500], [30.1110, -1.9480], [30.1090, -1.9480], [30.1090, -1.9500]]]}
+    },
+    {
+      "upi": "0/00/00/00/1001",
+      "landUse": "Agriculture (mock)",
+      "location": "Demo province, Demo district, Demo sector, Demo cell",
+      "boundary": {"type": "Polygon", "coordinates": [[[29.7400, -2.5960], [29.7407, -2.5960], [29.7407, -2.5953], [29.7400, -2.5953], [29.7400, -2.5960]]]}
+    },
+    {
+      "upi": "0/00/00/00/1002",
+      "landUse": "Agriculture (mock)",
+      "location": "Demo province, Demo district, Demo sector, Demo cell",
+      "boundary": {"type": "Polygon", "coordinates": [[[29.7420, -2.5960], [29.7432, -2.5961], [29.7435, -2.5950], [29.7426, -2.5944], [29.7419, -2.5950], [29.7420, -2.5960]]]}
+    },
+    {
+      "upi": "0/00/00/00/1003",
+      "landUse": "Agriculture (mock)",
+      "location": "Demo province, Demo district, Demo sector, Demo cell",
+      "boundary": {"type": "Polygon", "coordinates": [[[29.7440, -2.5960], [29.7446, -2.5960], [29.7446, -2.5956], [29.7440, -2.5956], [29.7440, -2.5960]]]}
+    }
+  ]
+}

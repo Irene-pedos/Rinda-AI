@@ -198,6 +198,15 @@
                             android:textAppearance="@style/TextAppearance.Rinda.Body"
                             android:textColor="@color/rinda_text_primary" />
 
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnHealthWalk"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_md"
+                            android:text="@string/monitoring_btn_walk"
+                            android:visibility="gone"
+                            app:icon="@drawable/ic_map_pin" />
+
                         <TextView
                             android:id="@+id/tvCause"
                             android:layout_width="match_parent"
@@ -517,8 +526,9 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- 6. Manage -->
+                <!-- 6. Manage. Farmers see their own buttons; an agent sees only "Check boundary" when it's due. -->
                 <TextView
+                    android:id="@+id/tvManageTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/section_gap"
@@ -526,6 +536,27 @@
                     android:accessibilityHeading="true"
                     android:text="@string/plot_manage_title"
                     android:textAppearance="@style/TextAppearance.Rinda.Section" />
+
+                <!-- Farmer, unfinished registration: walk the plot or add the e-title. -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnContinueRegistration"
+                    style="@style/Widget.Rinda.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_sm"
+                    android:text="@string/reg_btn_continue"
+                    android:visibility="gone"
+                    app:icon="@drawable/ic_map_pin" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAgentVerifyPlot"
+                    style="@style/Widget.Rinda.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_sm"
+                    android:text="@string/btn_verify_plot_boundary"
+                    android:visibility="gone"
+                    app:icon="@drawable/ic_status_healthy" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnReportProblem"

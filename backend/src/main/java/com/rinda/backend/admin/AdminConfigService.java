@@ -12,6 +12,7 @@ import com.rinda.backend.admin.AdminDtos.SeasonResponse;
 import com.rinda.backend.admin.AdminDtos.ThresholdResponse;
 import com.rinda.backend.common.ApiException;
 import com.rinda.backend.common.PageResponse;
+import com.rinda.backend.plot.PlotRules;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -43,10 +44,12 @@ public class AdminConfigService {
 
     private final JdbcTemplate jdbc;
     private final ObjectMapper mapper;
+    private final PlotRules plotRules;
 
-    public AdminConfigService(JdbcTemplate jdbc, ObjectMapper mapper) {
+    public AdminConfigService(JdbcTemplate jdbc, ObjectMapper mapper, PlotRules plotRules) {
         this.jdbc = jdbc;
         this.mapper = mapper;
+        this.plotRules = plotRules;
     }
 
     // ===== Thresholds =====
@@ -239,9 +242,10 @@ public class AdminConfigService {
         if (jdbc.queryForList("SELECT id FROM seasons WHERE id = ?", Long.class, r.seasonId()).isEmpty()) {
             throw new ApiException(HttpStatus.NOT_FOUND, "SEASON_NOT_FOUND", "Season not found.");
         }
-        // Only verified plots can be covered and trigger claims (spec §2.2 #4).
-        if ("COVERED".equals(r.status()) && !"ACTIVE".equals(plotStatus)) {
-            throw new ApiException(HttpStatus.CONFLICT, "PLOT_NOT_ACTIVE", "Only a verified plot can be covered.");
+        // Cover is a financial action: FIELD_VERIFIED or higher and not disputed (docs/01-plot-verification.md).
+        if ("COVERED".equals(r.status()) && plotRules.financialBlock(r.plotId()) != null) {
+            throw new ApiException(HttpStatus.CONFLICT, "PLOT_NOT_ACTIVE",
+                    "Only a plot checked in the field (FIELD_VERIFIED) and not disputed can be covered.");
         }
         if (r.startDate() != null && r.endDate() != null && !r.startDate().isBefore(r.endDate())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "ENROLLMENT_INVALID", "The start must be before the end.");

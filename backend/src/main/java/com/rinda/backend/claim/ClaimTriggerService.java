@@ -1,6 +1,7 @@
 package com.rinda.backend.claim;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.rinda.backend.plot.VerificationLevel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -66,7 +67,8 @@ public class ClaimTriggerService {
         NOT_AT_RISK_IN_STAGE, AT_RISK_TOO_SHORT, TOO_FEW_VALID_OBSERVATIONS, NO_LOSS_SIGNAL
     }
 
-    private record PlotRow(long farmerId, String name, String status, LocalDate plantingDate, boolean demo) {
+    private record PlotRow(long farmerId, String name, String status, LocalDate plantingDate, boolean demo,
+                           String verificationLevel, String upi) {
     }
 
     private record Cover(long enrollmentId, long seasonId, String seasonCode) {
@@ -86,7 +88,9 @@ public class ClaimTriggerService {
     @Transactional
     public Outcome evaluate(long plotId) {
         PlotRow plot = loadPlot(plotId);
-        if (plot == null || !"ACTIVE".equals(plot.status())) {
+        // Claims only on plots a person checked in the field, and never while disputed (decision A, 2026-11-11).
+        if (plot == null || !"ACTIVE".equals(plot.status())
+                || !VerificationLevel.valueOf(plot.verificationLevel()).atLeast(VerificationLevel.FIELD_VERIFIED)) {
             return Outcome.PLOT_NOT_ACTIVE;
         }
 
@@ -113,7 +117,7 @@ public class ClaimTriggerService {
         if (cover.isEmpty()) {
             return Outcome.NOT_COVERED;
         }
-        if (claimExists(plotId, cover.get().seasonId())) {
+        if (claimExists(plotId, plot.upi(), cover.get().seasonId())) {
             return Outcome.CLAIM_EXISTS;
         }
 
@@ -162,10 +166,11 @@ public class ClaimTriggerService {
                 SELECT p.farmer_id, p.name, p.status,
                        COALESCE(p.planting_date,
                                 (SELECT r.planting_date FROM ml_runs r WHERE r.plot_id = p.id ORDER BY r.id DESC LIMIT 1)),
-                       p.is_demo
+                       p.is_demo, p.verification_level, p.upi
                 FROM plots p WHERE p.id = ?
                 """, (rs, n) -> new PlotRow(rs.getLong(1), rs.getString(2), rs.getString(3),
-                rs.getObject(4, LocalDate.class), rs.getBoolean(5)), plotId).stream().findFirst().orElse(null);
+                rs.getObject(4, LocalDate.class), rs.getBoolean(5), rs.getString(6), rs.getString(7)), plotId)
+                .stream().findFirst().orElse(null);
     }
 
     private Map<String, Threshold> loadThresholds() {
@@ -215,9 +220,12 @@ public class ClaimTriggerService {
                 Date.valueOf(date), Date.valueOf(date)).stream().findFirst();
     }
 
-    private boolean claimExists(long plotId, long seasonId) {
-        Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM claims WHERE plot_id = ? AND season_id = ?",
-                Integer.class, plotId, seasonId);
+    /** One claim per plot per season, and one per UPI per season (a UPI can't be insured twice). */
+    private boolean claimExists(long plotId, String upi, long seasonId) {
+        Integer count = jdbc.queryForObject("""
+                SELECT COUNT(*) FROM claims c JOIN plots p ON p.id = c.plot_id
+                WHERE c.season_id = ? AND (c.plot_id = ? OR (? IS NOT NULL AND p.upi = ?))
+                """, Integer.class, seasonId, plotId, upi, upi);
         return count != null && count > 0;
     }
 

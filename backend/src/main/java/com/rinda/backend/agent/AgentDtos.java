@@ -25,15 +25,6 @@ public final class AgentDtos {
             @Schema(description = "When true, show a Demo label") boolean isDemo) {
     }
 
-    public record PlotVerifyRequest(
-            @NotNull @Pattern(regexp = "ACTIVE|REJECTED") String decision,
-            @Schema(types = {"string", "null"},
-                    description = "The planting date the agent confirmed in the field. It can correct the farmer's date.")
-            LocalDate confirmedPlantingDate,
-            @Size(max = 500) @Schema(types = {"string", "null"}, description = "Required when rejecting")
-            String rejectionReason) {
-    }
-
     public record FieldVisitResponse(
             long id,
             long plotId,

@@ -24,12 +24,7 @@ class MlResultApiTest extends ApiTestBase {
     @BeforeEach
     void createPlot() throws Exception {
         String token = farmerToken("+250784444441");
-        Map<String, Object> plot = Map.of("name", "Field", "plantingDate", "2026-09-20",
-                "boundary", Map.of("type", "Polygon", "coordinates", List.of(SQUARE)));
-        String body = mvc.perform(post("/api/v1/plots").header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(plot)))
-                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
-        plotId = mapper.readTree(body).get("id").asLong();
+        plotId = pendingPlot(token, "Field", "2026-09-20");
     }
 
     private Map<String, Object> result(String origin) {
@@ -61,7 +56,7 @@ class MlResultApiTest extends ApiTestBase {
     }
 
     private void makeActive() {
-        jdbc.update("UPDATE plots SET status = 'ACTIVE' WHERE id = ?", plotId);
+        jdbc.update("UPDATE plots SET status = 'ACTIVE', verification_level = 'FIELD_VERIFIED' WHERE id = ?", plotId);
     }
 
     private void makeDemo() {

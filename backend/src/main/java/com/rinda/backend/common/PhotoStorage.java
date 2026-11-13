@@ -30,6 +30,15 @@ public class PhotoStorage {
 
     /** Saves a photo and returns its key, or null when there is no photo. */
     public String save(String folder, MultipartFile photo) {
+        return store(folder, photo, false);
+    }
+
+    /** Saves a plot document (e-title, portal screenshot, lease, consent): a JPEG, PNG or PDF. */
+    public String saveDocument(String folder, MultipartFile document) {
+        return store(folder, document, true);
+    }
+
+    private String store(String folder, MultipartFile photo, boolean allowPdf) {
         if (photo == null || photo.isEmpty()) {
             return null;
         }
@@ -39,7 +48,7 @@ public class PhotoStorage {
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
-        String extension = extension(bytes);
+        String extension = allowPdf && isPdf(bytes) ? "pdf" : extension(bytes, allowPdf);
         String key = folder + "/" + UUID.randomUUID() + "." + extension;
         Path target = resolve(key);
         try {
@@ -54,7 +63,7 @@ public class PhotoStorage {
     public StoredPhoto read(String key) {
         try {
             byte[] bytes = Files.readAllBytes(resolve(key));
-            return new StoredPhoto(bytes, key.endsWith(".png") ? "image/png" : "image/jpeg");
+            return new StoredPhoto(bytes, contentType(key));
         } catch (IOException ex) {
             throw new ApiException(HttpStatus.NOT_FOUND, "PHOTO_NOT_FOUND", "Photo not found.");
         }
@@ -68,12 +77,27 @@ public class PhotoStorage {
         return path;
     }
 
-    private static String extension(byte[] b) {
+    public static String contentType(String key) {
+        if (key.endsWith(".pdf")) {
+            return "application/pdf";
+        }
+        return key.endsWith(".png") ? "image/png" : "image/jpeg";
+    }
+
+    private static boolean isPdf(byte[] b) {
+        return b.length > 4 && b[0] == '%' && b[1] == 'P' && b[2] == 'D' && b[3] == 'F' && b[4] == '-';
+    }
+
+    private static String extension(byte[] b, boolean allowPdf) {
         if (b.length > 3 && (b[0] & 0xFF) == 0xFF && (b[1] & 0xFF) == 0xD8 && (b[2] & 0xFF) == 0xFF) {
             return "jpg";
         }
         if (b.length > 8 && (b[0] & 0xFF) == 0x89 && b[1] == 'P' && b[2] == 'N' && b[3] == 'G') {
             return "png";
+        }
+        if (allowPdf) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "DOCUMENT_INVALID",
+                    "The document must be a JPEG or PNG image, or a PDF.");
         }
         throw new ApiException(HttpStatus.BAD_REQUEST, "PHOTO_INVALID", "The photo must be a JPEG or PNG image.");
     }

@@ -15,7 +15,8 @@ class Observation:
     day: date
     ndvi: float | None
     clear_pixels: int
-    cloud_pct: float | None = None
+    cloud_pct: float | None = None  # the whole Sentinel-2 scene, from the image's metadata
+    cloud_fraction: float | None = None  # share of the plot's pixels masked as cloud, shadow or not clear
 
     @property
     def usable(self) -> bool:
@@ -368,3 +369,102 @@ def harvest_range(observations: list[Observation], smoothed: dict[date, float], 
 
     total = sum(mean(values) for values in by_bin.values())
     return HarvestForecast(total / high_total * 100, total / low_total * 100, None, note)
+
+
+# ===== "Consistent with a maize season?" (docs/02-satellite-monitoring.md) =====
+
+@dataclass(frozen=True)
+class SeasonCheck:
+    """A review flag, never proof of crop: satellites can't tell maize from sorghum or a maize-bean mix."""
+
+    flag: str  # CONSISTENT, INCONSISTENT or NOT_ENOUGH_DATA
+    reason: str
+    confidence: str
+    signals: list[str]
+    data_quality_note: str
+    images_used: int
+    pixels_used: int | None  # clear pixels in the latest usable image
+    latest_image_date: date | None
+
+
+def season_check(observations: list[Observation], planting: date, as_of: date,
+                 min_clear_pixels: int | None) -> SeasonCheck:
+    """Compares the NDVI series since planting with the expected maize pattern: low (bare soil), then a rise,
+    a peak and a decline toward harvest. Every stage needs more than one image, so one image never decides it.
+    """
+    if min_clear_pixels is None:
+        return SeasonCheck("NOT_ENOUGH_DATA", "MIN_CLEAR_PIXELS_NOT_SET", "LOW", [],
+                           "The minimum clear-pixel count is not set yet, so no image can be counted.", 0, None, None)
+
+    def dap(obs: Observation) -> int:
+        return days_after_planting(obs.day, planting)
+
+    usable = [obs for obs in one_per_day(observations)
+              if planting <= obs.day <= as_of and obs.ndvi is not None and obs.clear_pixels >= min_clear_pixels]
+    latest = usable[-1] if usable else None
+    note = _season_note(usable, min_clear_pixels)
+    days_now = days_after_planting(as_of, planting)
+    need = params.SEASON_MIN_IMAGES_PER_STAGE
+
+    def result(flag: str, reason: str, signals: list[str]) -> SeasonCheck:
+        # Never HIGH: these rules have not been checked against Rwandan fields. Small plots with few
+        # clear pixels or few images stay LOW.
+        strong = len(usable) >= 2 * need and latest is not None and min(o.clear_pixels for o in usable) >= 2 * min_clear_pixels
+        confidence = "MEDIUM" if flag != "NOT_ENOUGH_DATA" and strong else "LOW"
+        return SeasonCheck(flag, reason, confidence, signals, note, len(usable),
+                           latest.clear_pixels if latest else None, latest.day if latest else None)
+
+    if len(usable) < need:
+        return result("NOT_ENOUGH_DATA", "FEW_CLEAR_IMAGES", [])
+
+    early = [obs for obs in usable if dap(obs) <= params.SEASON_EARLY_END_DAP]
+    later = [obs for obs in usable if dap(obs) > params.SEASON_EARLY_END_DAP]
+    green_later = [obs for obs in later if obs.ndvi >= params.SEASON_GREEN_NDVI_MIN]
+    bare_start = any(obs.ndvi <= params.SEASON_BARE_NDVI_MAX for obs in early)
+    signals = []
+    if bare_start:
+        signals.append("BARE_START_SEEN")
+
+    # Green when the field should be bare: another cover (grass, a perennial crop) or a wrong planting date.
+    if len(early) >= need and all(obs.ndvi >= params.SEASON_GREEN_NDVI_MIN for obs in early):
+        return result("INCONSISTENT", "GREEN_AT_PLANTING", signals + ["GREEN_AT_PLANTING"])
+
+    peak = max(later, key=lambda obs: obs.ndvi) if later else None
+    rose = (peak is not None and len(green_later) >= need and early
+            and peak.ndvi - min(obs.ndvi for obs in early) >= params.SEASON_MIN_RISE)
+    if rose:
+        signals.append("GROWTH_SEEN")
+    declined = peak is not None and any(
+        obs.day > peak.day and obs.ndvi <= peak.ndvi - params.SEASON_MIN_DECLINE for obs in later)
+    if declined:
+        signals.append("DECLINE_SEEN")
+
+    # Still green long after a maize crop should be drying: a longer-lived cover, or a later planting.
+    late = [obs for obs in usable if dap(obs) >= params.SEASON_END_DAP]
+    if (len(late) >= need and peak is not None
+            and all(obs.ndvi >= params.SEASON_GREEN_NDVI_MIN and obs.ndvi > peak.ndvi - params.SEASON_MIN_DECLINE
+                    for obs in late)):
+        return result("INCONSISTENT", "STILL_GREEN_AFTER_SEASON", signals + ["NO_DECLINE"])
+
+    # Bare all season: no green-up by the time maize should clearly show.
+    after_growth = [obs for obs in usable if dap(obs) >= params.SEASON_GROWTH_EXPECTED_DAP]
+    if days_now >= params.SEASON_GROWTH_EXPECTED_DAP and len(after_growth) >= need and not green_later:
+        return result("INCONSISTENT", "NO_GROWTH_SEEN", signals + ["NO_GROWTH"])
+
+    if bare_start and rose:
+        return result("CONSISTENT", "SEASON_PATTERN_SEEN" if declined else "CONSISTENT_SO_FAR", signals)
+
+    if not early:
+        return result("NOT_ENOUGH_DATA", "NO_CLEAR_IMAGE_AFTER_PLANTING", signals)
+    if days_now < params.SEASON_GROWTH_EXPECTED_DAP:
+        return result("NOT_ENOUGH_DATA", "TOO_EARLY", signals)
+    return result("NOT_ENOUGH_DATA", "PATTERN_UNCLEAR", signals)
+
+
+def _season_note(usable: list[Observation], min_clear_pixels: int) -> str:
+    if not usable:
+        return f"No image since planting had {min_clear_pixels} or more clear pixels."
+    pixels = sorted(obs.clear_pixels for obs in usable)
+    return (f"{len(usable)} clear image(s) since planting, latest {usable[-1].day.isoformat()}, "
+            f"median {int(median(pixels))} clear pixels each (minimum {min_clear_pixels}). "
+            "A review flag, not proof of crop: these rules have not been checked against field results yet.")

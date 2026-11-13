@@ -12,6 +12,10 @@ springdoc:
 rinda:
   otp:
     log-to-console: true
+  plots:
+    # Invented parcels for zero-code UPIs (mock-registry/parcels.json), so the "type the UPI, see the parcel"
+    # screen can be tested. Never in production: there the farmer's own e-title is the record (DOCUMENT).
+    land-registry-provider: MOCK
 
 # The log also goes to a file, so scripts\demo-check.ps1 can read the login codes. Ignored by git.
 logging:

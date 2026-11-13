@@ -41,7 +41,7 @@
     <string name="onboarding_welcome_title">Murakaza neza kuri Rinda</string>
     <string name="onboarding_welcome_desc">Kurengera abahinzi b\'ibigori mu Rwanda hakoreshejwe ibyogajuru n\'ubwishingizi bwihuse.</string>
     <string name="onboarding_satellite_title">Isuzuma ry\'Ibyogajuru</string>
-    <string name="onboarding_satellite_desc">Ibyogajuru bya Sentinel bikurikirana imikurire y\'ikigori cyawe buri minsi 5 kugira ngo hemezwe ubuzima bw\'igihingwa.</string>
+    <string name="onboarding_satellite_desc">Ibyogajuru bya Sentinel bikurikirana imikurire y\'ikigori cyawe buri cyumweru kugira ngo hemezwe ubuzima bw\'igihingwa.</string>
     <string name="onboarding_claims_title">Ubwishingizi bunoze kandi bwihuse</string>
     <string name="onboarding_claims_desc">Iyo igihingwa kigize ikibazo, ubwishingizi butangizwa mu buryo bwikora kandi buri mwanzuro ugasobanurwa mu mvugo yumvikana.</string>
     <string name="select_language">Hitamo Ururimi / Select Language</string>
@@ -105,7 +105,6 @@
     <string name="planting_date_hint">Hitamo itariki wateyeho</string>
     <string name="crop_label">Igihingwa</string>
     <string name="crop_maize">Ikigori (Maize)</string>
-    <string name="draw_boundary_instruction">Kanda ku ikarita kugira ngo ushyireho imbibi z\'umurima wawe w\'ibigori. Funga ishusho kugira ngo urangize.</string>
     <string name="chart_ndvi_title">Ubuzima bw\'Igihingwa (NDVI n\'Urwego Rusanzwe)</string>
     <string name="chart_rain_title">Imvura Yaguye buri munsi (mm)</string>
     <string name="chart_legend_plot">Uyu Murima</string>
@@ -222,12 +221,11 @@
     <string name="btn_verify_plot_boundary">Suzuma imbibi</string>
 
     <string name="verify_plot_title">Emeza Imbibi z\'Umurima</string>
-    <string name="verify_plot_subtitle">Suzuma imbibi umuhinzi yashushanyije unemeze itariki y\'itera.</string>
     <string name="confirm_planting_date">Emeza Itariki yo Gutera</string>
     <string name="btn_approve_plot">Emeza Umurima (Ugire Agaciro)</string>
     <string name="btn_reject_plot">Anga Imbibi z\'Umurima</string>
     <string name="verify_plot_dialog_title">Emeza uyu murima?</string>
-    <string name="verify_plot_dialog_msg">Imbibi n\'itariki yo gutera bizahita byemezwa. Icyogajuru kizajya gikurikirana umurima buri minsi 5.</string>
+    <string name="verify_plot_dialog_msg">Imbibi n\'itariki yo gutera bizahita byemezwa. Icyogajuru kizajya gikurikirana umurima buri cyumweru.</string>
     <string name="reject_plot_dialog_title">Anga izi mbibi?</string>
     <string name="reject_plot_dialog_msg">Sobanura impamvu imbibi zanze kugira ngo umuhinzi abikosore.</string>
     <string name="reject_plot_reason_hint">Impamvu yo kwanga (urugero: imbibi zambukiranya umuhanda)</string>
@@ -275,6 +273,7 @@
     <string name="field_check_farmer">Umuhinzi yari ahari igihe hasurwaga</string>
 
     <string name="field_gps_btn">Fata aho uherereye (GPS)</string>
+    <string name="profile_settings">Igenamiterere</string>
     <string name="field_gps_acquired">Aho uherereye (GPS): %1$.5f, %2$.5f</string>
     <string name="field_visit_success_title">Gusura umurima byanditswe</string>
     <string name="field_visit_success_body">Ibyo wabonye byabitswe byongerwa ku makuru y\'uyu murima.</string>

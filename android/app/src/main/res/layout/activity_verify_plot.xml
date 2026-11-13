@@ -84,6 +84,15 @@
                                 android:layout_marginTop="@dimen/spacing_xxs"
                                 android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
                                 tools:text="Area: 1.45 ha • Maize" />
+
+                            <TextView
+                                android:id="@+id/tvVerificationLevel"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_xxs"
+                                android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                                android:visibility="gone"
+                                tools:text="Verification: Document added (not verified)" />
                         </LinearLayout>
 
                         <TextView
@@ -104,6 +113,77 @@
                 android:layout_marginTop="@dimen/spacing_base"
                 android:text="@string/verify_plot_subtitle"
                 android:textAppearance="@style/TextAppearance.Rinda.Body" />
+
+            <!-- Why the plot can't be verified yet (DRAFT, FLAGGED, DISPUTED, or already checked) -->
+            <TextView
+                android:id="@+id/tvNotReady"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:background="@drawable/bg_rounded"
+                android:backgroundTint="@color/status_watch_bg"
+                android:drawablePadding="@dimen/spacing_sm"
+                android:padding="@dimen/spacing_md"
+                android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                android:textColor="@color/rinda_text_primary"
+                android:visibility="gone"
+                app:drawableStartCompat="@drawable/ic_status_watch"
+                app:drawableTint="@color/status_watch" />
+
+            <!-- Photo at the plot: taken in the app, with the phone's GPS position and time -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/section_gap"
+                android:layout_marginBottom="@dimen/spacing_sm"
+                android:accessibilityHeading="true"
+                android:text="@string/verify_photo_title"
+                android:textAppearance="@style/TextAppearance.Rinda.Section" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/verify_photo_body"
+                        android:textAppearance="@style/TextAppearance.Rinda.BodySmall"
+                        android:textColor="@color/rinda_text_secondary" />
+
+                    <ImageView
+                        android:id="@+id/ivVerifyPhoto"
+                        android:layout_width="match_parent"
+                        android:layout_height="180dp"
+                        android:layout_marginTop="@dimen/spacing_md"
+                        android:contentDescription="@string/verify_photo_title"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/tvPhotoGps"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_sm"
+                        android:accessibilityLiveRegion="polite"
+                        android:textAppearance="@style/TextAppearance.Rinda.Label" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTakePhoto"
+                        style="@style/Widget.Rinda.Button.Tonal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_md"
+                        android:text="@string/verify_btn_take_photo"
+                        app:icon="@drawable/ic_camera" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Planting Date Confirmation Card -->
             <TextView
@@ -192,6 +272,7 @@
     <!-- Bottom Actions: Reject Boundary & Verify Plot -->
     <LinearLayout
         style="@style/Rinda.BottomBar"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 

@@ -21,8 +21,6 @@ import com.rinda.app.data.local.OutboxDao;
 import com.rinda.app.data.local.OutboxEntity;
 import com.rinda.app.data.local.RindaDatabase;
 import com.rinda.app.data.model.FieldVisitResponse;
-import com.rinda.app.data.model.PlotResponse;
-import com.rinda.app.data.model.PlotVerifyRequest;
 import com.rinda.app.data.model.ProblemReportResponse;
 import java.io.File;
 import java.util.HashMap;
@@ -89,27 +87,16 @@ public class OutboxSyncWorker extends Worker {
 
     private boolean processItem(RindaApiService apiService, OutboxEntity item) throws Exception {
         if ("PLOT_VERIFY".equals(item.type)) {
-            return syncPlotVerify(apiService, item);
+            // Older app versions queued field checks offline as JSON. A check now needs a photo taken at the
+            // plot with its GPS position, sent online (VerifyPlotActivity), so a queued one can never succeed:
+            // drop it rather than retry forever. The plot stays waiting for its check.
+            return true;
         } else if ("FIELD_VISIT".equals(item.type)) {
             return syncFieldVisit(apiService, item);
         } else if ("PROBLEM_REPORT".equals(item.type)) {
             return syncProblemReport(apiService, item);
         }
         return false;
-    }
-
-    private boolean syncPlotVerify(RindaApiService apiService, OutboxEntity item) throws Exception {
-        JsonObject obj = JsonParser.parseString(item.payloadJson).getAsJsonObject();
-        long plotId = obj.get("plotId").getAsLong();
-        String decision = obj.get("decision").getAsString();
-        String date = obj.has("confirmedPlantingDate") && !obj.get("confirmedPlantingDate").isJsonNull()
-                ? obj.get("confirmedPlantingDate").getAsString() : null;
-        String reason = obj.has("rejectionReason") && !obj.get("rejectionReason").isJsonNull()
-                ? obj.get("rejectionReason").getAsString() : null;
-
-        PlotVerifyRequest req = new PlotVerifyRequest(decision, date, reason);
-        Response<PlotResponse> response = apiService.verifyAgentPlot(plotId, req).execute();
-        return response.isSuccessful() || response.code() == 409;
     }
 
     private boolean syncFieldVisit(RindaApiService apiService, OutboxEntity item) throws Exception {

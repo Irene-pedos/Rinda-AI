@@ -54,7 +54,7 @@
     <string name="onboarding_welcome_title">Welcome to Rinda</string>
     <string name="onboarding_welcome_desc">Rinda helps protect your maize. We watch your field and tell you early when your crop needs care.</string>
     <string name="onboarding_satellite_title">We watch your field from space</string>
-    <string name="onboarding_satellite_desc">Satellites look at your maize every 5 days. You get an alert if the crop looks weaker than normal.</string>
+    <string name="onboarding_satellite_desc">Satellites check your maize once a week. You get an alert if the crop looks weaker than normal.</string>
     <string name="onboarding_claims_title">Fair help when crops fail</string>
     <string name="onboarding_claims_desc">If your covered plot loses too much, a claim starts by itself. A person checks it and explains the decision to you.</string>
     <string name="select_language">Choose your language</string>
@@ -90,7 +90,7 @@
     <string name="demo_accounts_title">Demo accounts</string>
     <string name="demo_accounts_hint">For testing only. Tap one to fill in the number.</string>
     <string name="demo_farmer_1">Farmer 1 (3 plots)</string>
-    <string name="demo_farmer_2">Farmer 2 (pending)</string>
+    <string name="demo_farmer_2">Farmer 2 (unfinished plot)</string>
     <string name="demo_agent">Agent</string>
     <string name="demo_new_farmer">New farmer</string>
     <string name="code_sent">Code sent</string>
@@ -129,9 +129,17 @@
     <string name="plot_status_rejected">Not accepted</string>
     <string name="plot_status_archived">Archived</string>
     <string name="plot_status_pending_meaning">Your cooperative agent will check the plot boundary. Monitoring starts after that.</string>
-    <string name="plot_status_active_meaning">Your plot is checked. Satellites watch it every 5 days.</string>
+    <string name="plot_status_active_meaning">Your plot is checked. Satellites check it once a week.</string>
     <string name="plot_status_rejected_meaning">The boundary could not be accepted. Please talk to your cooperative agent.</string>
     <string name="plot_status_archived_meaning">This plot is no longer monitored.</string>
+    <string name="plot_status_draft">Not finished</string>
+    <string name="plot_status_draft_meaning">Registration is not finished. Walk the edge of the plot and add your e-title to send it for checking.</string>
+    <string name="plot_status_flagged">Needs review</string>
+    <string name="plot_status_flagged_meaning">A check needs a person to look at it. Your cooperative agent will review it before the plot can be checked.</string>
+    <string name="plot_status_disputed">Disputed</string>
+    <string name="plot_status_disputed_meaning">This plot overlaps another plot or uses the same UPI. Payments are paused until your agent resolves it.</string>
+    <string name="plot_status_unknown">Status unknown</string>
+    <string name="plot_status_unknown_meaning">This app does not know this plot status yet. Pull down to refresh, or update the app.</string>
 
     <!-- Crop Health Statuses (Always word + icon) -->
     <string name="health_healthy">Healthy</string>
@@ -173,7 +181,7 @@
     <string name="home_stat_area">Hectares</string>
     <string name="home_stat_verified">Verified</string>
     <string name="home_latest_alert">Latest alert</string>
-    <string name="home_no_alerts">No alerts. We check your plots every 5 days.</string>
+    <string name="home_no_alerts">No alerts. We check your plots once a week.</string>
     <string name="home_see_all">See all</string>
     <string name="home_quick_actions">What do you want to do?</string>
     <string name="home_action_add_plot">Add a plot</string>
@@ -185,9 +193,9 @@
     <string name="home_weather_latest">%1$s mm of rain on %2$s</string>
     <string name="home_how_it_works">How Rinda works</string>
     <string name="getting_started_title">Get started in 3 steps</string>
-    <string name="getting_started_step_1">Add your maize plot by drawing it on the map.</string>
+    <string name="getting_started_step_1">Add your maize plot: its UPI, your e-title, and a walk around its edge.</string>
     <string name="getting_started_step_2">Your cooperative agent checks the plot.</string>
-    <string name="getting_started_step_3">We watch it every 5 days and alert you early.</string>
+    <string name="getting_started_step_3">We check it once a week and alert you early.</string>
     <string name="getting_started_cta">Add my first plot</string>
 
     <!-- Plots Management -->
@@ -210,33 +218,46 @@
     <string name="plot_days_since_planting">Day %d after planting</string>
 
     <!-- Register plot (3 steps) -->
-    <string name="register_step_draw">Draw your field</string>
-    <string name="register_step_details">About this plot</string>
-    <string name="register_step_review">Check and send</string>
-    <string name="draw_boundary_instruction">Walk around your field in your mind. Tap each corner of the field on the map.</string>
-    <string name="draw_points_needed">Tap at least %d more corners</string>
-    <string name="draw_points_ready">%d corners: field shape is ready</string>
-    <string name="draw_area_estimate">About %1$.2f ha</string>
-    <string name="draw_area_empty">Area appears here</string>
     <string name="draw_undo">Undo</string>
     <string name="draw_clear">Start again</string>
-    <string name="draw_need_three">Tap at least 3 corners of your field first.</string>
-    <string name="review_name">Name</string>
-    <string name="review_area">Size</string>
-    <string name="review_planting">Planted</string>
-    <string name="review_crop">Crop</string>
-    <string name="review_corners">Corners</string>
-    <string name="review_next_title">What happens next</string>
-    <string name="review_next_body">Your cooperative agent checks the boundary. When it is verified, satellites start watching your maize.</string>
-    <string name="btn_send_plot">Send for checking</string>
     <string name="error_plot_name_required">Please give your plot a name.</string>
     <string name="error_planting_date_required">Please choose the planting date.</string>
-    <string name="register_success_title">Plot sent</string>
-    <string name="register_success_body">\"%1$s\" (%2$s) was sent to your cooperative agent for checking.</string>
-    <string name="register_success_next">You will get an alert when it is verified.</string>
-    <string name="btn_see_my_plots">See my plots</string>
-    <string name="draw_point_title">Corner %d</string>
-    <string name="cd_map">Map. Tap to add a corner of your field.</string>
+    <string name="plot_area_not_walked">Not walked yet</string>
+    <!-- Crop health card before crop health can be judged (docs/02-satellite-monitoring.md, UI states). Never "live". -->
+    <string name="monitoring_no_boundary">Not monitored yet</string>
+    <string name="monitoring_no_boundary_meaning">Walk the edge of your plot to start satellite monitoring.</string>
+    <string name="monitoring_no_boundary_agent">The farmer has not walked this plot yet. Satellite monitoring starts after the walk.</string>
+    <string name="monitoring_btn_walk">Walk the plot</string>
+    <string name="monitoring_fetching">Fetching satellite data</string>
+    <string name="monitoring_fetching_meaning">Rinda is getting satellite images from the planting date until today. Check again in a few minutes.</string>
+    <string name="monitoring_fetch_failed">Satellite data not fetched yet</string>
+    <string name="monitoring_fetch_failed_meaning">Getting the satellite images did not work this time. Rinda tries again at the next weekly update.</string>
+    <string name="monitoring_no_clear_image">No clear image yet</string>
+    <string name="monitoring_no_clear_image_meaning">Clouds have hidden the plot so far. Showing rainfall only. This is normal in cloudy weeks.</string>
+    <string name="monitoring_no_clear_image_since">No clear image since %1$s. Showing rainfall only. This is normal in cloudy weeks.</string>
+    <string name="monitoring_awaiting_field_check">Crop health starts after the field check</string>
+    <string name="monitoring_awaiting_field_check_meaning">Satellite images are coming in for this plot. Crop health and payouts start once the cooperative agent checks the plot in the field.</string>
+    <!-- Agent field check (POST /agent/plots/{id}/verify): photo taken at the plot in the app, with GPS and time. -->
+    <string name="verify_photo_title">Photo at the plot</string>
+    <string name="verify_photo_body">Stand inside the plot and take a photo of the maize. Rinda records where and when it was taken. The photo must be taken inside the walked boundary.</string>
+    <string name="verify_btn_take_photo">Take the photo</string>
+    <string name="verify_btn_retake_photo">Take it again</string>
+    <string name="verify_photo_none">No photo yet</string>
+    <string name="verify_gps_off">Location is off. Turn on location to record the field check.</string>
+    <string name="verify_photo_waiting_gps">Waiting for GPS. Stay in the plot with a clear view of the sky.</string>
+    <string name="verify_photo_gps">Position recorded, accurate to about %1$d m</string>
+    <string name="verify_photo_no_gps">No GPS reading when the photo was taken. Turn on location, wait a moment, and take it again.</string>
+    <string name="verify_photo_permission">Rinda needs the camera and your location to record the field check.</string>
+    <string name="verify_photo_required">Take the photo at the plot first, with GPS ready.</string>
+    <string name="verify_photo_failed">The photo could not be saved. Take it again.</string>
+    <string name="verify_reason_required">Write why you reject the plot. The farmer sees it.</string>
+    <string name="verify_not_ready_draft">The farmer has not finished registering this plot (walk or e-title missing). It can be checked once registration is complete.</string>
+    <string name="verify_not_ready_flagged">This plot has a flag that a person must review first. You can still reject it.</string>
+    <string name="verify_not_ready_disputed">This plot is disputed. It can\'t be verified until the dispute is resolved. You can still reject it.</string>
+    <string name="verify_not_ready_done">This plot has already been checked.</string>
+    <string name="verify_online_only">The field check needs an internet connection. Try again when you are online.</string>
+    <string name="monitoring_latest_image">Latest satellite image: %1$s. Not live: updated once a week.</string>
+    <string name="cd_map">Map of the parcel guide and the corners you walked.</string>
 
     <!-- Plot detail -->
     <string name="plot_detail_title">Plot</string>
@@ -342,7 +363,7 @@
 
     <!-- Alerts -->
     <string name="empty_alerts_title">No alerts</string>
-    <string name="empty_alerts">We check your maize every 5 days. You will see an alert here if something changes.</string>
+    <string name="empty_alerts">We check your maize once a week. You will see an alert here if something changes.</string>
     <string name="alert_title_at_risk">Your maize is at risk</string>
     <string name="alert_title_watch">Watch your maize</string>
     <string name="alert_title_recovered">Your maize looks healthy again</string>
@@ -382,11 +403,9 @@
     <string name="help_claims_title">How do claims work?</string>
     <string name="help_claims_body">1. Satellites watch every covered plot.\n2. If the loss passes the agreed level, a claim starts by itself. You do not need to fill a form.\n3. An insurance officer checks the evidence. An agent may visit.\n4. If approved, the payout goes to your mobile money (simulated here).\n\nYou can ask for a review once for each decision.</string>
     <string name="help_how_it_works_title">How Rinda works</string>
-    <string name="help_how_it_works_body">1. Add your maize plot by drawing it on the map.\n2. Your cooperative agent checks the plot.\n3. Satellites look at your maize every 5 days.\n4. If your maize looks weak, you get an alert.\n5. If a covered plot loses too much, a claim starts by itself and a person decides it.</string>
+    <string name="help_how_it_works_body">1. Add your maize plot: type its UPI, add your e-title, and walk around its edge with your phone.\n2. Your cooperative agent checks the plot.\n3. Satellites check your maize once a week.\n4. If your maize looks weak, you get an alert.\n5. If a covered plot loses too much, a claim starts by itself and a person decides it.</string>
     <string name="help_planting_title">Why does the planting date matter?</string>
     <string name="help_planting_body">Maize grows differently each week. We compare your plot with normal maize of the same age, so the planting date must be right.\n\nYour cooperative agent can correct it.</string>
-    <string name="help_draw_title">How to draw your field</string>
-    <string name="help_draw_body">1. Move the map to your field. Pinch with two fingers to zoom.\n2. Tap each corner of the field, one after another, going around the edge.\n3. Tap at least 3 corners. The green shape shows your field.\n4. Made a mistake? Tap Undo, or Start again.</string>
 
     <!-- Problem Reports -->
     <string name="report_problem_title">Report a problem</string>
@@ -470,12 +489,12 @@
     <string name="btn_verify_plot_boundary">Check boundary</string>
 
     <string name="verify_plot_title">Check plot boundary</string>
-    <string name="verify_plot_subtitle">Review the boundary drawn by the farmer and confirm the planting date.</string>
+    <string name="verify_plot_subtitle">Review the boundary the farmer walked and confirm the planting date.</string>
     <string name="confirm_planting_date">Confirm planting date</string>
     <string name="btn_approve_plot">Verify plot</string>
     <string name="btn_reject_plot">Reject boundary</string>
     <string name="verify_plot_dialog_title">Verify this plot?</string>
-    <string name="verify_plot_dialog_msg">The boundary shape and planting date will be confirmed. Satellite monitoring will begin every 5 days.</string>
+    <string name="verify_plot_dialog_msg">You confirm that you stood in this plot, that the walked boundary matches the field, and that the planting date is right. The plot becomes checked in the field, which payouts need.</string>
     <string name="reject_plot_dialog_title">Reject this boundary?</string>
     <string name="reject_plot_dialog_msg">Please state why this boundary cannot be accepted so the farmer can correct it.</string>
     <string name="reject_plot_reason_hint">Reason for rejection (e.g. boundary crosses road or river)</string>
@@ -523,6 +542,10 @@
     <string name="field_check_farmer">Farmer was present during visit</string>
 
     <string name="field_gps_btn">Capture field GPS location</string>
+    <string name="field_gps_not_captured">No GPS location yet. At the plot, tap the button below.</string>
+    <string name="field_gps_unavailable">No GPS location available. Turn on location, wait a moment outside, and try again.</string>
+    <string name="field_gps_permission_denied">Location permission was not given, so no GPS location is recorded.</string>
+    <string name="field_gps_review_none">Not captured</string>
     <string name="field_gps_acquired">GPS Location: %1$.5f, %2$.5f</string>
     <string name="field_visit_success_title">Field visit recorded</string>
     <string name="field_visit_success_body">Your ground observation was saved and attached to this plot\'s record.</string>
@@ -556,4 +579,84 @@
     <string name="delete_account_title">Delete your account?</string>
     <string name="delete_account_body">Deleting your account will remove your login credentials and personal details. Any verified plots with active cover will remain protected until the end of the season.</string>
     <string name="delete_account_blocked">Your account cannot be deleted because you have active insurance cover or an open claim this season. Please contact your cooperative agent.</string>
+    <!-- ===== Add a plot: UPI, details, GPS walk, e-title (docs/01-plot-verification.md). No drawing. ===== -->
+    <string name="reg_step_upi">Your plot\'s UPI</string>
+    <string name="reg_step_details">About this plot</string>
+    <string name="reg_step_walk">Walk the edge</string>
+    <string name="reg_step_document">Your e-title</string>
+    <string name="reg_upi_intro">The UPI is the number of your land parcel. You find it on your e-title or on the land portal page.</string>
+    <string name="reg_upi_label">UPI</string>
+    <string name="reg_upi_helper">Type it exactly as it is on your e-title, for example 1/01/01/01/0001.</string>
+    <string name="reg_upi_required">Type the UPI first.</string>
+    <string name="reg_upi_format">A UPI has five numbers separated by /, for example 1/01/01/01/0001.</string>
+    <string name="reg_btn_lookup">Look up this UPI</string>
+    <string name="reg_lookup_first">Tap \"Look up this UPI\" first.</string>
+    <string name="reg_parcel_title">Parcel for this UPI</string>
+    <string name="reg_parcel_demo">Demo data</string>
+    <string name="reg_parcel_area">Area: %1$s ha</string>
+    <string name="reg_parcel_location">Location: %1$s</string>
+    <string name="reg_parcel_land_use">Land use: %1$s</string>
+    <string name="reg_parcel_reference">This shape is only a guide. Your plot\'s boundary comes from walking its edge.</string>
+    <string name="reg_relationship_title">Your relationship to this plot</string>
+    <string name="reg_relationship_owner">I own it</string>
+    <string name="reg_relationship_family">It belongs to my family</string>
+    <string name="reg_relationship_tenant">I rent it</string>
+    <string name="reg_relationship_required">Choose your relationship to the plot.</string>
+    <string name="reg_relationship_non_owner_note">You will add a lease or the owner\'s permission. A person checks it.</string>
+    <string name="reg_declaration">I have the right to farm this plot, and what I enter is true. I understand that false information can cancel my cover.</string>
+    <string name="reg_declaration_required">Tick the box to confirm.</string>
+    <string name="reg_btn_create">Save and walk the plot</string>
+    <string name="reg_walk_instruction">Go to the plot. Stand at each corner and tap \"I\'m at this corner\". Walk around the edge in order.</string>
+    <string name="reg_walk_waiting_gps">Waiting for GPS. Stand outside with a clear view of the sky.</string>
+    <string name="reg_walk_gps_ready">GPS ready: accurate to about %1$d m</string>
+    <string name="reg_walk_gps_off">Location is off. Turn on location to walk the plot.</string>
+    <string name="reg_walk_permission">Rinda needs your location to record the walk. It is only read while you walk.</string>
+    <string name="reg_walk_corners">%1$d corners recorded</string>
+    <string name="reg_walk_corners_needed">Record at least %1$d more corners</string>
+    <string name="reg_walk_mark_corner">I\'m at this corner</string>
+    <string name="reg_walk_new_reading">Wait a moment for a new GPS reading, then tap again.</string>
+    <string name="reg_walk_no_fix">No GPS reading yet. Wait until the GPS is ready.</string>
+    <string name="reg_walk_corner_title">Corner %1$d</string>
+    <string name="reg_walk_area_estimate">About %1$.2f ha</string>
+    <string name="reg_walk_area_empty">Area appears here</string>
+    <string name="reg_walk_mock_warning">A fake-location app is on. The walk will be marked for review.</string>
+    <string name="reg_btn_finish_walk">Finish the walk</string>
+    <string name="reg_help_walk_title">How to walk your plot</string>
+    <string name="reg_help_walk_body">1. Go to one corner of the plot.\n2. Wait until the GPS is ready, then tap \"I\'m at this corner\".\n3. Walk along the edge to the next corner and tap again.\n4. Do this for every corner, in order, all the way round.\n5. Tap \"Finish the walk\". Rinda draws the boundary from the corners you walked.\n\nThe gray shape is only a guide from the land records. Your boundary comes from where you walked.</string>
+    <string name="reg_document_intro">Add a photo of your e-title, or a screenshot of your parcel on the land portal. You get it yourself: Rinda never logs in to the land portal for you.</string>
+    <string name="reg_document_type_title">Which document?</string>
+    <string name="reg_document_etitle">E-title</string>
+    <string name="reg_document_screenshot">Land portal screenshot</string>
+    <string name="reg_document_pick">Choose a photo or PDF</string>
+    <string name="reg_document_picked">Chosen: %1$s</string>
+    <string name="reg_document_none">No file chosen</string>
+    <string name="reg_document_area_label">Area on the document (m²)</string>
+    <string name="reg_document_area_helper">Type the area exactly as it is on the document, in square metres.</string>
+    <string name="reg_document_required">Choose the document first.</string>
+    <string name="reg_document_area_required">Type the area shown on the document.</string>
+    <string name="reg_document_too_big">The file is larger than 5 MB. Choose a smaller photo or PDF.</string>
+    <string name="reg_document_read_failed">The file could not be read. Choose it again.</string>
+    <string name="reg_document_uploaded">Document added</string>
+    <string name="reg_tenure_title">Lease or owner\'s permission</string>
+    <string name="reg_tenure_body">You don\'t own this plot, so add your lease or a signed note from the owner. A person checks it before the plot can be verified.</string>
+    <string name="reg_tenure_lease">Lease</string>
+    <string name="reg_tenure_consent">Owner\'s permission</string>
+    <string name="reg_btn_upload">Add the document</string>
+    <string name="reg_result_title">Plot saved</string>
+    <string name="reg_result_body">\"%1$s\" is registered. Here is what was checked.</string>
+    <string name="reg_result_level">Verification: %1$s</string>
+    <string name="reg_result_checks">Checks</string>
+    <string name="reg_result_next">Your cooperative agent checks the plot at the field. Payouts need that check.</string>
+    <string name="reg_btn_done">Done</string>
+    <string name="reg_btn_continue">Continue registration</string>
+    <string name="reg_level_self_declared">Self-declared</string>
+    <string name="reg_level_document_supported">Document added (not verified)</string>
+    <string name="reg_level_field_verified">Checked in the field</string>
+    <string name="reg_level_nla_verified">Matched with land records</string>
+    <string name="reg_check_passed">Passed</string>
+    <string name="reg_check_flagged">Needs review</string>
+    <string name="reg_check_reviewed">Reviewed</string>
+    <string name="reg_check_pending">Not done yet</string>
+    <string name="reg_check_not_run">Not checked</string>
+    <string name="reg_loading_plot">Loading your plot…</string>
 </resources>

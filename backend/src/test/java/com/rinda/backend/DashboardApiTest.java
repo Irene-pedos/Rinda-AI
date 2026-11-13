@@ -34,7 +34,7 @@ class DashboardApiTest extends ApiTestBase {
         officer = staffToken("+250781111102", "OFFICER", null);
         admin = staffToken("+250781111103", "ADMIN", null);
         plotId = plot("Upper field");
-        jdbc.update("UPDATE plots SET status = 'ACTIVE' WHERE id = ?", plotId);
+        jdbc.update("UPDATE plots SET status = 'ACTIVE', verification_level = 'FIELD_VERIFIED' WHERE id = ?", plotId);
         jdbc.update("INSERT INTO seasons (code, type) VALUES ('T2026A', 'A')");
         seasonId = jdbc.queryForObject("SELECT id FROM seasons WHERE code = 'T2026A'", Long.class);
     }
@@ -49,12 +49,7 @@ class DashboardApiTest extends ApiTestBase {
     }
 
     private long plot(String name) throws Exception {
-        Map<String, Object> plot = Map.of("name", name, "plantingDate", "2026-09-20",
-                "boundary", Map.of("type", "Polygon", "coordinates", List.of(SQUARE)));
-        String body = mvc.perform(post("/api/v1/plots").header("Authorization", "Bearer " + farmer)
-                        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(plot)))
-                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
-        return mapper.readTree(body).get("id").asLong();
+        return pendingPlot(farmer, name, "2026-09-20");
     }
 
     private long claim(long plot, long season, String status, String evidence) {

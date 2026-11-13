@@ -30,13 +30,8 @@ class ClaimActionApiTest extends ApiTestBase {
     void claimUnderReview() throws Exception {
         farmer = farmerToken("+250786666661");
         officer = staffToken("+250786666662", "OFFICER", null);
-        Map<String, Object> plot = Map.of("name", "Hill field", "plantingDate", "2026-09-20",
-                "boundary", Map.of("type", "Polygon", "coordinates", List.of(SQUARE)));
-        String body = mvc.perform(post("/api/v1/plots").header("Authorization", "Bearer " + farmer)
-                        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(plot)))
-                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
-        plotId = mapper.readTree(body).get("id").asLong();
-        jdbc.update("UPDATE plots SET status = 'ACTIVE' WHERE id = ?", plotId);
+        plotId = pendingPlot(farmer, "Hill field", "2026-09-20");
+        jdbc.update("UPDATE plots SET status = 'ACTIVE', verification_level = 'FIELD_VERIFIED' WHERE id = ?", plotId);
         jdbc.update("INSERT INTO seasons (code, type) VALUES ('2026A', 'A')");
         seasonId = jdbc.queryForObject("SELECT id FROM seasons WHERE code = '2026A'", Long.class);
         jdbc.update("INSERT INTO enrollments (plot_id, season_id, status) VALUES (?, ?, 'COVERED')", plotId, seasonId);

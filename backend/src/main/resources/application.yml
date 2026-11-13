@@ -50,6 +50,25 @@ rinda:
     # Automatic "Run analysis" every 5 days (spec §2.1). "-" means off: the MVP runs it by hand (spec §10.1).
     # Example to turn it on: "0 0 4 */5 * *" (04:00 every 5th day, Kigali time).
     cron: ${RINDA_ANALYSIS_CRON:-}
+  monitoring:
+    run-inline: false
+    max-attempts: 2
+    # Weekly refresh (decision B): 04:00 every Monday, Kigali time. Each run fetches whatever new images exist.
+    # "-" turns it off.
+    cron: ${RINDA_MONITORING_CRON:0 0 4 * * MON}
+    # TO_CONFIRM: Sentinel-2 images can be published a few days after they were taken.
+    refresh-overlap-days: 10
+    # TO_CONFIRM: a maize season is about 4-5 months; the refresh stops after this many days.
+    max-days-after-planting: 200
+  plots:
+    # Five numeric segments (province/district/sector/cell/parcel), checked loosely: the exact format is
+    # unconfirmed (docs/OPEN_QUESTIONS.md question 23). Make it strict only after checking a real e-title.
+    upi-pattern: '^\d{1,3}/\d{1,3}/\d{1,3}/\d{1,3}/\d{1,8}$'
+    # Off until a cell-level boundary file with a confirmed licence exists (question 24). The plot shows the
+    # check as NOT_RUN, so it is never silently skipped.
+    admin-area-check-enabled: false
+    # DOCUMENT: the farmer's own e-title or portal screenshot. NLA comes later, after an official agreement.
+    land-registry-provider: DOCUMENT
   jwt:
     secret: ${JWT_SECRET}
     access-ttl: 15m
